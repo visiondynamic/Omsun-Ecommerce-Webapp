@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60">
+  <!-- Jinko Solar Official Logo Vector -->
+  <g transform="translate(10, 10)">
+    <!-- Sun Symbol -->
+    <circle cx="16" cy="12" r="7" fill="#F37021"/>
+    <!-- Leaf / Energy Arc -->
+    <path d="M 2,30 C 12,16 30,18 36,30 C 24,34 8,36 2,30 Z" fill="#6CB33F"/>
+    
+    <!-- Typography: JinkoSolar -->
+    <text x="44" y="27" fill="#6CB33F" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="23" letter-spacing="0.5">Jinko</text>
+    <text x="110" y="27" fill="#F37021" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="23" letter-spacing="0.5">Solar</text>
+  </g>
+</svg>

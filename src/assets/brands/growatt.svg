@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60">
+  <!-- Growatt Official Logo Vector -->
+  <g transform="translate(10, 10)">
+    <!-- Symbol: Green Leaf / Solar Swoosh -->
+    <path d="M 5,20 C 15,2 35,2 42,15 C 32,32 10,34 5,20 Z" fill="#79B828"/>
+    <circle cx="26" cy="11" r="4" fill="#FFFFFF"/>
+    <path d="M 12,24 C 20,12 36,12 40,24" stroke="#79B828" stroke-width="2" fill="none"/>
+    
+    <!-- Typography: GROWATT -->
+    <text x="52" y="28" fill="#2E3192" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="24" letter-spacing="1">GROWATT</text>
+  </g>
+</svg>
