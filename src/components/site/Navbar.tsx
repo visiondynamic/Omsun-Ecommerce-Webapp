@@ -61,6 +61,25 @@ export function Navbar() {
   const routerState = useRouterState();
   const pathname = routerState.location.pathname;
   const { user, logout } = useAuth();
+  const { setIsCartOpen, totalItems } = useCart();
+
+  const handleCartClick = () => {
+    let loggedIn = false;
+    if (typeof window !== "undefined") {
+      try {
+        const storedUser = localStorage.getItem("omsun_auth_user");
+        loggedIn = !!storedUser && JSON.parse(storedUser) !== null;
+      } catch {
+        loggedIn = false;
+      }
+    }
+
+    if (loggedIn) {
+      setIsCartOpen(true);
+    } else {
+      window.location.href = "/auth?mode=register";
+    }
+  };
 
   /* ── Keyboard shortcut listener for Search (Ctrl+K or Cmd+K) ── */
   useEffect(() => {
@@ -258,17 +277,26 @@ export function Navbar() {
               <Search className="relative size-5 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
             </button>
 
-            {/* Cart — glowing badge */}
+            {/* Cart — glowing badge with live count */}
             <button
+              type="button"
+              onClick={handleCartClick}
               aria-label="Open cart"
-              className="group relative hidden min-h-10 min-w-10 items-center justify-center rounded-full text-white/60 transition-all duration-300 hover:text-white sm:inline-flex"
+              title="Shopping Cart"
+              className="group relative flex min-h-10 min-w-10 items-center justify-center rounded-full text-white/70 transition-all duration-300 hover:text-white"
             >
               <span className="absolute inset-0 rounded-full bg-amber-400/0 transition-all duration-300 group-hover:bg-amber-400/12 group-hover:shadow-[0_0_18px_2px_rgba(251,191,36,0.3)]" />
               <ShoppingCart className="relative size-5 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(251,191,36,0.9)]" />
-              <span className="absolute right-1.5 top-1.5 flex size-2.5 items-center justify-center">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-60" />
-                <span className="relative size-2 rounded-full bg-gradient-to-br from-amber-400 to-orange-500" />
-              </span>
+              {totalItems > 0 ? (
+                <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-600 font-mono text-[10px] font-extrabold text-white shadow-lg animate-bounce">
+                  {totalItems}
+                </span>
+              ) : (
+                <span className="absolute right-1.5 top-1.5 flex size-2.5 items-center justify-center">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-60" />
+                  <span className="relative size-2 rounded-full bg-gradient-to-br from-amber-400 to-orange-500" />
+                </span>
+              )}
             </button>
 
             {/* User Auth Section */}
