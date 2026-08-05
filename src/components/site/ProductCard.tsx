@@ -7,6 +7,7 @@ import {
   Leaf,
   Minus,
   Plus,
+  RotateCcw,
   ShieldCheck,
   ShoppingCart,
   Star,
@@ -33,7 +34,7 @@ export function ProductCard({
 }) {
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const { addToCart } = useCart();
+  const { addToCart, buyNow } = useCart();
 
   const out = product.stock === 0;
   const isLight = variant === "light";
@@ -43,10 +44,6 @@ export function ProductCard({
     product.compareAt && product.compareAt > product.price
       ? Math.round(((product.compareAt - product.price) / product.compareAt) * 100)
       : null;
-
-  const handleAddToCart = (qty = 1) => {
-    addToCart(product, qty);
-  };
 
   return (
     <>
@@ -226,29 +223,41 @@ export function ProductCard({
               </span>
             </div>
 
-            {/* Add to Cart CTA */}
-            <Button
-              disabled={out}
-              onClick={() => handleAddToCart(1)}
-              className={cn(
-                "h-11 w-full rounded-xl font-bold text-xs transition-all duration-300",
-                out
-                  ? isLight
-                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                    : "bg-white/10 text-white/40 cursor-not-allowed"
-                  : isLight
-                    ? "bg-emerald-600 text-white shadow-md hover:bg-emerald-700 hover:scale-[1.02] active:scale-95"
-                    : "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg hover:from-emerald-400 hover:to-teal-500 hover:scale-[1.02] active:scale-95",
-              )}
-            >
-              <ShoppingCart className="size-4 mr-1.5" />
-              {out ? "Notify When Available" : "Add to Cart"}
-            </Button>
+            {/* DARAZ-STYLE DUAL ACTION BUTTONS: Add to Cart + Buy Now */}
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              <Button
+                disabled={out}
+                onClick={() => addToCart(product, 1)}
+                className={cn(
+                  "h-11 rounded-xl font-bold text-xs transition-all duration-300",
+                  out
+                    ? "bg-slate-200 dark:bg-white/10 text-slate-400 cursor-not-allowed"
+                    : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-black",
+                )}
+              >
+                <ShoppingCart className="size-3.5 mr-1" />
+                Add to Cart
+              </Button>
+
+              <Button
+                disabled={out}
+                onClick={() => buyNow(product, 1)}
+                className={cn(
+                  "h-11 rounded-xl font-bold text-xs transition-all duration-300 shadow-md",
+                  out
+                    ? "bg-slate-200 dark:bg-white/10 text-slate-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-orange-500 to-amber-600 text-white hover:from-orange-400 hover:to-amber-500 hover:scale-[1.02]",
+                )}
+              >
+                <Zap className="size-3.5 mr-1" />
+                Buy Now
+              </Button>
+            </div>
           </div>
         </div>
       </article>
 
-      {/* ═══════════════ INTERACTIVE QUICK VIEW DIALOG MODAL ═══════════════ */}
+      {/* ═══════════════ DARAZ-STYLE QUICK VIEW DIALOG MODAL ═══════════════ */}
       <Dialog open={quickViewOpen} onOpenChange={setQuickViewOpen}>
         <DialogContent className="max-w-3xl overflow-hidden rounded-3xl border-slate-200 dark:border-white/15 bg-white dark:bg-[#061e16] p-0 shadow-2xl">
           <DialogHeader className="sr-only">
@@ -275,19 +284,24 @@ export function ProductCard({
                 />
               </div>
 
+              {/* Daraz Trust Badges */}
               <div className="space-y-2 border-t border-slate-200 dark:border-white/10 pt-3 text-[11px] font-semibold text-slate-600 dark:text-white/70">
                 <div className="flex items-center gap-2">
                   <Truck className="size-3.5 text-emerald-500" />
                   <span>48-Hour Kathmandu Warehouse Delivery</span>
                 </div>
                 <div className="flex items-center gap-2">
+                  <RotateCcw className="size-3.5 text-emerald-500" />
+                  <span>7 Days Easy Return Policy</span>
+                </div>
+                <div className="flex items-center gap-2">
                   <ShieldCheck className="size-3.5 text-emerald-500" />
-                  <span>Official OMSUN Serialised Guarantee</span>
+                  <span>100% Genuine Warranty Guaranteed</span>
                 </div>
               </div>
             </div>
 
-            {/* Right Product Details & Actions */}
+            {/* Right Details & Dual Action Buttons */}
             <div className="p-6 sm:p-8 flex flex-col justify-between text-slate-900 dark:text-white">
               <div>
                 <div className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
@@ -314,12 +328,12 @@ export function ProductCard({
                   )}
                   {discountPercent && (
                     <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-extrabold text-red-500 border border-red-500/20">
-                      Save {discountPercent}%
+                      -{discountPercent}% OFF
                     </span>
                   )}
                 </div>
 
-                {/* Highlights List */}
+                {/* Specs List */}
                 <div className="mt-6 space-y-2 border-t border-b border-slate-200 dark:border-white/10 py-4">
                   {[
                     "Certified Tier-1 Engineering Specification",
@@ -334,7 +348,7 @@ export function ProductCard({
                 </div>
               </div>
 
-              {/* Quantity & CTA Action Buttons */}
+              {/* Quantity Selector & Dual Actions */}
               <div className="mt-6 space-y-4">
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-white/70">
@@ -363,35 +377,47 @@ export function ProductCard({
                   </div>
                 </div>
 
-                <div className="grid gap-2.5">
+                <div className="grid grid-cols-2 gap-2.5">
                   <Button
                     disabled={out}
                     onClick={() => {
-                      handleAddToCart(quantity);
+                      addToCart(product, quantity);
                       setQuickViewOpen(false);
                     }}
-                    className="h-12 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 font-bold text-xs text-white shadow-lg hover:from-emerald-400 hover:to-teal-500"
+                    className="h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold text-xs hover:bg-emerald-500 hover:text-black"
                   >
-                    <ShoppingCart className="size-4 mr-2" />
-                    Add {quantity} to Cart · {formatNPR(product.price * quantity)}
+                    <ShoppingCart className="size-4 mr-1.5" />
+                    Add to Cart
                   </Button>
 
                   <Button
-                    asChild
-                    variant="outline"
-                    className="h-11 w-full rounded-xl border-slate-300 dark:border-white/20 text-xs font-bold hover:bg-slate-100 dark:hover:bg-white/10"
+                    disabled={out}
+                    onClick={() => {
+                      setQuickViewOpen(false);
+                      buyNow(product, quantity);
+                    }}
+                    className="h-12 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold text-xs shadow-lg hover:from-orange-400 hover:to-amber-500"
                   >
-                    <Link
-                      to="/product/$id"
-                      params={{ id: product.id }}
-                      onClick={() => setQuickViewOpen(false)}
-                      className="flex items-center justify-center gap-1.5"
-                    >
-                      <span>View Full Product Specifications</span>
-                      <ArrowRight className="size-3.5" />
-                    </Link>
+                    <Zap className="size-4 mr-1.5" />
+                    Buy Now
                   </Button>
                 </div>
+
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-10 w-full rounded-xl border-slate-300 dark:border-white/20 text-xs font-bold hover:bg-slate-100 dark:hover:bg-white/10"
+                >
+                  <Link
+                    to="/product/$id"
+                    params={{ id: product.id }}
+                    onClick={() => setQuickViewOpen(false)}
+                    className="flex items-center justify-center gap-1.5"
+                  >
+                    <span>View Full Product Page</span>
+                    <ArrowRight className="size-3.5" />
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>

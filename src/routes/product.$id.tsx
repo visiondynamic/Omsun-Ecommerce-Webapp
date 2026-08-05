@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { Award, Check, Minus, Plus, ShieldCheck, ShoppingCart, Star, Truck } from "lucide-react";
+import { Award, Check, Minus, Plus, ShieldCheck, ShoppingCart, Star, Truck, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import { Navbar } from "@/components/site/Navbar";
@@ -188,13 +188,23 @@ function ProductPage() {
                 </span>
               </div>
 
-              <Button
-                disabled={out}
-                onClick={() => addToCart(product, qty)}
-                className="mt-6 h-14 w-full rounded-2xl bg-energy text-base font-semibold text-primary-foreground shadow-glow transition-transform duration-300 hover:-translate-y-0.5 disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
-              >
-                <ShoppingCart className="size-5" /> {out ? "Notify me" : "Add to cart"}
-              </Button>
+              <div className="grid grid-cols-2 gap-3 mt-6">
+                <Button
+                  disabled={out}
+                  onClick={() => addToCart(product, qty)}
+                  className="h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-sm font-bold hover:bg-emerald-500 hover:text-black transition-all"
+                >
+                  <ShoppingCart className="size-4 mr-1.5" /> {out ? "Out of Stock" : "Add to Cart"}
+                </Button>
+
+                <Button
+                  disabled={out}
+                  onClick={() => buyNow(product, qty)}
+                  className="h-14 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold text-sm shadow-xl hover:from-orange-400 hover:to-amber-500 transition-all hover:scale-[1.02]"
+                >
+                  <Zap className="size-4 mr-1.5" /> Buy Now
+                </Button>
+              </div>
               <Button
                 variant="outline"
                 className="mt-3 h-14 w-full rounded-2xl border-2 text-base font-semibold"

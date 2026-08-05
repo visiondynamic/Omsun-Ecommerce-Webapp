@@ -9,7 +9,8 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
+  addToCart: (product: Product, quantity?: number, openDrawer?: boolean) => void;
+  buyNow: (product: Product, quantity?: number) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -21,7 +22,7 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = "omsun_shopping_cart_v1";
+const LOCAL_STORAGE_KEY = "omsun_daraz_shopping_cart_v2";
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -38,6 +39,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // Helper function to check if user is logged in
+  const checkUserLoggedIn = (): boolean => {
+    if (typeof window === "undefined") return false;
+    try {
+      const storedUser = localStorage.getItem("omsun_auth_user");
+      return !!storedUser && JSON.parse(storedUser) !== null;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cart));
@@ -46,8 +58,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [cart]);
 
-  const addToCart = (product: Product, quantity = 1) => {
-    // 1. Add/Update item in cart state
+  // ADD TO CART WITH AUTH GUARD
+  const addToCart = (product: Product, quantity = 1, openDrawer = true) => {
+    const isLoggedIn = checkUserLoggedIn();
+
+    if (!isLoggedIn) {
+      toast.error("Account Login Required", {
+        description: "Please sign in or create an account to add items to your cart.",
+      });
+      setTimeout(() => {
+        window.location.href = "/auth?mode=register";
+      }, 400);
+      return;
+    }
+
+    // User is logged in -> Execute Daraz Cart mechanism
     setCart((prev) => {
       const existingIndex = prev.findIndex((item) => item.product.id === product.id);
       if (existingIndex > -1) {
@@ -62,14 +87,32 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return [...prev, { product, quantity }];
     });
 
-    toast.success(`${quantity}× ${product.name} added!`, {
-      description: "Redirecting to Signup page to complete your account...",
+    toast.success(`${quantity}× ${product.name} added to cart`, {
+      description: `Subtotal: ${formatNPR(product.price * quantity)}`,
     });
 
-    // 2. Direct user to Signup / Register page
-    setTimeout(() => {
-      window.location.href = "/auth?mode=register";
-    }, 400);
+    if (openDrawer) {
+      setIsCartOpen(true);
+    }
+  };
+
+  // BUY NOW WITH AUTH GUARD
+  const buyNow = (product: Product, quantity = 1) => {
+    const isLoggedIn = checkUserLoggedIn();
+
+    if (!isLoggedIn) {
+      toast.error("Account Login Required", {
+        description: "Please sign in or create an account to proceed to express checkout.",
+      });
+      setTimeout(() => {
+        window.location.href = "/auth?mode=register";
+      }, 400);
+      return;
+    }
+
+    // User is logged in -> Add & redirect to Checkout
+    addToCart(product, quantity, false);
+    window.location.href = "/protected/checkout";
   };
 
   const removeFromCart = (productId: string) => {
@@ -101,6 +144,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       value={{
         cart,
         addToCart,
+        buyNow,
         removeFromCart,
         updateQuantity,
         clearCart,
