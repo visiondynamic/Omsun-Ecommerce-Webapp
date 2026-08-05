@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { Award, Check, Minus, Plus, ShieldCheck, ShoppingCart, Star, Truck } from "lucide-react";
 import { toast } from "sonner";
+import { useCart } from "@/context/CartContext";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -36,6 +37,7 @@ export const Route = createFileRoute("/product/$id")({
 
 function ProductPage() {
   const { product } = Route.useLoaderData() as { product: Product };
+  const { addToCart } = useCart();
   const [qty, setQty] = useState(1);
   const [active, setActive] = useState(0);
   const gallery = [product.image, product.image, product.image];
@@ -188,7 +190,7 @@ function ProductPage() {
 
               <Button
                 disabled={out}
-                onClick={() => toast.success(`${qty} × ${product.name} added to cart`)}
+                onClick={() => addToCart(product, qty)}
                 className="mt-6 h-14 w-full rounded-2xl bg-energy text-base font-semibold text-primary-foreground shadow-glow transition-transform duration-300 hover:-translate-y-0.5 disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
               >
                 <ShoppingCart className="size-5" /> {out ? "Notify me" : "Add to cart"}

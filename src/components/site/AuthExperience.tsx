@@ -62,7 +62,14 @@ import { useNavigate } from "@tanstack/react-router";
 
 /* ─── main component ─── */
 export default function AuthExperience() {
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register">(() => {
+    if (typeof window !== "undefined") {
+      const search = new URLSearchParams(window.location.search);
+      const m = search.get("mode");
+      if (m === "login") return "login";
+    }
+    return "register";
+  });
   const [showPwd, setShowPwd] = useState(false);
   const [showCPwd, setShowCPwd] = useState(false);
   const isLogin = mode === "login";
