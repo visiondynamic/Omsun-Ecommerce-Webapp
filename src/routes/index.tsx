@@ -144,7 +144,7 @@ const testimonials = [
 ];
 
 function Home() {
-  const featured = products.slice(0, 3);
+  const featured = products.slice(0, 4);
   const bestSellers = products.filter((p) => p.badges.includes("Best Seller"));
 
   return (
@@ -234,13 +234,13 @@ function Home() {
               </Button>
             </Reveal>
 
-            {/* HIGH-END BENTO GRID — 2 COLUMNS ON MOBILE */}
-            <div className="grid gap-3.5 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
+            {/* HIGH-END BENTO GRID — 1 COLUMN ON MOBILE FOR SPACIOUS UN-CRAMPED LAYOUT */}
+            <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((c, i) => (
                 <Reveal key={c.name} delay={i * 70}>
                   <Link
                     to="/shop"
-                    className="group relative flex flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-[#051c14] p-4 sm:p-8 shadow-2xl transition-all duration-500 hover:border-emerald-400/60 hover:shadow-[0_25px_60px_-15px_rgba(16,185,129,0.35)] hover:-translate-y-1.5 h-full min-h-[210px] sm:min-h-[300px]"
+                    className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/15 bg-[#051c14] p-6 sm:p-8 shadow-2xl transition-all duration-500 hover:border-emerald-400/60 hover:shadow-[0_25px_60px_-15px_rgba(16,185,129,0.35)] hover:-translate-y-1.5 h-full min-h-[260px] sm:min-h-[300px]"
                   >
                     <img
                       src={c.image}
@@ -321,7 +321,7 @@ function Home() {
               </Button>
             </Reveal>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
               {featured.map((p, i) => (
                 <Reveal key={p.id} delay={i * 80} className="h-full">
                   <ProductCard product={p} variant="light" />
@@ -376,7 +376,7 @@ function Home() {
                 </div>
               </Reveal>
 
-              <div className="grid gap-6 sm:grid-cols-2">
+              <div className="grid gap-3 sm:gap-6 grid-cols-2">
                 {bestSellers.map((p, i) => (
                   <Reveal key={p.id} delay={i * 80} className="h-full">
                     <ProductCard product={p} variant="dark" />

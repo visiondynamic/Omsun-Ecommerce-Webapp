@@ -151,6 +151,7 @@ export function Navbar() {
     : products.slice(0, 4);
 
   return (
+    <>
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -824,9 +825,53 @@ export function Navbar() {
                 <Zap className="relative size-4" />
                 <span className="relative">Browse Catalog & Get Quote</span>
               </Link>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+    {/* ═══════════════ DARAZ-STYLE FIXED MOBILE BOTTOM NAV BAR ═══════════════ */}
+    <nav
+      aria-label="Mobile Bottom Navigation"
+      className="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-[#051710]/95 backdrop-blur-xl border-t border-white/10 px-4 py-1.5 flex items-center justify-around text-white shadow-2xl"
+    >
+      <Link to="/" className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400">
+        <span className="grid size-6 place-items-center text-sm">🏠</span>
+        <span>Home</span>
+      </Link>
+
+      <Link to="/shop" className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400">
+        <span className="grid size-6 place-items-center text-sm">🛍️</span>
+        <span>Shop</span>
+      </Link>
+
+      <button
+        type="button"
+        onClick={handleCartClick}
+        aria-label="Shopping Cart"
+        className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-amber-300 relative"
+      >
+        <div className="relative grid size-6 place-items-center">
+          <ShoppingCart className="size-4" />
+          {totalItems > 0 && (
+            <span className="absolute -top-1.5 -right-2 flex size-4 items-center justify-center rounded-full bg-red-600 text-[9px] font-black text-white">
+              {totalItems}
+            </span>
+          )}
+        </div>
+        <span>Cart</span>
+      </button>
+
+      <Link to="/projects" className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400">
+        <span className="grid size-6 place-items-center text-sm">⚡</span>
+        <span>Projects</span>
+      </Link>
+
+      <Link to="/auth" className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400">
+        <span className="grid size-6 place-items-center text-sm">👤</span>
+        <span>Account</span>
+      </Link>
+    </nav>
+  </>
   );
 }

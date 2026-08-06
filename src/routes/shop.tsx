@@ -190,8 +190,39 @@ function Shop() {
           </div>
         </header>
 
+        {/* ═══════════════ DARAZ-STYLE HORIZONTAL REEL TABS ═══════════════ */}
+        <div className="mt-6 flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 text-xs font-bold text-white/80">
+          {[
+            { label: "For You", icon: "🔥", active: true },
+            { label: "Fast Delivery", icon: "🚚", active: false },
+            { label: "Tier-1 Panels", icon: "☀️", active: false },
+            { label: "Battery Storage", icon: "🔋", active: false },
+            { label: "Hybrid Inverters", icon: "⚡", active: false },
+            { label: "Top Rated", icon: "⭐", active: false },
+          ].map((tab) => (
+            <button
+              key={tab.label}
+              onClick={() => {
+                if (tab.label === "For You") clearAllFilters();
+                else if (tab.label === "Tier-1 Panels") selectSingleCategory("Solar Panels");
+                else if (tab.label === "Battery Storage") selectSingleCategory("Energy Storage");
+                else if (tab.label === "Hybrid Inverters") selectSingleCategory("Inverters");
+              }}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-extrabold shrink-0 transition-all shadow-sm",
+                tab.active || (tab.label === "For You" && cats.length === 0)
+                  ? "border-emerald-500 bg-emerald-500 text-black"
+                  : "border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/30",
+              )}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
         {/* ═══════════════ SLIDABLE HORIZONTAL CATEGORY CAROUSEL ═══════════════ */}
-        <section className="mt-8">
+        <section className="mt-6">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -418,9 +449,9 @@ function Shop() {
             ) : (
               <div
                 className={cn(
-                  "grid gap-6 items-stretch",
+                  "grid gap-3 sm:gap-6 items-stretch",
                   view === "grid"
-                    ? "sm:grid-cols-2 xl:grid-cols-3"
+                    ? "grid-cols-2 sm:grid-cols-2 xl:grid-cols-3"
                     : "grid-cols-1 max-w-3xl",
                 )}
               >

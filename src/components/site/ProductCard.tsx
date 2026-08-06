@@ -49,51 +49,32 @@ export function ProductCard({
     <>
       <article
         className={cn(
-          "group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl p-3 transition-all duration-500 hover:-translate-y-1.5",
+          "group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl p-2.5 sm:p-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
           isLight
-            ? "border border-slate-200/90 bg-white text-slate-900 shadow-lg hover:border-emerald-500/80 hover:shadow-2xl"
-            : "border border-white/12 bg-[#061e16]/90 text-white shadow-xl backdrop-blur-xl hover:border-emerald-400/50 hover:shadow-[0_25px_50px_-12px_rgba(16,185,129,0.25)]",
+            ? "border border-slate-200/80 bg-white text-slate-900 shadow-sm hover:border-emerald-500/70"
+            : "border border-white/12 bg-[#061d15]/90 text-white shadow-md backdrop-blur-xl hover:border-emerald-400/50",
         )}
       >
         {/* ── PHOTO CONTAINER ── */}
-        <div className={cn("relative overflow-hidden rounded-2xl shrink-0", isLight ? "bg-slate-100" : "bg-[#03150e]")}>
+        <div className={cn("relative overflow-hidden rounded-xl shrink-0", isLight ? "bg-slate-100" : "bg-[#03150e]")}>
           {/* Top Badges */}
-          <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
-            {product.badges.map((b) => (
+          <div className="absolute left-2 top-2 z-10 flex flex-wrap gap-1">
+            <span className="rounded-md bg-emerald-600/90 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-md backdrop-blur-md">
+              FREE DELIVERY
+            </span>
+            {product.badges.slice(0, 1).map((b) => (
               <span
                 key={b}
-                className={cn(
-                  "rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-md backdrop-blur-md",
-                  b === "Best Seller"
-                    ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white"
-                    : b === "Featured"
-                      ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
-                      : isLight
-                        ? "bg-slate-900/80 text-white"
-                        : "bg-white/20 text-white border border-white/20",
-                )}
+                className="rounded-md bg-purple-600/90 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-md backdrop-blur-md"
               >
                 {b}
               </span>
             ))}
-
-            {product.efficient && (
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md",
-                  isLight
-                    ? "border border-emerald-500/30 bg-emerald-100 text-emerald-800"
-                    : "border border-emerald-400/30 bg-emerald-400/20 text-emerald-300",
-                )}
-              >
-                <Leaf className="size-3 text-emerald-600" /> Efficient
-              </span>
-            )}
           </div>
 
           {/* Discount Badge */}
           {discountPercent && (
-            <div className="absolute right-3 top-3 z-10 rounded-full bg-red-500/90 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-lg backdrop-blur-md">
+            <div className="absolute right-2 top-2 z-10 rounded-md bg-red-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-md">
               -{discountPercent}% OFF
             </div>
           )}
@@ -106,12 +87,12 @@ export function ProductCard({
               loading="lazy"
               width={800}
               height={800}
-              className="aspect-square w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+              className="aspect-square w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             />
           </Link>
 
-          {/* Floating Quick View overlay button */}
-          <div className="pointer-events-none absolute inset-x-4 bottom-4 flex gap-2 opacity-0 transition-all duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
+          {/* Quick View overlay button */}
+          <div className="pointer-events-none absolute inset-x-2 bottom-2 flex gap-2 opacity-0 transition-all duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
             <Button
               type="button"
               onClick={() => {
@@ -119,46 +100,29 @@ export function ProductCard({
                 setQuickViewOpen(true);
               }}
               className={cn(
-                "h-11 flex-1 rounded-xl text-xs font-bold shadow-xl backdrop-blur-md transition-colors",
+                "h-9 flex-1 rounded-lg text-[11px] font-bold shadow-lg backdrop-blur-md transition-colors",
                 isLight
                   ? "border border-slate-300 bg-white/90 text-slate-900 hover:bg-emerald-600 hover:text-white"
-                  : "border border-white/20 bg-black/75 text-white hover:bg-emerald-500 hover:text-black",
+                  : "border border-white/20 bg-black/80 text-white hover:bg-emerald-500 hover:text-black",
               )}
             >
-              <Eye className="size-4 mr-1.5" /> Quick View
+              <Eye className="size-3.5 mr-1" /> Quick View
             </Button>
           </div>
         </div>
 
         {/* ── CARD CONTENT ── */}
-        <div className="flex flex-1 flex-col justify-between gap-3 p-3.5 pt-4">
+        <div className="flex flex-1 flex-col justify-between gap-2 p-1.5 pt-2.5">
           <div>
-            {/* Category & Rating */}
-            <div className="flex items-center justify-between gap-2 mb-1.5">
-              <span
-                className={cn(
-                  "text-[11px] font-mono font-bold uppercase tracking-wider",
-                  isLight ? "text-emerald-700" : "text-emerald-400",
-                )}
-              >
-                {product.category}
-              </span>
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-md border",
-                  isLight
-                    ? "bg-amber-50 text-amber-800 border-amber-300"
-                    : "text-amber-300 bg-amber-400/10 border-amber-400/20",
-                )}
-              >
-                <Star className="size-3.5 fill-amber-400 text-amber-400" /> {product.rating}
-              </span>
+            {/* Category */}
+            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-500/90 mb-0.5">
+              {product.category}
             </div>
 
-            {/* Title */}
+            {/* Title (2 lines max - Daraz style) */}
             <h3
               className={cn(
-                "font-display text-base font-bold leading-snug line-clamp-2 min-h-[2.6rem] transition-colors",
+                "font-display text-xs sm:text-sm font-bold leading-tight line-clamp-2 min-h-[2.3rem] transition-colors",
                 isLight
                   ? "text-slate-900 group-hover:text-emerald-700"
                   : "text-white group-hover:text-emerald-300",
@@ -169,83 +133,54 @@ export function ProductCard({
               </Link>
             </h3>
 
-            {/* Tagline */}
-            <p
-              className={cn(
-                "line-clamp-2 min-h-[2.5rem] text-xs font-medium leading-relaxed mt-1",
-                isLight ? "text-slate-600" : "text-white/60",
-              )}
-            >
-              {product.tagline}
-            </p>
+            {/* Price & Discount Row (OMSUN Theme) */}
+            <div className="mt-2 flex flex-wrap items-baseline gap-1.5">
+              <span className={cn("font-display text-sm sm:text-base font-extrabold", isLight ? "text-emerald-700" : "text-emerald-400")}>
+                {formatNPR(product.price)}
+              </span>
+              {product.compareAt ? (
+                <span className={cn("text-[11px] line-through font-mono", isLight ? "text-slate-400" : "text-white/40")}>
+                  {formatNPR(product.compareAt)}
+                </span>
+              ) : null}
+            </div>
+
+            {/* Star Rating & Sold Count */}
+            <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+              <span className="flex items-center gap-0.5 font-bold text-amber-400">
+                <Star className="size-3 fill-amber-400 text-amber-400" />
+                <span>{product.rating}</span>
+              </span>
+              <span>•</span>
+              <span>388 sold</span>
+            </div>
           </div>
 
           {/* Bottom Section */}
-          <div className="pt-2">
-            <div
-              className={cn(
-                "flex items-end justify-between gap-2 pt-3 border-t mb-2.5",
-                isLight ? "border-slate-200" : "border-white/10",
-              )}
-            >
-              <div>
-                <div className={cn("font-display text-lg font-extrabold", isLight ? "text-slate-900" : "text-white")}>
-                  {formatNPR(product.price)}
-                </div>
-                {product.compareAt ? (
-                  <div className={cn("text-xs line-through", isLight ? "text-slate-400" : "text-white/40")}>
-                    {formatNPR(product.compareAt)}
-                  </div>
-                ) : (
-                  <div className="text-xs opacity-0 font-mono">NPR 0</div>
-                )}
-              </div>
-
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold shrink-0",
-                  out
-                    ? isLight
-                      ? "bg-red-50 text-red-700 border border-red-200"
-                      : "bg-red-500/15 text-red-400 border border-red-500/30"
-                    : isLight
-                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                      : "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30",
-                )}
-              >
-                <span
-                  className={cn(
-                    "size-1.5 rounded-full",
-                    out ? "bg-red-400" : "bg-emerald-500 animate-pulse",
-                  )}
-                />
-                {out ? "Out of stock" : `${product.stock} in stock`}
-              </span>
-            </div>
-
-            {/* DARAZ-STYLE DUAL ACTION BUTTONS: Add to Cart + Buy Now */}
-            <div className="grid grid-cols-2 gap-2 mt-1">
+          <div className="pt-1.5 border-t border-slate-200/60 dark:border-white/10 mt-2">
+            {/* OMSUN DUAL ACTION BUTTONS */}
+            <div className="grid grid-cols-2 gap-1.5 mt-1">
               <Button
                 disabled={out}
                 onClick={() => addToCart(product, 1)}
                 variant="outline"
                 className={cn(
-                  "h-10 rounded-xl font-bold text-[11px] sm:text-xs px-2 sm:px-3 transition-all border",
+                  "h-9 rounded-xl font-bold text-[10px] sm:text-xs px-1 sm:px-2 transition-all border",
                   isLight
                     ? "border-emerald-600 text-emerald-800 hover:bg-emerald-50 bg-emerald-50/50"
                     : "border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/20 bg-emerald-500/10",
                 )}
               >
-                <ShoppingCart className="size-3.5 mr-1 shrink-0" />
-                <span className="truncate">Add to Cart</span>
+                <ShoppingCart className="size-3 mr-1 shrink-0 hidden sm:inline-block" />
+                <span className="truncate">Cart</span>
               </Button>
 
               <Button
                 disabled={out}
                 onClick={() => buyNow(product, 1)}
-                className="h-10 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 font-bold text-[11px] sm:text-xs px-2 sm:px-3 text-white shadow-md transition-all hover:scale-[1.02]"
+                className="h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 font-extrabold text-[10px] sm:text-xs px-1 sm:px-2 text-white shadow-md transition-all hover:from-emerald-400 hover:to-teal-500 hover:scale-[1.02]"
               >
-                <Zap className="size-3.5 mr-1 shrink-0" />
+                <Zap className="size-3 mr-1 shrink-0 hidden sm:inline-block" />
                 <span className="truncate">Buy Now</span>
               </Button>
             </div>
