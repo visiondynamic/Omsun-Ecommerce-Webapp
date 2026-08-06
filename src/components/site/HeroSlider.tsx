@@ -29,7 +29,7 @@ interface Slide {
   sub: string;
   cta: { label: string; to?: string; action?: () => void };
   ctaSecondary: { label: string; to?: string; action?: () => void };
-  accent: string; // tailwind gradient class or CSS value
+  accent: string;
   accentGlow: string;
 }
 
@@ -42,7 +42,7 @@ export function HeroSlider() {
   const [progress, setProgress] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const SLIDE_DURATION = 4000;
+  const SLIDE_DURATION = 4200;
 
   const slides: Slide[] = [
     {
@@ -52,11 +52,11 @@ export function HeroSlider() {
       badgeIcon: <Sun className="size-3.5" />,
       headline: ["Power That", "Pays You"],
       accentWord: "Back.",
-      sub: "Premium monocrystalline & bifacial solar panels engineered for Nepal's climate — from 50 W to multi-MW utility installations.",
+      sub: "Tier-1 monocrystalline & bifacial solar modules engineered for high altitude Himalayan sun & monsoon reliability.",
       cta: { label: "Explore Solar Panels", to: "/shop" },
       ctaSecondary: {
-        label: "Get Free Sizing",
-        action: () => toast.success("Our engineer will call you within 24 hours."),
+        label: "Get Free Site Sizing",
+        action: () => toast.success("Our sales engineer will reach out within 24 hours."),
       },
       accent: "linear-gradient(120deg,#6366f1,#0ea5e9,#14b8a6)",
       accentGlow: "rgba(99,102,241,0.4)",
@@ -68,11 +68,11 @@ export function HeroSlider() {
       badgeIcon: <BatteryCharging className="size-3.5" />,
       headline: ["Store Every", "Ray of"],
       accentWord: "Sunlight.",
-      sub: "Modular lithium iron-phosphate battery walls with 6,000+ cycle life — keep your facility running through grid outages and peak tariffs.",
-      cta: { label: "Browse Storage", to: "/shop" },
+      sub: "Modular lithium iron-phosphate powerwalls with 6,000+ deep cycle life for continuous off-grid reliability.",
+      cta: { label: "Browse Battery Storage", to: "/shop" },
       ctaSecondary: {
         label: "Talk to an Engineer",
-        action: () => toast.success("Our engineer will call you within 24 hours."),
+        action: () => toast.success("Our sales engineer will reach out within 24 hours."),
       },
       accent: "linear-gradient(120deg,#0ea5e9,#3b82f6,#6366f1)",
       accentGlow: "rgba(14,165,233,0.35)",
@@ -84,24 +84,24 @@ export function HeroSlider() {
       badgeIcon: <Sun className="size-3.5" />,
       headline: ["Clean Energy", "From Your"],
       accentWord: "Rooftop.",
-      sub: "End-to-end rooftop solar design, supply and installation — OMSUN engineers handle everything from site survey to grid connection.",
+      sub: "Complete rooftop solar design, equipment supply & turnkey EPC commissioning across all 7 provinces of Nepal.",
       cta: {
         label: "Request Installation",
-        action: () => toast.success("Our engineer will call you within 24 hours."),
+        action: () => toast.success("Our sales engineer will reach out within 24 hours."),
       },
-      ctaSecondary: { label: "View Projects", to: "/shop" },
+      ctaSecondary: { label: "View Nepal Projects", to: "/projects" },
       accent: "linear-gradient(120deg,#10b981,#059669,#0d9488)",
       accentGlow: "rgba(16,185,129,0.35)",
     },
     {
       id: 3,
       image: bannerInverter,
-      badge: "Hybrid Inverter Technology",
+      badge: "Hybrid Inverter Tech",
       badgeIcon: <Gauge className="size-3.5" />,
       headline: ["Smart Hybrid", "Power"],
       accentWord: "Control.",
-      sub: "Huawei, Growatt, Schneider — full hybrid, on-grid and off-grid inverters stocked in Kathmandu, shipped nationwide within 48 hours.",
-      cta: { label: "Shop Inverters", to: "/shop" },
+      sub: "Certified hybrid, on-grid & off-grid inverters stocked in Kathmandu and dispatched nationwide within 48 hours.",
+      cta: { label: "Shop Hybrid Inverters", to: "/shop" },
       ctaSecondary: { label: "Compare Models", to: "/shop" },
       accent: "linear-gradient(120deg,#8b5cf6,#6366f1,#0ea5e9)",
       accentGlow: "rgba(139,92,246,0.35)",
@@ -113,10 +113,10 @@ export function HeroSlider() {
       badgeIcon: <Globe className="size-3.5" />,
       headline: ["Lighting Up", "Every Corner"],
       accentWord: "of Nepal.",
-      sub: "From the Terai to the Himalayas — 18 MW+ installed, 4,200+ projects delivered, zero-compromise engineering support across Nepal.",
-      cta: { label: "Our Projects", to: "/shop" },
+      sub: "18 MW+ installed capacity and 4,200+ active energy projects backed by zero-compromise warranty support.",
+      cta: { label: "View Our Projects", to: "/projects" },
       ctaSecondary: {
-        label: "Become a Partner",
+        label: "Become a Distributor",
         action: () => toast.success("Partnership enquiry received. We'll reach out shortly."),
       },
       accent: "linear-gradient(120deg,#6366f1,#818cf8,#a78bfa)",
@@ -148,7 +148,6 @@ export function HeroSlider() {
     goTo((current - 1 + slides.length) % slides.length, "right");
   }, [current, goTo, slides.length]);
 
-  // Keep stable refs so interval/keyboard never need next/prev as deps
   const nextRef = useRef(next);
   const prevRef = useRef(prev_);
   useEffect(() => {
@@ -158,9 +157,6 @@ export function HeroSlider() {
     prevRef.current = prev_;
   }, [prev_]);
 
-  // Auto-play — only depends on `paused`, NOT on `next`
-  // Using the ref means the interval always calls the freshest next()
-  // without restarting the timer on every slide change.
   useEffect(() => {
     if (paused) return;
     intervalRef.current = setInterval(() => nextRef.current(), SLIDE_DURATION);
@@ -169,7 +165,6 @@ export function HeroSlider() {
     };
   }, [paused]);
 
-  // Progress bar tick — resets when slide changes or paused toggles
   useEffect(() => {
     if (paused) return;
     setProgress(0);
@@ -182,7 +177,6 @@ export function HeroSlider() {
     };
   }, [current, paused]);
 
-  // Arrow-key navigation
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") nextRef.current();
@@ -197,11 +191,11 @@ export function HeroSlider() {
 
   return (
     <section
-      className="hero-slider relative isolate h-[100svh] min-h-[600px] overflow-hidden"
+      className="hero-slider relative isolate min-h-[580px] h-[85dvh] sm:h-[90svh] lg:h-[94svh] overflow-hidden bg-[#020d08]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* ── Background slides ── */}
+      {/* ── Background Slides ── */}
       {slides.map((s, i) => (
         <div
           key={s.id}
@@ -221,49 +215,32 @@ export function HeroSlider() {
             className="absolute inset-0 size-full object-cover"
             draggable={false}
           />
-          {/* Dark overlay with accent color tint */}
+          {/* Contrast Dark Gradient Backdrop */}
           <div
             className="absolute inset-0"
             style={{
-              background: `linear-gradient(135deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0.6) 100%)`,
+              background: `linear-gradient(180deg, rgba(2,13,8,0.88) 0%, rgba(2,13,8,0.65) 50%, rgba(2,13,8,0.95) 100%)`,
             }}
-          />
-          {/* Bottom gradient fade */}
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/60 to-transparent" />
-          {/* Decorative diagonal accent */}
-          <div
-            className="hero-diagonal-accent absolute right-0 top-0 h-full w-1/2 opacity-20"
-            style={{
-              background: s.accent,
-              clipPath: "polygon(40% 0%, 100% 0%, 100% 100%, 0% 100%)",
-            }}
-          />
-          {/* Glow orb */}
-          <div
-            className="absolute right-[15%] top-[20%] size-[40rem] rounded-full blur-[120px] opacity-30"
-            style={{ background: s.accentGlow }}
           />
         </div>
       ))}
 
-      {/* ── Content ── */}
-      <div className="relative z-10 flex h-full flex-col justify-center px-6 pt-24 sm:px-12 lg:px-20">
+      {/* ── Main Content Container with Guaranteed Navbar Clearance (pt-36 sm:pt-40 lg:pt-44) ── */}
+      <div className="relative z-10 flex h-full flex-col justify-center px-5 sm:px-12 lg:px-20 pt-36 sm:pt-40 lg:pt-44 pb-16">
         <div className="max-w-3xl">
-          {/* Badge */}
+          {/* Eyebrow Pill Badge */}
           <div
             key={`badge-${current}`}
-            className="hero-content-in mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white backdrop-blur-md"
-            style={{ animationDelay: "0ms" }}
+            className="hero-content-in mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/50 px-4 py-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-300 backdrop-blur-md"
           >
-            <span style={{ color: "var(--color-primary)" }}>{slide.badgeIcon}</span>
-            {slide.badge}
+            <span className="text-emerald-400">{slide.badgeIcon}</span>
+            <span>{slide.badge}</span>
           </div>
 
-          {/* Headline */}
+          {/* Responsive Headline */}
           <h1
             key={`h1-${current}`}
-            className="hero-content-in font-display text-5xl font-extrabold leading-[0.95] text-white sm:text-6xl lg:text-7xl xl:text-8xl"
-            style={{ animationDelay: "80ms" }}
+            className="hero-content-in font-display text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[1.05] text-white tracking-tight"
           >
             {slide.headline.map((line, i) => (
               <span key={i} className="block">
@@ -278,7 +255,6 @@ export function HeroSlider() {
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
-                animationDelay: "140ms",
               }}
             >
               {slide.accentWord}
@@ -288,35 +264,33 @@ export function HeroSlider() {
           {/* Subtext */}
           <p
             key={`sub-${current}`}
-            className="hero-content-in mt-7 max-w-lg text-base leading-relaxed text-white/75 sm:text-lg"
-            style={{ animationDelay: "200ms" }}
+            className="hero-content-in mt-4 sm:mt-6 max-w-xl text-xs sm:text-base lg:text-lg font-medium text-white/85 leading-relaxed"
           >
             {slide.sub}
           </p>
 
-          {/* CTAs */}
+          {/* Action CTAs */}
           <div
             key={`cta-${current}`}
-            className="hero-content-in mt-9 flex flex-wrap gap-3"
-            style={{ animationDelay: "280ms" }}
+            className="hero-content-in mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3"
           >
             {slide.cta.to ? (
               <Button
                 asChild
-                className="h-14 rounded-2xl px-8 text-base font-bold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.5)]"
+                className="h-13 sm:h-14 rounded-xl sm:rounded-2xl px-7 sm:px-8 text-xs sm:text-base font-bold text-white shadow-2xl transition-all hover:scale-[1.02] w-full sm:w-auto"
                 style={{ background: slide.accent }}
               >
                 <Link to={slide.cta.to}>
-                  {slide.cta.label} <ArrowRight className="ml-2 size-5" />
+                  {slide.cta.label} <ArrowRight className="ml-2 size-4 sm:size-5" />
                 </Link>
               </Button>
             ) : (
               <Button
-                className="h-14 rounded-2xl px-8 text-base font-bold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                className="h-13 sm:h-14 rounded-xl sm:rounded-2xl px-7 sm:px-8 text-xs sm:text-base font-bold text-white shadow-2xl transition-all hover:scale-[1.02] w-full sm:w-auto"
                 style={{ background: slide.accent }}
                 onClick={slide.cta.action}
               >
-                {slide.cta.label} <ArrowRight className="ml-2 size-5" />
+                {slide.cta.label} <ArrowRight className="ml-2 size-4 sm:size-5" />
               </Button>
             )}
 
@@ -324,14 +298,14 @@ export function HeroSlider() {
               <Button
                 asChild
                 variant="outline"
-                className="h-14 rounded-2xl border-2 border-white/30 bg-white/10 px-8 text-base font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white/20 hover:border-white/50"
+                className="h-13 sm:h-14 rounded-xl sm:rounded-2xl border border-white/30 bg-white/10 px-7 sm:px-8 text-xs sm:text-base font-bold text-white backdrop-blur-md transition-all hover:bg-white/20 w-full sm:w-auto"
               >
                 <Link to={slide.ctaSecondary.to}>{slide.ctaSecondary.label}</Link>
               </Button>
             ) : (
               <Button
                 variant="outline"
-                className="h-14 rounded-2xl border-2 border-white/30 bg-white/10 px-8 text-base font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white/20 hover:border-white/50"
+                className="h-13 sm:h-14 rounded-xl sm:rounded-2xl border border-white/30 bg-white/10 px-7 sm:px-8 text-xs sm:text-base font-bold text-white backdrop-blur-md transition-all hover:bg-white/20 w-full sm:w-auto"
                 onClick={slide.ctaSecondary.action}
               >
                 {slide.ctaSecondary.label}
@@ -341,29 +315,8 @@ export function HeroSlider() {
         </div>
       </div>
 
-      {/* ── Stats row ── */}
-      <div className="absolute bottom-20 left-0 right-0 z-10 flex justify-center px-6">
-        <div className="flex flex-wrap gap-6 sm:gap-10">
-          {[
-            { value: "18 MW+", label: "Installed" },
-            { value: "4,200+", label: "Projects" },
-            { value: "77", label: "Districts" },
-            { value: "24/7", label: "Support" },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="font-display text-2xl font-extrabold text-white sm:text-3xl">
-                {stat.value}
-              </div>
-              <div className="text-xs font-semibold uppercase tracking-widest text-white/60">
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Dots + progress ── */}
-      <div className="absolute bottom-7 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3">
+      {/* ── Slide Dots Indicator Bar ── */}
+      <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2">
         {slides.map((s, i) => (
           <button
             key={s.id}
@@ -371,14 +324,14 @@ export function HeroSlider() {
             onClick={() => goTo(i, i > current ? "left" : "right")}
             className="hero-dot relative overflow-hidden rounded-full transition-all duration-500"
             style={{
-              width: i === current ? "2.5rem" : "0.5rem",
-              height: "0.5rem",
-              background: i === current ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.35)",
+              width: i === current ? "2.2rem" : "0.5rem",
+              height: "0.45rem",
+              background: i === current ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)",
             }}
           >
             {i === current && (
               <span
-                className="absolute inset-y-0 left-0 rounded-full bg-white/40 transition-none"
+                className="absolute inset-y-0 left-0 rounded-full bg-emerald-400 transition-none"
                 style={{ width: `${progress}%` }}
               />
             )}
@@ -386,35 +339,21 @@ export function HeroSlider() {
         ))}
       </div>
 
-      {/* ── Prev / Next arrows ── */}
+      {/* ── Wide Desktop Only Side Arrows (xl:grid to avoid any floating on tablet) ── */}
       <button
         aria-label="Previous slide"
         onClick={prev_}
-        className="absolute left-4 top-1/2 z-10 -translate-y-1/2 grid size-12 place-items-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all duration-300 hover:bg-white/25 hover:scale-110 sm:left-6 sm:size-14"
+        className="absolute left-6 top-1/2 z-10 hidden xl:grid size-12 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all hover:bg-white/25 hover:scale-110"
       >
         <ChevronLeft className="size-6" />
       </button>
       <button
         aria-label="Next slide"
         onClick={next}
-        className="absolute right-4 top-1/2 z-10 -translate-y-1/2 grid size-12 place-items-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all duration-300 hover:bg-white/25 hover:scale-110 sm:right-6 sm:size-14"
+        className="absolute right-6 top-1/2 z-10 hidden xl:grid size-12 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all hover:bg-white/25 hover:scale-110"
       >
         <ChevronRight className="size-6" />
       </button>
-
-      {/* ── Live badge top-right ── */}
-      <div className="absolute right-6 top-24 z-10 hidden sm:flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-md">
-        <span className="relative size-2 rounded-full bg-green-400">
-          <span className="absolute inset-0 animate-ping rounded-full bg-green-400 opacity-75" />
-        </span>
-        <span className="text-xs font-bold text-white/90">Live: 18.4 MW generating</span>
-        <Zap className="size-3.5 text-yellow-400" />
-      </div>
-
-      {/* ── Slide counter ── */}
-      <div className="absolute right-6 bottom-7 z-10 hidden sm:block text-xs font-bold text-white/50 font-display">
-        {String(current + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
-      </div>
     </section>
   );
 }

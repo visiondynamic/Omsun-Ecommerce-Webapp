@@ -154,6 +154,32 @@ function Home() {
         {/* HERO — Animated Slider (DARK HERO) */}
         <HeroSlider />
 
+        {/* STATS & IMPACT STRIP (DARK EMERALD HIGH-CONTRAST BAR ⚡) */}
+        <section className="border-y border-white/15 bg-[#031810] py-8 text-white shadow-xl relative z-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 text-center">
+              {[
+                { value: "18 MW+", label: "Installed Capacity", sub: "Utility & Commercial Solar" },
+                { value: "4,200+", label: "Projects Completed", sub: "Across All 7 Provinces" },
+                { value: "77", label: "Districts Covered", sub: "Terai to High Himalaya" },
+                { value: "24/7", label: "Engineer Support", sub: "Nationwide Warranty" },
+              ].map((stat) => (
+                <div key={stat.label} className="flex flex-col items-center justify-center p-2">
+                  <div className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+                    {stat.value}
+                  </div>
+                  <div className="mt-1 text-xs font-bold uppercase tracking-wider text-emerald-400">
+                    {stat.label}
+                  </div>
+                  <div className="mt-0.5 text-[11px] font-medium text-white/50 hidden sm:block">
+                    {stat.sub}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* TRUSTED BRANDS (LIGHT MARQUEE SECTION ☀️) */}
         <section className="border-y border-slate-200/80 bg-[#f8faf9] py-9">
           <p className="mb-6 text-center text-xs font-bold uppercase tracking-[0.24em] text-emerald-800">
@@ -208,13 +234,13 @@ function Home() {
               </Button>
             </Reveal>
 
-            {/* HIGH-END BENTO GRID */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* HIGH-END BENTO GRID — 2 COLUMNS ON MOBILE */}
+            <div className="grid gap-3.5 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((c, i) => (
                 <Reveal key={c.name} delay={i * 70}>
                   <Link
                     to="/shop"
-                    className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/15 bg-[#051c14] p-8 shadow-2xl transition-all duration-500 hover:border-emerald-400/60 hover:shadow-[0_25px_60px_-15px_rgba(16,185,129,0.35)] hover:-translate-y-1.5 h-full min-h-[300px]"
+                    className="group relative flex flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl border border-white/15 bg-[#051c14] p-4 sm:p-8 shadow-2xl transition-all duration-500 hover:border-emerald-400/60 hover:shadow-[0_25px_60px_-15px_rgba(16,185,129,0.35)] hover:-translate-y-1.5 h-full min-h-[210px] sm:min-h-[300px]"
                   >
                     <img
                       src={c.image}

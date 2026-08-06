@@ -79,17 +79,17 @@ export function Footer() {
               e.preventDefault();
               alert("Thank you for subscribing to OMSUN Nepal updates!");
             }}
-            className="flex w-full sm:w-auto items-center gap-2 shrink-0 max-w-md"
+            className="flex flex-col sm:flex-row w-full sm:w-auto items-stretch sm:items-center gap-2.5 shrink-0 max-w-md"
           >
             <Input
               type="email"
               placeholder="Enter your email address"
               required
-              className="h-12 rounded-xl border-white/15 bg-black/40 text-xs text-white placeholder:text-white/40 focus-visible:ring-emerald-500"
+              className="h-12 rounded-xl border-white/15 bg-black/40 text-xs text-white placeholder:text-white/40 focus-visible:ring-emerald-500 w-full"
             />
             <Button
               type="submit"
-              className="h-12 rounded-xl bg-emerald-500 text-black font-bold text-xs px-6 hover:bg-emerald-400 shrink-0 shadow-lg"
+              className="h-12 rounded-xl bg-emerald-500 text-black font-bold text-xs px-6 hover:bg-emerald-400 shrink-0 shadow-lg w-full sm:w-auto justify-center"
             >
               <span>Subscribe</span>
               <ArrowRight className="size-3.5 ml-1.5" />

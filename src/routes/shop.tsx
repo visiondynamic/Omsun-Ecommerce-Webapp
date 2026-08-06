@@ -78,6 +78,7 @@ function Shop() {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sort, setSort] = useState("featured");
   const [view, setView] = useState<"grid" | "list">("grid");
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const categoryScrollRef = useRef<HTMLDivElement>(null);
 
@@ -286,8 +287,30 @@ function Shop() {
 
         {/* ═══════════════ MAIN CONTENT: STICKY SIDEBAR + PRODUCT GRID ═══════════════ */}
         <div className="mt-8 grid gap-8 lg:grid-cols-[280px_1fr]">
-          {/* ── STICKY FIXED SIDEBAR ── */}
-          <aside className="h-fit rounded-3xl border border-slate-200 dark:border-white/12 bg-card p-6 shadow-xl lg:sticky lg:top-28 lg:max-h-[calc(100vh-140px)] lg:overflow-y-auto custom-scrollbar">
+          {/* Mobile Filter Toggle Button */}
+          <div className="lg:hidden">
+            <Button
+              type="button"
+              onClick={() => setMobileFilterOpen((v) => !v)}
+              className="flex h-12 w-full items-center justify-between rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-5 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20"
+            >
+              <span className="flex items-center gap-2">
+                <SlidersHorizontal className="size-4 text-emerald-500" />
+                <span>{mobileFilterOpen ? "Hide Filter Engine" : "Filter Products & Brands"}</span>
+              </span>
+              <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-extrabold">
+                {cats.length + brands.length + (inStockOnly ? 1 : 0) + (query ? 1 : 0)} Active
+              </span>
+            </Button>
+          </div>
+
+          {/* ── STICKY FIXED SIDEBAR (COLLAPSIBLE ON MOBILE) ── */}
+          <aside
+            className={cn(
+              "h-fit rounded-3xl border border-slate-200 dark:border-white/12 bg-card p-6 shadow-xl lg:sticky lg:top-28 lg:max-h-[calc(100vh-140px)] lg:overflow-y-auto custom-scrollbar transition-all duration-300",
+              mobileFilterOpen ? "block" : "hidden lg:block",
+            )}
+          >
             <div className="flex items-center justify-between font-display text-sm font-bold uppercase tracking-wider">
               <span className="flex items-center gap-2">
                 <SlidersHorizontal className="size-4 text-emerald-500" />

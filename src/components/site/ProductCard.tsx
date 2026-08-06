@@ -228,29 +228,25 @@ export function ProductCard({
               <Button
                 disabled={out}
                 onClick={() => addToCart(product, 1)}
+                variant="outline"
                 className={cn(
-                  "h-11 rounded-xl font-bold text-xs transition-all duration-300",
-                  out
-                    ? "bg-slate-200 dark:bg-white/10 text-slate-400 cursor-not-allowed"
-                    : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500 hover:text-black",
+                  "h-10 rounded-xl font-bold text-[11px] sm:text-xs px-2 sm:px-3 transition-all border",
+                  isLight
+                    ? "border-emerald-600 text-emerald-800 hover:bg-emerald-50 bg-emerald-50/50"
+                    : "border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/20 bg-emerald-500/10",
                 )}
               >
-                <ShoppingCart className="size-3.5 mr-1" />
-                Add to Cart
+                <ShoppingCart className="size-3.5 mr-1 shrink-0" />
+                <span className="truncate">Add to Cart</span>
               </Button>
 
               <Button
                 disabled={out}
                 onClick={() => buyNow(product, 1)}
-                className={cn(
-                  "h-11 rounded-xl font-bold text-xs transition-all duration-300 shadow-md",
-                  out
-                    ? "bg-slate-200 dark:bg-white/10 text-slate-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-orange-500 to-amber-600 text-white hover:from-orange-400 hover:to-amber-500 hover:scale-[1.02]",
-                )}
+                className="h-10 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 font-bold text-[11px] sm:text-xs px-2 sm:px-3 text-white shadow-md transition-all hover:scale-[1.02]"
               >
-                <Zap className="size-3.5 mr-1" />
-                Buy Now
+                <Zap className="size-3.5 mr-1 shrink-0" />
+                <span className="truncate">Buy Now</span>
               </Button>
             </div>
           </div>

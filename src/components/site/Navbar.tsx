@@ -142,12 +142,12 @@ export function Navbar() {
   /* Filter products for instant search modal */
   const filteredProducts = searchQuery.trim()
     ? products.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.shortDesc.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
+      (p) =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.shortDesc.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
     : products.slice(0, 4);
 
   return (
@@ -521,7 +521,7 @@ export function Navbar() {
                     >
                       <img src={sol.image} alt={sol.title} className="absolute inset-0 size-full object-cover opacity-20 transition-transform duration-500 group-hover/sol:scale-110 group-hover/sol:opacity-35" />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#051a12]/95 via-[#051a12]/85 to-[#051a12]/60" />
-                      
+
                       <div className="relative z-10 flex items-start gap-3">
                         <span className="grid size-10 shrink-0 place-items-center rounded-xl transition-transform duration-300 group-hover/sol:scale-110" style={{ background: `color-mix(in srgb, ${sol.color} 20%, transparent)`, color: sol.color, border: `1px solid ${sol.color}40` }}>
                           <sol.icon className="size-5" strokeWidth={1.8} />
@@ -794,31 +794,36 @@ export function Navbar() {
               }}
             />
 
-            <div
-              className={cn(
-                "space-y-2 transition-all duration-400",
-                open ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
-              )}
-              style={{ transitionDelay: open ? "220ms" : "0ms" }}
-            >
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  handleCartClick();
+                }}
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 text-xs font-bold text-amber-300 transition-all duration-200"
+              >
+                <ShoppingCart className="size-4" />
+                <span>View Shopping Cart ({totalItems})</span>
+              </button>
+
               <Link
                 to="/auth"
                 onClick={() => setOpen(false)}
-                className="flex h-11 w-full items-center justify-center rounded-xl border border-white/10 text-sm font-semibold text-white/65 transition-all duration-200 hover:border-white/20 hover:bg-white/8 hover:text-white"
+                className="flex h-11 w-full items-center justify-center rounded-xl border border-white/10 text-xs font-semibold text-white/80 transition-all duration-200 hover:border-white/20 hover:bg-white/8 hover:text-white"
               >
-                Sign In
+                Sign In / Register Account
               </Link>
+
               <Link
                 to="/shop"
                 onClick={() => setOpen(false)}
-                className="navbar-cta-btn group relative flex h-11 w-full items-center justify-center gap-2 overflow-hidden rounded-xl text-sm font-bold text-white"
+                className="navbar-cta-btn group relative flex h-11 w-full items-center justify-center gap-2 overflow-hidden rounded-xl text-xs font-bold text-white shadow-lg"
                 style={{ background: "linear-gradient(120deg,#6366f1,#0ea5e9,#14b8a6)" }}
               >
                 <span className="absolute inset-0 -translate-x-full skew-x-[-18deg] bg-white/20 transition-transform duration-500 group-hover:translate-x-[120%]" />
                 <Zap className="relative size-4" />
-                <span className="relative">Get a Quote</span>
+                <span className="relative">Browse Catalog & Get Quote</span>
               </Link>
-            </div>
           </div>
         </div>
       </div>
