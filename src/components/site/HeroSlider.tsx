@@ -188,14 +188,13 @@ export function HeroSlider() {
 
   const slide = slides[current];
   if (!slide) return null;
-
   return (
     <section
-      className="hero-slider relative isolate min-h-[580px] h-[85dvh] sm:h-[90svh] lg:h-[94svh] overflow-hidden bg-[#020d08]"
+      className="hero-slider relative isolate min-h-[620px] h-[85dvh] sm:h-[90svh] lg:h-[92svh] overflow-hidden bg-black"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* ── Background Slides ── */}
+      {/* ── Background Slides with Vivid Natural Photography Colors ── */}
       {slides.map((s, i) => (
         <div
           key={s.id}
@@ -209,38 +208,42 @@ export function HeroSlider() {
             .filter(Boolean)
             .join(" ")}
         >
+          {/* Natural Banner Photograph in 100% Full Color */}
           <img
             src={s.image}
             alt={s.headline.join(" ")}
-            className="absolute inset-0 size-full object-cover"
+            className="absolute inset-0 size-full object-cover opacity-95 transition-transform duration-1000 ease-out"
             draggable={false}
           />
-          {/* Contrast Dark Gradient Backdrop */}
+          {/* Subtle Dark Contrast Gradient (Preserves True Photography Colors!) */}
           <div
             className="absolute inset-0"
             style={{
-              background: `linear-gradient(180deg, rgba(2,13,8,0.88) 0%, rgba(2,13,8,0.65) 50%, rgba(2,13,8,0.95) 100%)`,
+              background: `linear-gradient(180deg, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.40) 45%, rgba(0,0,0,0.85) 100%)`,
             }}
           />
+          {/* Subtle Ambient Accent Glows */}
+          <div className="pointer-events-none absolute -top-24 right-1/4 size-[500px] rounded-full bg-[#43B987]/15 blur-[120px]" />
+          <div className="pointer-events-none absolute bottom-0 left-10 size-[450px] rounded-full bg-[#2F80ED]/15 blur-[120px]" />
         </div>
       ))}
 
-      {/* ── Main Content Container with Guaranteed Navbar Clearance (pt-36 sm:pt-40 lg:pt-44) ── */}
+      {/* ── Main Content Container with Guaranteed Navbar Clearance ── */}
       <div className="relative z-10 flex h-full flex-col justify-center px-5 sm:px-12 lg:px-20 pt-36 sm:pt-40 lg:pt-44 pb-16">
         <div className="max-w-3xl">
           {/* Eyebrow Pill Badge */}
           <div
             key={`badge-${current}`}
-            className="hero-content-in mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/50 px-4 py-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-300 backdrop-blur-md"
+            className="hero-content-in mb-4 inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/40 px-4 py-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white shadow-lg backdrop-blur-md"
           >
-            <span className="text-emerald-400">{slide.badgeIcon}</span>
+            <span className="text-[#43B987]">{slide.badgeIcon}</span>
             <span>{slide.badge}</span>
           </div>
 
-          {/* Responsive Headline */}
+          {/* Responsive Headline in Crisp White with Drop Shadow */}
           <h1
             key={`h1-${current}`}
-            className="hero-content-in font-display text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[1.05] text-white tracking-tight"
+            className="hero-content-in font-display text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[1.05] text-white tracking-tight drop-shadow-md"
           >
             {slide.headline.map((line, i) => (
               <span key={i} className="block">
@@ -251,7 +254,7 @@ export function HeroSlider() {
               key={`accent-${current}`}
               className="hero-content-in block"
               style={{
-                background: slide.accent,
+                background: "linear-gradient(120deg, #43B987 0%, #2F80ED 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
@@ -261,10 +264,10 @@ export function HeroSlider() {
             </span>
           </h1>
 
-          {/* Subtext */}
+          {/* Subtext in Crisp White */}
           <p
             key={`sub-${current}`}
-            className="hero-content-in mt-4 sm:mt-6 max-w-xl text-xs sm:text-base lg:text-lg font-medium text-white/85 leading-relaxed"
+            className="hero-content-in mt-4 sm:mt-6 max-w-xl text-xs sm:text-base lg:text-lg font-medium text-white/90 leading-relaxed drop-shadow-sm"
           >
             {slide.sub}
           </p>
@@ -272,13 +275,13 @@ export function HeroSlider() {
           {/* Action CTAs */}
           <div
             key={`cta-${current}`}
-            className="hero-content-in mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3"
+            className="hero-content-in mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3.5"
           >
             {slide.cta.to ? (
               <Button
                 asChild
-                className="h-13 sm:h-14 rounded-xl sm:rounded-2xl px-7 sm:px-8 text-xs sm:text-base font-bold text-white shadow-2xl transition-all hover:scale-[1.02] w-full sm:w-auto"
-                style={{ background: slide.accent }}
+                className="h-13 sm:h-14 rounded-full px-8 text-xs sm:text-base font-bold text-white shadow-xl transition-all hover:scale-[1.02] hover:shadow-2xl w-full sm:w-auto"
+                style={{ background: "linear-gradient(120deg, #43B987 0%, #2F80ED 100%)" }}
               >
                 <Link to={slide.cta.to}>
                   {slide.cta.label} <ArrowRight className="ml-2 size-4 sm:size-5" />
@@ -286,8 +289,8 @@ export function HeroSlider() {
               </Button>
             ) : (
               <Button
-                className="h-13 sm:h-14 rounded-xl sm:rounded-2xl px-7 sm:px-8 text-xs sm:text-base font-bold text-white shadow-2xl transition-all hover:scale-[1.02] w-full sm:w-auto"
-                style={{ background: slide.accent }}
+                className="h-13 sm:h-14 rounded-full px-8 text-xs sm:text-base font-bold text-white shadow-xl transition-all hover:scale-[1.02] hover:shadow-2xl w-full sm:w-auto"
+                style={{ background: "linear-gradient(120deg, #43B987 0%, #2F80ED 100%)" }}
                 onClick={slide.cta.action}
               >
                 {slide.cta.label} <ArrowRight className="ml-2 size-4 sm:size-5" />
@@ -298,14 +301,14 @@ export function HeroSlider() {
               <Button
                 asChild
                 variant="outline"
-                className="h-13 sm:h-14 rounded-xl sm:rounded-2xl border border-white/30 bg-white/10 px-7 sm:px-8 text-xs sm:text-base font-bold text-white backdrop-blur-md transition-all hover:bg-white/20 w-full sm:w-auto"
+                className="h-13 sm:h-14 rounded-full border-2 border-white/60 bg-black/40 px-8 text-xs sm:text-base font-bold text-white shadow-sm backdrop-blur-md transition-all hover:bg-white hover:text-black hover:border-white w-full sm:w-auto"
               >
                 <Link to={slide.ctaSecondary.to}>{slide.ctaSecondary.label}</Link>
               </Button>
             ) : (
               <Button
                 variant="outline"
-                className="h-13 sm:h-14 rounded-xl sm:rounded-2xl border border-white/30 bg-white/10 px-7 sm:px-8 text-xs sm:text-base font-bold text-white backdrop-blur-md transition-all hover:bg-white/20 w-full sm:w-auto"
+                className="h-13 sm:h-14 rounded-full border-2 border-white/60 bg-black/40 px-8 text-xs sm:text-base font-bold text-white shadow-sm backdrop-blur-md transition-all hover:bg-white hover:text-black hover:border-white w-full sm:w-auto"
                 onClick={slide.ctaSecondary.action}
               >
                 {slide.ctaSecondary.label}

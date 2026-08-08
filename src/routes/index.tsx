@@ -154,8 +154,8 @@ function Home() {
         {/* HERO — Animated Slider (DARK HERO) */}
         <HeroSlider />
 
-        {/* STATS & IMPACT STRIP (DARK EMERALD HIGH-CONTRAST BAR ⚡) */}
-        <section className="border-y border-white/15 bg-[#031810] py-8 text-white shadow-xl relative z-20">
+        {/* STATS & IMPACT STRIP (LIGHT GLASS LEAF GREEN + SKY BLUE GRADIENT BAR ⚡) */}
+        <section className="border-y border-[#43B987]/30 bg-gradient-to-r from-[#E5F7EF] via-[#F2FBF6] to-[#EFF8FF] py-8 text-[#173226] shadow-xs relative z-20 backdrop-blur-md">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 text-center">
               {[
@@ -165,13 +165,13 @@ function Home() {
                 { value: "24/7", label: "Engineer Support", sub: "Nationwide Warranty" },
               ].map((stat) => (
                 <div key={stat.label} className="flex flex-col items-center justify-center p-2">
-                  <div className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+                  <div className="font-display text-2xl sm:text-4xl font-extrabold text-[#173226] tracking-tight">
                     {stat.value}
                   </div>
-                  <div className="mt-1 text-xs font-bold uppercase tracking-wider text-emerald-400">
+                  <div className="mt-1 text-xs font-bold uppercase tracking-wider text-[#43B987]">
                     {stat.label}
                   </div>
-                  <div className="mt-0.5 text-[11px] font-medium text-white/50 hidden sm:block">
+                  <div className="mt-0.5 text-[11px] font-medium text-[#475569] hidden sm:block">
                     {stat.sub}
                   </div>
                 </div>
@@ -180,9 +180,9 @@ function Home() {
           </div>
         </section>
 
-        {/* TRUSTED BRANDS (LIGHT MARQUEE SECTION ☀️) */}
-        <section className="border-y border-slate-200/80 bg-[#f8faf9] py-9">
-          <p className="mb-6 text-center text-xs font-bold uppercase tracking-[0.24em] text-emerald-800">
+        {/* TRUSTED BRANDS (SECTION 2 — LEAF GREEN + SKY BLUE BLEND 🌿💧) */}
+        <section className="border-y border-[#43B987]/30 bg-gradient-to-r from-[#E2F6ED] via-[#EBF8F2] to-[#EBF5FF] py-10">
+          <p className="mb-6 text-center text-xs font-bold uppercase tracking-[0.24em] text-[#43B987]">
             Authorised distributor & integration partner
           </p>
           <div className="relative overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
@@ -190,7 +190,7 @@ function Home() {
               {[...partnerBrandLogos, ...partnerBrandLogos].map((brand, i) => (
                 <div
                   key={`${brand.name}-${i}`}
-                  className="group relative flex h-16 min-w-[140px] items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-2 shadow-sm transition-all duration-300 hover:border-emerald-500 hover:shadow-md hover:scale-105"
+                  className="group relative flex h-16 min-w-[140px] items-center justify-center rounded-2xl border border-[#43B987]/30 bg-white/95 px-6 py-2 shadow-xs transition-all duration-300 hover:border-[#43B987] hover:shadow-md hover:scale-105"
                   title={brand.name}
                 >
                   <img
@@ -204,64 +204,65 @@ function Home() {
           </div>
         </section>
 
-        {/* SHOP BY CATEGORY — ADVANCED BENTO SHOWCASE (DARK EMERALD SECTION 🌙) */}
-        <section className="relative overflow-hidden bg-[#03120c] py-28 text-white">
-          <div className="pointer-events-none absolute -top-40 right-0 size-[600px] rounded-full bg-emerald-500/10 blur-[140px]" />
-          <div className="pointer-events-none absolute -bottom-40 left-0 size-[600px] rounded-full bg-teal-500/10 blur-[140px]" />
+        {/* SHOP BY CATEGORY — SOLID ELECTRIC MINT GREEN #03C987 BACKGROUND (SECTION 3 🌿) */}
+        <section className="relative overflow-hidden bg-[#03C987] py-28 text-[#0A2E20] border-y border-[#02B377]">
+          <div className="pointer-events-none absolute -top-40 right-0 size-[600px] rounded-full bg-white/15 blur-[140px]" />
+          <div className="pointer-events-none absolute -bottom-40 left-0 size-[600px] rounded-full bg-[#0A2E20]/12 blur-[140px]" />
 
           <div className="relative mx-auto max-w-7xl px-6">
             <Reveal className="flex flex-wrap items-end justify-between gap-6 mb-14">
               <div className="max-w-2xl">
-                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400">
-                  <Sparkles className="size-4" />
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#0A2E20] bg-[#0A2E20] px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-md">
+                  <Sparkles className="size-4 text-[#03C987]" />
                   <span>Product Verticals & Families</span>
                 </div>
-                <h2 className="mt-4 font-display text-4xl font-extrabold sm:text-6xl text-white tracking-tight">
+                <h2 className="mt-4 font-display text-4xl font-extrabold sm:text-6xl text-[#0A2E20] tracking-tight">
                   Shop by Engineering Category
                 </h2>
-                <p className="mt-4 text-base text-white/70 leading-relaxed">
+                <p className="mt-4 text-base text-[#0A2E20]/90 font-medium leading-relaxed">
                   Six certified product families engineered for Nepal's climate. Stocked in our central Kathmandu warehouse and dispatched nationwide with serialised warranties.
                 </p>
               </div>
               <Button
                 asChild
-                className="h-13 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 px-7 text-sm font-bold text-white shadow-xl transition-all duration-300 hover:scale-105"
+                className="h-13 rounded-full bg-[#0A2E20] px-7 text-sm font-bold text-white shadow-2xl hover:bg-[#061F15] transition-all duration-300 hover:scale-105"
               >
                 <Link to="/shop" className="flex items-center gap-2">
                   <span>View All Categories</span>
-                  <ArrowRight className="size-4" />
+                  <ArrowRight className="size-4 text-[#03C987]" />
                 </Link>
               </Button>
             </Reveal>
 
-            {/* HIGH-END BENTO GRID — 1 COLUMN ON MOBILE FOR SPACIOUS UN-CRAMPED LAYOUT */}
-            <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {/* 24PX FLOATING CARDS GRID — NATURAL PHOTOGRAPHY COLORS (NO WHITE OVERLAY) */}
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((c, i) => (
                 <Reveal key={c.name} delay={i * 70}>
                   <Link
                     to="/shop"
-                    className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/15 bg-[#051c14] p-6 sm:p-8 shadow-2xl transition-all duration-500 hover:border-emerald-400/60 hover:shadow-[0_25px_60px_-15px_rgba(16,185,129,0.35)] hover:-translate-y-1.5 h-full min-h-[260px] sm:min-h-[300px]"
+                    className="group relative flex flex-col justify-between overflow-hidden rounded-[24px] border border-white/40 bg-black/40 p-6 sm:p-8 shadow-xl transition-all duration-500 hover:border-white hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:-translate-y-1.5 h-full min-h-[280px] sm:min-h-[310px]"
                   >
+                    {/* Natural Category Image in 100% Full Color */}
                     <img
                       src={c.image}
                       alt={c.name}
-                      className="absolute inset-0 size-full object-cover opacity-30 transition-transform duration-700 ease-out group-hover:scale-110 group-hover:opacity-45"
+                      className="absolute inset-0 size-full object-cover opacity-90 transition-transform duration-700 ease-out group-hover:scale-110 group-hover:opacity-100"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#04160f] via-[#04160f]/85 to-[#04160f]/40" />
+                    {/* Subtle Dark Vignette for Text Readability (No White Overlay!) */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20" />
 
                     <div className="relative z-10 flex items-center justify-between">
+                      {/* Circular glass icon container */}
                       <span
-                        className="grid size-14 place-items-center rounded-2xl border border-white/20 shadow-lg transition-transform duration-500 group-hover:scale-110"
+                        className="grid size-14 place-items-center rounded-full border border-white/40 bg-black/40 shadow-md backdrop-blur-md transition-all duration-500 group-hover:scale-110 group-hover:border-white"
                         style={{
-                          background: `color-mix(in srgb, ${c.color} 25%, #051c14)`,
-                          color: c.color,
-                          boxShadow: `0 0 20px 0 ${c.color}33`,
+                          color: "#FFFFFF",
                         }}
                       >
                         <c.icon className="size-7" strokeWidth={2} />
                       </span>
 
-                      <span className="rounded-full border border-white/15 bg-white/10 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-emerald-300 backdrop-blur-md">
+                      <span className="rounded-full border border-white/30 bg-black/40 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-md">
                         {c.tag}
                       </span>
                     </div>
@@ -269,24 +270,24 @@ function Home() {
                     <div className="relative z-10 mt-12">
                       <div className="flex items-end justify-between gap-4">
                         <div>
-                          <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-white/50">
+                          <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-300">
                             {c.badge}
                           </span>
-                          <h3 className="mt-1 font-display text-2xl font-extrabold text-white transition-colors duration-300 group-hover:text-emerald-300">
+                          <h3 className="mt-1 font-display text-2xl font-extrabold text-white drop-shadow-md transition-colors duration-300 group-hover:text-emerald-300">
                             {c.name}
                           </h3>
-                          <p className="mt-2 text-xs font-medium text-white/70 leading-relaxed max-w-md">
+                          <p className="mt-2 text-xs font-medium text-slate-200 leading-relaxed max-w-md drop-shadow-sm">
                             {c.note}
                           </p>
                         </div>
 
-                        <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-white/20 bg-white/10 text-white transition-all duration-300 group-hover:border-emerald-400 group-hover:bg-emerald-500 group-hover:text-black">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-full border border-white/40 bg-black/40 text-white backdrop-blur-md transition-all duration-300 group-hover:border-white group-hover:bg-white group-hover:text-black">
                           <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
                         </span>
                       </div>
 
-                      <div className="mt-5 flex items-center gap-2 border-t border-white/10 pt-3.5 text-[11px] font-semibold text-emerald-400/90">
-                        <CheckCircle2 className="size-3.5 shrink-0" />
+                      <div className="mt-5 flex items-center gap-2 border-t border-white/20 pt-3.5 text-[11px] font-semibold text-white">
+                        <CheckCircle2 className="size-3.5 shrink-0 text-[#03C987]" />
                         <span>{c.specs}</span>
                       </div>
                     </div>
@@ -297,31 +298,31 @@ function Home() {
           </div>
         </section>
 
-        {/* FEATURED PRODUCTS (LIGHT MODE SECTION ☀️) */}
-        <section className="bg-slate-100/90 py-28 text-slate-900 border-y border-slate-200">
+        {/* FEATURED PRODUCTS (SECTION 4 — SKY BLUE TO EMERALD MESH 💧🌿) */}
+        <section className="bg-gradient-to-br from-[#EFF8FF] via-[#F2FBF6] to-[#E5F7EF] py-28 text-[#0A2E20] border-y border-[#03C987]/30">
           <div className="mx-auto max-w-7xl px-6">
             <Reveal className="flex flex-wrap items-end justify-between gap-6 mb-12">
               <div className="max-w-xl">
-                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-600/30 bg-emerald-50 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800">
-                  <Sparkles className="size-4 text-emerald-600" />
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#0095D0]/30 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#0095D0] shadow-xs">
+                  <Sparkles className="size-4 text-[#0095D0]" />
                   <span>Curated High-Performance Hardware</span>
                 </div>
-                <h2 className="mt-3 font-display text-4xl font-extrabold sm:text-5xl text-slate-900">
+                <h2 className="mt-3 font-display text-4xl font-extrabold sm:text-5xl text-[#0A2E20]">
                   Featured Power Systems
                 </h2>
-                <p className="mt-3 text-sm text-slate-600 font-medium">
+                <p className="mt-3 text-sm text-[#475569] font-medium">
                   Top-tier monocrystalline solar modules, hybrid string inverters, and high-density LiFePO4 energy storage.
                 </p>
               </div>
               <Button
                 asChild
-                className="h-12 rounded-xl bg-slate-900 text-white font-bold px-6 text-sm hover:bg-emerald-700 shadow-md"
+                className="h-12 rounded-full bg-gradient-to-r from-[#03C987] to-[#0095D0] text-white font-bold px-6 text-sm hover:opacity-95 shadow-md"
               >
                 <Link to="/shop">View Full Catalog &rarr;</Link>
               </Button>
             </Reveal>
 
-            <div className="grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
               {featured.map((p, i) => (
                 <Reveal key={p.id} delay={i * 80} className="h-full">
                   <ProductCard product={p} variant="light" />
@@ -331,36 +332,36 @@ function Home() {
           </div>
         </section>
 
-        {/* BEST SELLERS — SPLIT COMPOSITION (DARK EMERALD SECTION 🌙) */}
-        <section className="bg-[#020d08] py-28 text-white">
+        {/* BEST SELLERS — SPLIT COMPOSITION (SECTION 5 — LEAF TO SKY BLEND 🌿💧) */}
+        <section className="bg-gradient-to-b from-[#E5F7EF] via-[#F2FBF6] to-[#EFF8FF] py-28 text-[#0A2E20]">
           <div className="mx-auto max-w-7xl px-6">
             <div className="grid gap-12 lg:grid-cols-[0.8fr_1.4fr] lg:items-center">
               <Reveal className="h-full">
-                <div className="rounded-3xl border border-white/15 bg-[#051e16] p-8 sm:p-10 shadow-2xl relative overflow-hidden h-full flex flex-col justify-between">
-                  <div className="absolute top-0 right-0 size-48 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
-                  
+                <div className="rounded-[24px] border border-[#03C987]/40 bg-gradient-to-br from-[#E2F6ED] via-[#F2FBF6] to-[#EBF5FF] p-8 sm:p-10 shadow-lg relative overflow-hidden h-full flex flex-col justify-between">
+                  <div className="absolute top-0 right-0 size-48 rounded-full bg-[#03C987]/20 blur-3xl pointer-events-none" />
+
                   <div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-6">
-                      <Zap className="size-4" />
+                    <div className="inline-flex items-center gap-2 rounded-full border border-[#03C987]/50 bg-white px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#0A2E20] mb-6 shadow-xs">
+                      <Zap className="size-4 text-[#03C987]" />
                       <span>Nationwide Demand</span>
                     </div>
 
-                    <h2 className="font-display text-3xl font-extrabold sm:text-5xl text-white">
+                    <h2 className="font-display text-3xl font-extrabold sm:text-5xl text-[#0A2E20]">
                       What Nepal Keeps Ordering
                     </h2>
 
-                    <p className="mt-4 text-sm text-white/70 leading-relaxed">
+                    <p className="mt-4 text-sm text-[#475569] leading-relaxed">
                       Field-proven across monsoon humidity and high-altitude Himalayan winters. Every system ships with serialised warranty cards and local technical support.
                     </p>
 
-                    <div className="mt-8 space-y-3 border-t border-white/10 pt-6">
+                    <div className="mt-8 space-y-3 border-t border-[#03C987]/30 pt-6">
                       {[
                         "100% Certified Tier-1 Equipment",
                         "48-Hour Kathmandu Warehouse Dispatch",
                         "Full Nepal Net-Metering Paperwork Support",
                       ].map((h) => (
-                        <div key={h} className="flex items-center gap-2.5 text-xs font-bold text-emerald-300">
-                          <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
+                        <div key={h} className="flex items-center gap-2.5 text-xs font-bold text-[#0A2E20]">
+                          <CheckCircle2 className="size-4 text-[#03C987] shrink-0" />
                           <span>{h}</span>
                         </div>
                       ))}
@@ -369,17 +370,17 @@ function Home() {
 
                   <Button
                     asChild
-                    className="mt-8 h-13 w-full rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm shadow-xl"
+                    className="mt-8 h-13 w-full rounded-full bg-gradient-to-r from-[#03C987] to-[#0095D0] text-white font-bold text-sm shadow-xl hover:opacity-95"
                   >
                     <Link to="/shop">Explore All Best Sellers</Link>
                   </Button>
                 </div>
               </Reveal>
 
-              <div className="grid gap-3 sm:gap-6 grid-cols-2">
+              <div className="grid gap-4 sm:gap-6 grid-cols-2">
                 {bestSellers.map((p, i) => (
                   <Reveal key={p.id} delay={i * 80} className="h-full">
-                    <ProductCard product={p} variant="dark" />
+                    <ProductCard product={p} variant="light" />
                   </Reveal>
                 ))}
               </div>
@@ -387,14 +388,14 @@ function Home() {
           </div>
         </section>
 
-        {/* WHY OMSUN (LIGHT MODE SECTION ☀️) */}
-        <section id="why" className="bg-[#f3f7f5] py-28 text-slate-900 border-y border-slate-200">
+        {/* WHY OMSUN (SECTION 6 — SOLID ELECTRIC MINT GREEN #03C987 BACKGROUND 🍃) */}
+        <section id="why" className="bg-[#03C987] py-28 text-[#0A2E20] border-y border-[#02B377]">
           <div className="mx-auto max-w-7xl px-6">
             <Reveal className="text-center max-w-2xl mx-auto mb-14">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-white bg-[#0A2E20] px-4 py-1.5 rounded-full border border-[#0A2E20] shadow-md">
                 The Engineering Advantage
               </span>
-              <h2 className="mt-3 font-display text-4xl font-extrabold sm:text-5xl text-slate-900">
+              <h2 className="mt-4 font-display text-4xl font-extrabold sm:text-5xl text-[#0A2E20]">
                 Why Engineers Specify OMSUN
               </h2>
             </Reveal>
@@ -427,20 +428,20 @@ function Home() {
                 },
               ].map((item, i) => (
                 <Reveal key={item.title} delay={i * 70}>
-                  <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-full group hover:border-emerald-500">
+                  <div className="bg-white/95 p-8 rounded-[24px] border border-white/80 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-full group hover:border-[#0A2E20]">
                     <div>
                       <div className="flex items-center justify-between mb-6">
-                        <div className="size-14 rounded-2xl bg-emerald-50 text-emerald-600 grid place-items-center group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+                        <div className="size-14 rounded-full bg-[#03C987]/20 text-[#0A2E20] grid place-items-center group-hover:bg-[#0A2E20] group-hover:text-[#03C987] transition-colors duration-300 shadow-xs">
                           <item.icon className="size-7" strokeWidth={1.8} />
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/70 px-2.5 py-1 rounded-full">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#0A2E20] bg-[#03C987]/25 px-3 py-1 rounded-full border border-[#03C987]/30">
                           {item.metric}
                         </span>
                       </div>
-                      <h3 className="font-display text-xl font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                      <h3 className="font-display text-xl font-bold text-[#0A2E20] group-hover:text-[#0A2E20] transition-colors">
                         {item.title}
                       </h3>
-                      <p className="mt-2 text-xs font-medium text-slate-600 leading-relaxed">
+                      <p className="mt-2 text-xs font-medium text-[#475569] leading-relaxed">
                         {item.desc}
                       </p>
                     </div>
@@ -451,14 +452,14 @@ function Home() {
           </div>
         </section>
 
-        {/* TESTIMONIALS (LIGHT MODE SECTION ☀️) */}
-        <section className="bg-white py-28 text-slate-900">
+        {/* TESTIMONIALS (SECTION 7 — SKY BLUE TO MINT GREEN 💧🍃) */}
+        <section className="bg-gradient-to-b from-[#EFF8FF] via-[#EBF5FF] to-[#E5F7EF] py-28 text-[#173226]">
           <div className="mx-auto max-w-7xl px-6">
             <Reveal className="text-center max-w-2xl mx-auto mb-14">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#43B987] bg-white px-3.5 py-1 rounded-full border border-[#43B987]/30 shadow-xs">
                 Client Testimonials
               </span>
-              <h2 className="mt-3 font-display text-4xl font-extrabold sm:text-5xl text-slate-900">
+              <h2 className="mt-3 font-display text-4xl font-extrabold sm:text-5xl text-[#173226]">
                 Trusted by Engineers & Enterprise Clients
               </h2>
             </Reveal>
@@ -466,27 +467,27 @@ function Home() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {testimonials.map((t, i) => (
                 <Reveal key={t.name} delay={i * 80}>
-                  <div className="bg-slate-50 p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-full">
+                  <div className="bg-white/90 p-8 rounded-[24px] border border-[#43B987]/30 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-full">
                     <div>
                       <div className="flex items-center justify-between mb-4">
-                        <Quote className="size-8 text-emerald-600/40" />
-                        <div className="flex items-center gap-1 text-amber-400">
+                        <Quote className="size-8 text-[#43B987]/50" />
+                        <div className="flex items-center gap-1 text-[#F4B400]">
                           {Array.from({ length: t.rating }).map((_, idx) => (
-                            <Star key={idx} className="size-4 fill-amber-400" />
+                            <Star key={idx} className="size-4 fill-[#F4B400]" />
                           ))}
                         </div>
                       </div>
-                      <p className="text-sm italic text-slate-700 leading-relaxed font-medium">
+                      <p className="text-sm italic text-[#475569] leading-relaxed font-medium">
                         "{t.quote}"
                       </p>
                     </div>
-                    <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
+                    <div className="mt-6 pt-4 border-t border-[#43B987]/25 flex items-center justify-between">
                       <div>
-                        <div className="font-bold text-sm font-display text-slate-900">{t.name}</div>
-                        <div className="text-xs font-semibold text-emerald-700">{t.role}</div>
+                        <div className="font-bold text-sm font-display text-[#173226]">{t.name}</div>
+                        <div className="text-xs font-semibold text-[#43B987]">{t.role}</div>
                       </div>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 bg-slate-200/60 px-2.5 py-1 rounded-full">
-                        <MapPin className="size-3 text-emerald-600" />
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#475569] bg-white px-2.5 py-1 rounded-full border border-[#43B987]/30">
+                        <MapPin className="size-3 text-[#43B987]" />
                         {t.location}
                       </span>
                     </div>
@@ -497,37 +498,42 @@ function Home() {
           </div>
         </section>
 
-        {/* ── HIGH-IMPACT FINAL CTA BANNER ── */}
+        {/* ── HIGH-IMPACT FINAL CTA BANNER (SOLID ELECTRIC MINT GREEN #03C987 🌲) ── */}
         <section className="mx-auto max-w-7xl px-6 pb-24">
           <Reveal>
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#041810] via-[#072a1d] to-[#041810] p-10 sm:p-16 border border-emerald-500/30 text-white shadow-2xl text-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-6">
-                <Sun className="size-4" />
-                <span>Free Technical Consultation</span>
-              </div>
+            <div className="relative overflow-hidden rounded-[32px] bg-[#03C987] p-10 sm:p-16 border border-[#02B377] text-[#0A2E20] shadow-2xl text-center">
+              <div className="pointer-events-none absolute -top-24 right-1/4 size-[400px] rounded-full bg-white/20 blur-[100px]" />
+              <div className="pointer-events-none absolute bottom-0 left-10 size-[350px] rounded-full bg-[#0A2E20]/15 blur-[100px]" />
 
-              <h2 className="font-display text-3xl sm:text-5xl font-extrabold text-white max-w-3xl mx-auto leading-tight">
-                Ready to Power Your Property with Clean Energy?
-              </h2>
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#0A2E20] bg-[#0A2E20] px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-white mb-6 shadow-md">
+                  <Sun className="size-4 text-[#03C987]" />
+                  <span>Free Technical Consultation</span>
+                </div>
 
-              <p className="mt-4 max-w-xl mx-auto text-sm text-white/70 leading-relaxed">
-                Get a free technical site survey, 3D shadow analysis, and financial payback proposal from OMSUN's licensed engineering team in Nepal.
-              </p>
+                <h2 className="font-display text-3xl sm:text-5xl font-extrabold text-[#0A2E20] max-w-3xl mx-auto leading-tight">
+                  Ready to Power Your Property with Clean Energy?
+                </h2>
 
-              <div className="mt-8 flex flex-wrap justify-center items-center gap-4">
-                <Button
-                  asChild
-                  className="h-13 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold px-8 text-sm shadow-xl"
-                >
-                  <Link to="/solar-solutions">Request Free Site Survey</Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-13 rounded-2xl border-white/20 bg-white/10 text-white font-bold px-8 text-sm hover:bg-white/20"
-                >
-                  <Link to="/shop">Browse Products</Link>
-                </Button>
+                <p className="mt-4 max-w-xl mx-auto text-sm text-[#0A2E20]/90 font-medium leading-relaxed">
+                  Get a free technical site survey, 3D shadow analysis, and financial payback proposal from OMSUN's licensed engineering team in Nepal.
+                </p>
+
+                <div className="mt-8 flex flex-wrap justify-center items-center gap-4">
+                  <Button
+                    asChild
+                    className="h-13 rounded-full bg-[#0A2E20] text-white font-bold px-8 text-sm shadow-xl hover:bg-[#061F15] transition-all duration-300 hover:scale-105"
+                  >
+                    <Link to="/solar-solutions">Request Free Site Survey</Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-13 rounded-full border-2 border-[#0A2E20] bg-[#0A2E20]/10 text-[#0A2E20] font-bold px-8 text-sm hover:bg-[#0A2E20] hover:text-white transition-all duration-300"
+                  >
+                    <Link to="/shop">Browse Products</Link>
+                  </Button>
+                </div>
               </div>
             </div>
           </Reveal>

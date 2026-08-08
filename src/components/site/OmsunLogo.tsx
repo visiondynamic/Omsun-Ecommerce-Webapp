@@ -76,10 +76,10 @@ export function OmsunLogo({ className, compact = false, watermark = false }: Oms
         >
           <svg viewBox="0 0 100 100" className="size-full p-1.5" fill="none">
             <defs>
-              <linearGradient id={gradientId} x1="16" y1="18" x2="84" y2="82">
-                <stop offset="0%" stopColor="#d11421" />
-                <stop offset="100%" stopColor="#a60f1a" />
-              </linearGradient>
+                <linearGradient id={gradientId} x1="16" y1="18" x2="84" y2="82">
+                  <stop offset="0%" stopColor="#3BB273" />
+                  <stop offset="100%" stopColor="#2F80ED" />
+                </linearGradient>
             </defs>
             <path
               d="M18 53C20 31 36 16 56 16c17 0 31 10 37 25"

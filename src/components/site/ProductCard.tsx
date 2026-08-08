@@ -49,32 +49,44 @@ export function ProductCard({
     <>
       <article
         className={cn(
-          "group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl p-2.5 sm:p-3 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
-          isLight
-            ? "border border-slate-200/80 bg-white text-slate-900 shadow-sm hover:border-emerald-500/70"
-            : "border border-white/12 bg-[#061d15]/90 text-white shadow-md backdrop-blur-xl hover:border-emerald-400/50",
+          "group relative flex h-full flex-col justify-between overflow-hidden rounded-[20px] p-3 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.02]",
+          "border border-[#D8F2DF] bg-white text-[#173226] shadow-sm hover:border-[#38B46A] hover:shadow-lg hover:shadow-[#38B46A]/15",
         )}
       >
         {/* ── PHOTO CONTAINER ── */}
-        <div className={cn("relative overflow-hidden rounded-xl shrink-0", isLight ? "bg-slate-100" : "bg-[#03150e]")}>
+        <div className="relative overflow-hidden rounded-2xl shrink-0 bg-slate-50">
           {/* Top Badges */}
-          <div className="absolute left-2 top-2 z-10 flex flex-wrap gap-1">
-            <span className="rounded-md bg-emerald-600/90 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-md backdrop-blur-md">
-              FREE DELIVERY
-            </span>
-            {product.badges.slice(0, 1).map((b) => (
-              <span
-                key={b}
-                className="rounded-md bg-purple-600/90 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-md backdrop-blur-md"
-              >
-                {b}
+          <div className="absolute left-2.5 top-2.5 z-10 flex flex-wrap gap-1.5">
+            {out ? (
+              <span className="rounded-lg bg-[#94A3B8] px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm">
+                Out of Stock
               </span>
-            ))}
+            ) : (
+              <span className="rounded-lg bg-[#38B46A] px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm">
+                In Stock
+              </span>
+            )}
+            {product.badges.slice(0, 1).map((b) => {
+              const lower = b.toLowerCase();
+              let badgeBg = "bg-[#2F80ED]"; // Default Featured (Blue)
+              if (lower.includes("new")) badgeBg = "bg-[#38B46A]"; // Green
+              if (lower.includes("sale") || lower.includes("off")) badgeBg = "bg-[#F59E0B]"; // Orange
+              if (lower.includes("top") || lower.includes("rate")) badgeBg = "bg-[#F4B400]"; // Gold
+
+              return (
+                <span
+                  key={b}
+                  className={cn("rounded-lg px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm", badgeBg)}
+                >
+                  {b}
+                </span>
+              );
+            })}
           </div>
 
           {/* Discount Badge */}
           {discountPercent && (
-            <div className="absolute right-2 top-2 z-10 rounded-md bg-red-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-md">
+            <div className="absolute right-2.5 top-2.5 z-10 rounded-lg bg-[#F59E0B] px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-sm">
               -{discountPercent}% OFF
             </div>
           )}
@@ -99,12 +111,7 @@ export function ProductCard({
                 setQuantity(1);
                 setQuickViewOpen(true);
               }}
-              className={cn(
-                "h-9 flex-1 rounded-lg text-[11px] font-bold shadow-lg backdrop-blur-md transition-colors",
-                isLight
-                  ? "border border-slate-300 bg-white/90 text-slate-900 hover:bg-emerald-600 hover:text-white"
-                  : "border border-white/20 bg-black/80 text-white hover:bg-emerald-500 hover:text-black",
-              )}
+              className="h-9 flex-1 rounded-xl text-[11px] font-bold shadow-lg backdrop-blur-md transition-all border border-slate-200 bg-white/95 text-[#173226] hover:bg-[#38B46A] hover:text-white hover:border-[#38B46A]"
             >
               <Eye className="size-3.5 mr-1" /> Quick View
             </Button>
