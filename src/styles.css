@@ -1,6 +1,24 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* ─── Self-hosted brand fonts (variable woff2, latin subset) ───────────── */
+@font-face {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("./assets/fonts/manrope-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Sora";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("./assets/fonts/sora-latin.woff2") format("woff2");
+}
+
+
 @custom-variant dark (&:is(.dark *));
 
 /*
@@ -108,6 +126,18 @@
 
   html {
     scroll-behavior: smooth;
+  }
+
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  @supports not (overflow: clip) {
+    html,
+    body {
+      overflow-x: hidden;
+    }
   }
 
   body {
@@ -416,7 +446,8 @@
   justify-content: center;
   padding: 1.5rem;
   background: #f4f4ff;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   font-family: var(--font-sans);
 }
 
@@ -469,10 +500,21 @@
 }
 
 @media (max-width: 700px) {
+  .auth-page {
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0;
+  }
+
+  /* Full-width brand hero + form column (no floating card on mobile) */
   .auth-card-shell {
-    grid-template-columns: 1fr;
-    max-width: 440px;
+    display: block;
+    max-width: 480px;
+    width: 100%;
     min-height: unset;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: none;
   }
 }
 
@@ -497,8 +539,65 @@
 }
 
 @media (max-width: 700px) {
-  .auth-slide-panel {
-    display: none;
+  /* The coloured panel becomes a full-width hero header — same design, stacked */
+  .auth-slide-panel,
+  .auth-slide-panel--left,
+  .auth-slide-panel--right {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: 0;
+    width: 100%;
+    height: 392px;
+    border-radius: 0 0 2rem 2rem;
+  }
+
+  .auth-slide-inner {
+    padding: 1.5rem 1.75rem 1.6rem;
+  }
+
+  .auth-panel-headline {
+    display: block;
+    text-align: center;
+  }
+
+  .auth-character-wrap {
+    width: 122px;
+    height: 122px;
+    margin: -0.5rem auto 0.4rem;
+  }
+
+  .auth-character {
+    width: 122px;
+    height: 122px;
+  }
+
+  .auth-panel-h2 {
+    font-size: 1.45rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .auth-panel-p {
+    font-size: 0.78rem;
+    line-height: 1.55;
+    max-width: 34ch;
+    margin: 0 auto;
+  }
+
+  .auth-panel-stats {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .auth-stat-val {
+    font-size: 0.95rem;
+  }
+
+  .auth-stat-sub {
+    font-size: 0.58rem;
+  }
+
+  .auth-panel-switch {
+    font-size: 0.8rem;
   }
 }
 
@@ -578,6 +677,27 @@
   text-align: center;
   position: relative;
   z-index: 1;
+}
+
+.auth-panel-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.auth-content-in {
+  animation: auth-content-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes auth-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .auth-character-wrap {
@@ -706,9 +826,29 @@
 }
 
 @media (max-width: 700px) {
-  .auth-form-pane {
-    grid-column: 1 !important;
-    grid-row: auto !important;
+  .auth-form-pane,
+  .auth-form-pane:first-of-type,
+  .auth-form-pane:last-of-type {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  /* Hidden pane is absolutely positioned below the hero so forms can crossfade
+     like on desktop, without leaving a phantom gap in the layout */
+  .auth-form-pane--hidden {
+    position: absolute;
+    top: 392px;
+    left: 0;
+    right: 0;
+    bottom: auto;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .auth-form-pane--hidden.auth-form-pane--left,
+  .auth-form-pane--hidden.auth-form-pane--right {
+    transform: translateX(-24px);
   }
 }
 
@@ -741,7 +881,63 @@
 
 @media (max-width: 700px) {
   .auth-form-inner {
-    padding: 2rem 1.5rem;
+    padding: 1.75rem 1.25rem 2rem;
+  }
+
+  .auth-input {
+    padding: 0.7rem 2.6rem 0.7rem 2.35rem;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .auth-input-icon {
+    width: 1.05rem;
+    height: 1.05rem;
+    left: 0.85rem;
+  }
+
+  .auth-eye-btn {
+    right: 0.85rem;
+  }
+
+  .auth-label {
+    font-size: 0.75rem;
+  }
+
+  .auth-tab {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .auth-form-title {
+    font-size: 1.4rem;
+  }
+
+  .auth-form-sub {
+    font-size: 0.82rem;
+  }
+
+  .auth-submit-btn {
+    padding: 0.85rem 1.25rem;
+    font-size: 0.9rem;
+    border-radius: 0.8rem;
+  }
+
+  .auth-social-btn {
+    padding: 0.7rem;
+    font-size: 0.78rem;
+  }
+
+  .auth-check-label {
+    font-size: 0.76rem;
+  }
+
+  .auth-forgot {
+    font-size: 0.74rem;
+  }
+
+  .auth-footer-switch {
+    font-size: 0.76rem;
   }
 }
 

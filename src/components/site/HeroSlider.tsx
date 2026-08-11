@@ -13,11 +13,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-import bannerSolarFarm from "@/assets/banner-solar-farm.png";
-import bannerStorage from "@/assets/banner-storage.png";
-import bannerRooftop from "@/assets/banner-rooftop.png";
-import bannerInverter from "@/assets/banner-inverter.png";
-import bannerNepal from "@/assets/banner-nepal.png";
+import bannerSolarFarm from "@/assets/banner-solar-farm.webp";
+import bannerStorage from "@/assets/banner-storage.webp";
+import bannerRooftop from "@/assets/banner-rooftop.webp";
+import bannerInverter from "@/assets/banner-inverter.webp";
+import bannerNepal from "@/assets/banner-nepal.webp";
 
 interface Slide {
   id: number;
@@ -39,10 +39,11 @@ export function HeroSlider() {
   const [direction, setDirection] = useState<"left" | "right">("left");
   const [animating, setAnimating] = useState(false);
   const [paused, setPaused] = useState(false);
-  const [progress, setProgress] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const SLIDE_DURATION = 4200;
+  const progressBarRef = useRef<HTMLSpanElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const [preloaded, setPreloaded] = useState<Set<number>>(() => new Set([0]));
 
   const slides: Slide[] = [
     {
@@ -131,7 +132,6 @@ export function HeroSlider() {
       setPrev(current);
       setAnimating(true);
       setCurrent(index);
-      setProgress(0);
       setTimeout(() => {
         setPrev(null);
         setAnimating(false);
@@ -139,6 +139,20 @@ export function HeroSlider() {
     },
     [animating, current],
   );
+
+  useEffect(() => {
+    const nextIdx = (current + 1) % slides.length;
+    const prevIdx = (current - 1 + slides.length) % slides.length;
+    const t = setTimeout(() => {
+      setPreloaded((prevSet) => {
+        const s = new Set(prevSet);
+        s.add(nextIdx);
+        s.add(prevIdx);
+        return s;
+      });
+    }, 250);
+    return () => clearTimeout(t);
+  }, [current, slides.length]);
 
   const next = useCallback(() => {
     goTo((current + 1) % slides.length, "left");
@@ -167,13 +181,17 @@ export function HeroSlider() {
 
   useEffect(() => {
     if (paused) return;
-    setProgress(0);
-    const tick = 50;
-    progressRef.current = setInterval(() => {
-      setProgress((p) => Math.min(p + (tick / SLIDE_DURATION) * 100, 100));
-    }, tick);
+    const start = performance.now();
+    const tick = (now: number) => {
+      const pct = Math.min(((now - start) / SLIDE_DURATION) * 100, 100);
+      if (progressBarRef.current) {
+        progressBarRef.current.style.width = `${pct}%`;
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
     return () => {
-      if (progressRef.current) clearInterval(progressRef.current);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [current, paused]);
 
@@ -190,7 +208,7 @@ export function HeroSlider() {
   if (!slide) return null;
   return (
     <section
-      className="hero-slider relative isolate min-h-[620px] h-[85dvh] sm:h-[90svh] lg:h-[92svh] overflow-hidden bg-black"
+      className="hero-slider relative isolate min-h-[560px] h-[85dvh] sm:min-h-[620px] sm:h-[90svh] lg:h-svh overflow-hidden bg-black"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -210,10 +228,12 @@ export function HeroSlider() {
         >
           {/* Natural Banner Photograph in 100% Full Color */}
           <img
-            src={s.image}
+            src={i === current || i === prev || preloaded.has(i) ? s.image : undefined}
             alt={s.headline.join(" ")}
             className="absolute inset-0 size-full object-cover opacity-95 transition-transform duration-1000 ease-out"
             draggable={false}
+            decoding="async"
+            fetchPriority={i === current ? "high" : "auto"}
           />
           {/* Subtle Dark Contrast Gradient (Preserves True Photography Colors!) */}
           <div
@@ -334,8 +354,9 @@ export function HeroSlider() {
           >
             {i === current && (
               <span
+                ref={progressBarRef}
                 className="absolute inset-y-0 left-0 rounded-full bg-emerald-400 transition-none"
-                style={{ width: `${progress}%` }}
+                style={{ width: "0%" }}
               />
             )}
           </button>

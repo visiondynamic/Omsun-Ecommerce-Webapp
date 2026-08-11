@@ -20,6 +20,9 @@ import {
   Hotel,
   Building2,
   Search,
+  Home,
+  ShoppingBag,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -33,15 +36,40 @@ import batteryImg from "@/assets/p-battery.jpg";
 import cableImg from "@/assets/p-cable.jpg";
 import lightImg from "@/assets/p-light.jpg";
 import switchgearImg from "@/assets/p-panelboard.jpg";
-import projectImg from "@/assets/project-nepal.jpg";
-import heroImg from "@/assets/banner-solar-farm.png";
+import projectImg from "@/assets/project-nepal.webp";
+import heroImg from "@/assets/banner-solar-farm.webp";
 
 const links = [
   { label: "Home", to: "/", color: "#3BB273", glow: "rgba(59,178,115,0.4)", hasMenu: false },
   { label: "Shop", to: "/shop", color: "#2F80ED", glow: "rgba(47,128,237,0.4)", hasMenu: true },
-  { label: "Solar Solutions", to: "/solar-solutions", color: "#3BB273", glow: "rgba(59,178,115,0.4)", hasMenu: true },
-  { label: "Projects", to: "/projects", color: "#2F80ED", glow: "rgba(47,128,237,0.4)", hasMenu: true },
-  { label: "Why OMSUN", to: "/why-omsun", color: "#3BB273", glow: "rgba(59,178,115,0.4)", hasMenu: false },
+  {
+    label: "Solar Solutions",
+    to: "/solar-solutions",
+    color: "#3BB273",
+    glow: "rgba(59,178,115,0.4)",
+    hasMenu: true,
+  },
+  {
+    label: "Projects",
+    to: "/projects",
+    color: "#2F80ED",
+    glow: "rgba(47,128,237,0.4)",
+    hasMenu: true,
+  },
+  {
+    label: "Why OMSUN",
+    to: "/why-omsun",
+    color: "#3BB273",
+    glow: "rgba(59,178,115,0.4)",
+    hasMenu: false,
+  },
+  {
+    label: "Contact Us",
+    to: "/contact",
+    color: "#2F80ED",
+    glow: "rgba(47,128,237,0.4)",
+    hasMenu: false,
+  },
 ];
 
 export function Navbar() {
@@ -50,7 +78,9 @@ export function Navbar() {
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
   const [pillColor, setPillColor] = useState("rgba(59,178,115,0.08)");
-  const [activeMenu, setActiveMenu] = useState<"Shop" | "Solar Solutions" | "Projects" | null>(null);
+  const [activeMenu, setActiveMenu] = useState<"Shop" | "Solar Solutions" | "Projects" | null>(
+    null,
+  );
 
   /* ── Search Modal State ── */
   const [searchOpen, setSearchOpen] = useState(false);
@@ -142,12 +172,12 @@ export function Navbar() {
   /* Filter products for instant search modal */
   const filteredProducts = searchQuery.trim()
     ? products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.shortDesc.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
+        (p) =>
+          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.tagline.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
     : products.slice(0, 4);
 
   return (
@@ -159,31 +189,32 @@ export function Navbar() {
         )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          {/* ═══════════════ DEEP EVERGREEN FLOATING NAV PILL (#0A2E20) ═══════════════ */}
+          {/* ═══════════════ EXECUTIVE FLOATING NAV PILL ═══════════════ */}
           <nav
             className={cn(
-              "relative flex items-center justify-between gap-4 rounded-full sm:rounded-[36px] px-6 py-3 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-              "border border-[#03C987]/35 bg-[#0A2E20] shadow-[0_16px_40px_-10px_rgba(10,46,32,0.60)] backdrop-blur-[18px] text-white",
-              scrolled && "border-[#03C987]/50 bg-[#0A2E20]/95 shadow-[0_20px_50px_-8px_rgba(10,46,32,0.75)]",
+              "relative flex items-center justify-between gap-4 rounded-full px-6 py-2.5 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              "border border-[#03C987]/30 bg-[#06241a]/95 shadow-[0_16px_40px_-10px_rgba(4,26,18,0.70)] backdrop-blur-xl text-white",
+              scrolled &&
+                "border-[#03C987]/50 bg-[#041a12]/98 shadow-[0_20px_50px_-8px_rgba(4,26,18,0.85)]",
             )}
           >
             {/* ── LOGO (START OF NAVBAR) ── */}
             <Link
               to="/"
-              className="flex shrink-0 items-center transition-transform hover:scale-105"
+              className="flex shrink-0 items-center transition-transform hover:scale-105 py-0.5"
               aria-label="OMSUN Nepal home"
             >
               <img
                 src={omsunLogo}
                 alt="OMSUN logo"
-                className="h-11 sm:h-12 md:h-14 w-auto object-contain drop-shadow-sm brightness-110"
+                className="h-10 sm:h-11 md:h-12 w-auto object-contain drop-shadow-sm brightness-110"
               />
             </Link>
 
             {/* ── DESKTOP NAV LINKS ── */}
             <ul
               ref={navListRef}
-              className="relative hidden items-center gap-1 lg:flex"
+              className="relative hidden items-center gap-0.5 lg:flex"
               onMouseLeave={onNavLeave}
             >
               {/* Electric Mint Green sliding pill */}
@@ -193,10 +224,8 @@ export function Navbar() {
                   left: pillStyle.left,
                   width: pillStyle.width,
                   opacity: pillStyle.opacity,
-                  background: "rgba(3, 201, 135, 0.18)",
-                  boxShadow: hoveredLink
-                    ? `0 0 16px 0 rgba(3, 201, 135, 0.35)`
-                    : "none",
+                  background: "rgba(3, 201, 135, 0.16)",
+                  boxShadow: hoveredLink ? `0 0 16px 0 rgba(3, 201, 135, 0.30)` : "none",
                 }}
               />
 
@@ -216,7 +245,7 @@ export function Navbar() {
                     <Link
                       to={l.to}
                       onMouseEnter={(e) => onLinkEnter(e, l)}
-                      className="relative inline-flex min-h-10 items-center gap-1 rounded-full px-4.5 text-sm font-extrabold transition-all duration-200"
+                      className="relative inline-flex min-h-9 items-center gap-1 rounded-full px-4 text-xs sm:text-sm font-bold tracking-wide transition-all duration-200"
                       style={{
                         color: isActive || isHovered || isDropdownOpen ? "#03C987" : "#FFFFFF",
                       }}
@@ -225,7 +254,7 @@ export function Navbar() {
                       {l.hasMenu && (
                         <ChevronDown
                           className={cn(
-                            "size-3.5 transition-transform duration-300 text-white/80",
+                            "size-3.5 transition-transform duration-300 text-white/70",
                             isDropdownOpen ? "rotate-180 text-[#03C987]" : "",
                           )}
                         />
@@ -233,25 +262,17 @@ export function Navbar() {
 
                       {/* Animated underline bar in Electric Mint Green */}
                       <span
-                        className="absolute inset-x-3.5 bottom-1.5 h-[2.5px] rounded-full origin-left transition-all duration-300"
+                        className="absolute inset-x-3.5 bottom-1 h-[2px] rounded-full origin-left transition-all duration-300"
                         style={{
-                          background: `linear-gradient(90deg, #03C987 0%, #0095D0 100%)`,
+                          background: `#03C987`,
                           transform:
-                            isHovered || isActive || isDropdownOpen
-                              ? "scaleX(1)"
-                              : "scaleX(0)",
+                            isHovered || isActive || isDropdownOpen ? "scaleX(1)" : "scaleX(0)",
                           boxShadow:
-                            isHovered || isDropdownOpen ? `0 0 10px 1px rgba(3, 201, 135, 0.6)` : "none",
+                            isHovered || isDropdownOpen
+                              ? `0 0 10px 1px rgba(3, 201, 135, 0.6)`
+                              : "none",
                         }}
                       />
-
-                      {/* Active dot */}
-                      {isActive && !isHovered && !isDropdownOpen && (
-                        <span
-                          className="absolute bottom-1 left-1/2 size-1.5 -translate-x-1/2 rounded-full"
-                          style={{ background: "#03C987", boxShadow: `0 0 6px 1px rgba(3, 201, 135, 0.8)` }}
-                        />
-                      )}
                     </Link>
                   </li>
                 );
@@ -259,16 +280,16 @@ export function Navbar() {
             </ul>
 
             {/* ── RIGHT ACTIONS (END OF NAVBAR) ── */}
-            <div className="flex items-center justify-end gap-2">
-              {/* Search Trigger Button */}
+            <div className="flex items-center justify-end gap-3">
+              {/* Mobile Search Icon (opens search modal) */}
               <button
+                type="button"
                 onClick={() => setSearchOpen(true)}
-                aria-label="Search products"
-                title="Search products (Ctrl+K)"
-                className="group relative flex min-h-10 min-w-10 items-center justify-center rounded-full text-white/90 transition-all duration-300 hover:text-[#03C987]"
+                aria-label="Search store"
+                title="Search"
+                className="group relative flex size-9 items-center justify-center rounded-full text-white/90 transition-all duration-300 hover:bg-white/10 hover:text-[#03C987] lg:hidden cursor-pointer"
               >
-                <span className="absolute inset-0 rounded-full bg-white/0 transition-all duration-300 group-hover:bg-white/10" />
-                <Search className="relative size-5 transition-all duration-300 group-hover:scale-110" />
+                <Search className="size-4.5 transition-transform group-hover:scale-110" />
               </button>
 
               {/* Cart — glowing badge with live count */}
@@ -277,18 +298,17 @@ export function Navbar() {
                 onClick={handleCartClick}
                 aria-label="Open cart"
                 title="Shopping Cart"
-                className="group relative flex min-h-10 min-w-10 items-center justify-center rounded-full text-white/90 transition-all duration-300 hover:text-[#03C987]"
+                className="group relative flex size-9 items-center justify-center rounded-full text-white/90 transition-all duration-300 hover:bg-white/10 hover:text-[#03C987] cursor-pointer"
               >
-                <span className="absolute inset-0 rounded-full bg-white/0 transition-all duration-300 group-hover:bg-white/10" />
-                <ShoppingCart className="relative size-5 transition-all duration-300 group-hover:scale-110" />
+                <ShoppingCart className="size-4.5 transition-transform group-hover:scale-110" />
                 {totalItems > 0 ? (
-                  <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-[#03C987] font-mono text-[10px] font-extrabold text-[#0A2E20] shadow-md animate-bounce">
+                  <span className="absolute -top-1 -right-1 flex size-4.5 items-center justify-center rounded-full bg-[#03C987] font-mono text-[9px] font-black text-[#0A2E20] shadow-md">
                     {totalItems}
                   </span>
                 ) : (
-                  <span className="absolute right-1.5 top-1.5 flex size-2.5 items-center justify-center">
+                  <span className="absolute right-1 top-1 flex size-2 items-center justify-center">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#03C987] opacity-70" />
-                    <span className="relative size-2 rounded-full bg-[#03C987]" />
+                    <span className="relative size-1.5 rounded-full bg-[#03C987]" />
                   </span>
                 )}
               </button>
@@ -298,13 +318,13 @@ export function Navbar() {
                 <>
                   <Link
                     to={user.role === "admin" ? "/admin-dashboard" : "/dashboard"}
-                    className="group relative hidden min-h-10 items-center rounded-full border border-white/20 bg-white/10 px-4 text-sm font-bold text-white transition-all duration-300 hover:border-[#03C987] hover:bg-[#03C987]/20 hover:text-[#03C987] sm:inline-flex"
+                    className="group relative hidden h-9 items-center rounded-full border border-white/20 bg-white/10 px-4 text-xs font-bold text-white transition-all duration-300 hover:border-[#03C987] hover:bg-[#03C987] hover:text-[#041a12] sm:inline-flex"
                   >
                     {user.role === "admin" ? "Admin Panel" : "My Dashboard"}
                   </Link>
                   <button
                     onClick={logout}
-                    className="group relative hidden min-h-10 items-center rounded-full border border-white/20 bg-white/10 px-4 text-sm font-bold text-white transition-all duration-300 hover:border-red-400 hover:bg-red-500/20 hover:text-red-300 sm:inline-flex"
+                    className="group relative hidden h-9 items-center rounded-full border border-white/20 bg-white/10 px-3.5 text-xs font-bold text-white transition-all duration-300 hover:border-red-400 hover:bg-red-500/20 hover:text-red-300 sm:inline-flex cursor-pointer"
                   >
                     Logout
                   </button>
@@ -312,28 +332,40 @@ export function Navbar() {
               ) : (
                 <Link
                   to="/auth"
-                  className="group relative hidden min-h-10 items-center rounded-full border border-white/20 bg-white/10 px-4 text-sm font-bold text-white transition-all duration-300 hover:border-[#03C987] hover:bg-[#03C987]/20 hover:text-[#03C987] sm:inline-flex"
+                  className="group relative hidden h-9 items-center rounded-full border border-white/20 bg-white/10 px-4 text-xs font-extrabold text-white transition-all duration-300 hover:border-[#03C987] hover:bg-[#03C987] hover:text-[#041a12] sm:inline-flex"
                 >
                   Sign In
                 </Link>
               )}
 
-              {/* Solar CTA — Pill Button in Electric Mint Green */}
-              <Link
-                to="/shop"
-                className="navbar-cta-btn group relative hidden min-h-10 items-center gap-2 overflow-hidden rounded-full bg-[#03C987] px-5 text-sm font-extrabold text-[#0A2E20] shadow-md hover:bg-white hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 lg:inline-flex"
-              >
-                <span className="absolute inset-0 -translate-x-full skew-x-[-18deg] bg-white/30 transition-transform duration-500 group-hover:translate-x-[120%]" />
-                <Zap className="relative size-4 text-[#0A2E20] transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
-                <span className="relative">Get Solar Quote</span>
-                <ArrowUpRight className="relative size-3.5 text-[#0A2E20] opacity-0 -translate-y-0.5 translate-x-0.5 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0" />
-              </Link>
+              {/* ── INLINE STORE SEARCH CAPSULE (REPLACED GET SOLAR QUOTE BUTTON) ── */}
+              <div className="relative hidden lg:flex items-center rounded-full border border-white/25 bg-white/10 hover:bg-white/15 focus-within:bg-white/15 focus-within:border-[#03C987] px-3.5 py-1.5 transition-all min-w-[190px] xl:min-w-[220px]">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (!searchOpen) setSearchOpen(true);
+                  }}
+                  onFocus={() => setSearchOpen(true)}
+                  placeholder="Search entire store here"
+                  className="w-full bg-transparent text-xs font-medium text-white placeholder:text-white/70 focus:outline-none pr-5"
+                />
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen(true)}
+                  aria-label="Search store"
+                  className="absolute right-3 text-white/80 hover:text-[#03C987] transition-colors cursor-pointer"
+                >
+                  <Search className="size-3.5" />
+                </button>
+              </div>
 
               {/* Mobile hamburger */}
               <button
                 aria-label={open ? "Close menu" : "Open menu"}
                 onClick={() => setOpen((v) => !v)}
-                className="group relative inline-flex min-h-10 min-w-10 items-center justify-center rounded-full text-[#173226] transition-all duration-300 hover:text-black lg:hidden"
+                className="group relative inline-flex size-9 items-center justify-center rounded-full text-white/90 transition-all duration-300 hover:bg-white/10 lg:hidden cursor-pointer"
               >
                 {open ? <X className="size-5" /> : <Menu className="size-5" />}
               </button>
@@ -350,88 +382,143 @@ export function Navbar() {
               onMouseEnter={() => handleMenuEnter("Shop")}
               onMouseLeave={handleMenuLeave}
             >
-              <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#051711]/98 p-7 shadow-[0_35px_80px_-10px_rgba(0,0,0,0.9)] backdrop-blur-3xl">
-                <div className="grid grid-cols-12 gap-8 items-stretch">
-                  {/* Left Column: Feature Highlight & Intro */}
-                  <div className="col-span-4 flex flex-col justify-between border-r border-white/10 pr-8">
-                    <div>
-                      <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                        <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        <span>Solar & Power Verticals</span>
+              {activeMenu === "Shop" && (
+                <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#051711]/98 p-7 shadow-[0_35px_80px_-10px_rgba(0,0,0,0.9)] backdrop-blur-3xl">
+                  <div className="grid grid-cols-12 gap-8 items-stretch">
+                    {/* Left Column: Feature Highlight & Intro */}
+                    <div className="col-span-4 flex flex-col justify-between border-r border-white/10 pr-8">
+                      <div>
+                        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                          <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span>Solar & Power Verticals</span>
+                        </div>
+
+                        <h3 className="mt-3 font-display text-xl font-bold text-white tracking-tight leading-snug">
+                          Engineering Clean Energy for Nepal
+                        </h3>
+
+                        <p className="mt-2.5 text-xs text-white/60 leading-relaxed">
+                          OMSUN Nepal powers homes, commercial buildings & utility projects with
+                          Tier-1 solar panels, smart hybrid storage, and high-voltage grid
+                          distribution.
+                        </p>
+
+                        <div className="mt-4 space-y-2">
+                          <div className="flex items-center gap-2 text-[11px] font-medium text-white/80">
+                            <span className="flex size-4 items-center justify-center rounded-full bg-amber-400/20 text-amber-300 text-[10px]">
+                              ✓
+                            </span>
+                            <span>Tier-1 Mono PERC & N-Type Panels</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] font-medium text-white/80">
+                            <span className="flex size-4 items-center justify-center rounded-full bg-emerald-400/20 text-emerald-300 text-[10px]">
+                              ✓
+                            </span>
+                            <span>25-Year Product Performance Guarantee</span>
+                          </div>
+                        </div>
                       </div>
 
-                      <h3 className="mt-3 font-display text-xl font-bold text-white tracking-tight leading-snug">
-                        Engineering Clean Energy for Nepal
-                      </h3>
-
-                      <p className="mt-2.5 text-xs text-white/60 leading-relaxed">
-                        OMSUN Nepal powers homes, commercial buildings & utility projects with Tier-1 solar panels, smart hybrid storage, and high-voltage grid distribution.
-                      </p>
-
-                      <div className="mt-4 space-y-2">
-                        <div className="flex items-center gap-2 text-[11px] font-medium text-white/80">
-                          <span className="flex size-4 items-center justify-center rounded-full bg-amber-400/20 text-amber-300 text-[10px]">✓</span>
-                          <span>Tier-1 Mono PERC & N-Type Panels</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[11px] font-medium text-white/80">
-                          <span className="flex size-4 items-center justify-center rounded-full bg-emerald-400/20 text-emerald-300 text-[10px]">✓</span>
-                          <span>25-Year Product Performance Guarantee</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Link
-                      to="/shop"
-                      onClick={() => setActiveMenu(null)}
-                      className="group/cta mt-6 inline-flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-bold text-emerald-300 transition-all duration-300 hover:border-emerald-400 hover:bg-emerald-500/20 hover:text-white"
-                    >
-                      <span>Browse Full Product Catalog</span>
-                      <ArrowRight className="size-4 transition-transform duration-200 group-hover/cta:translate-x-1" />
-                    </Link>
-                  </div>
-
-                  {/* Right Column: Category Cards with Photos */}
-                  <div className="col-span-8 grid grid-cols-3 gap-3.5 pl-2">
-                    {[
-                      { name: "Solar Panels", desc: "Mono-PERC & Bifacial N-Type", icon: Sun, color: "#0ea5e9", image: panelImg },
-                      { name: "Hybrid Inverters", desc: "On-Grid & Off-Grid Controllers", icon: Gauge, color: "#6366f1", image: inverterImg },
-                      { name: "Energy Storage", desc: "LiFePO4 Powerwalls & Batteries", icon: BatteryCharging, color: "#10b981", image: batteryImg },
-                      { name: "Cables & Wiring", desc: "Solar DC Cables & Copper Armor", icon: Cable, color: "#f59e0b", image: cableImg },
-                      { name: "Solar Lighting", desc: "Smart Street & All-in-One Lights", icon: Lightbulb, color: "#ec4899", image: lightImg },
-                      { name: "Switchgear & Panels", desc: "Industrial Distribution & Breakers", icon: PanelsTopLeft, color: "#8b5cf6", image: switchgearImg },
-                    ].map((item) => (
                       <Link
-                        key={item.name}
                         to="/shop"
                         onClick={() => setActiveMenu(null)}
-                        className="group/card relative overflow-hidden rounded-xl border border-white/12 bg-[#082218] transition-all duration-300 hover:border-white/30 hover:shadow-[0_12px_30px_rgba(0,0,0,0.7)] h-full min-h-[92px]"
+                        className="group/cta mt-6 inline-flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-bold text-emerald-300 transition-all duration-300 hover:border-emerald-400 hover:bg-emerald-500/20 hover:text-white"
                       >
-                        <img src={item.image} alt={item.name} className="absolute inset-0 size-full object-cover opacity-25 transition-transform duration-500 group-hover/card:scale-110 group-hover/card:opacity-40" />
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#051a12]/95 via-[#051a12]/85 to-[#051a12]/50" />
-                        <div className="relative flex items-center gap-3 p-3 z-10 h-full">
-                          <div className="relative shrink-0">
-                            <img src={item.image} alt={item.name} className="size-11 rounded-lg border border-white/20 object-cover shadow-md transition-transform duration-300 group-hover/card:scale-105" />
-                            <span className="absolute -bottom-1 -right-1 grid size-5 place-items-center rounded-md border border-white/20 text-[10px] shadow-sm" style={{ background: item.color, color: "#fff" }}>
-                              <item.icon className="size-3" strokeWidth={2.2} />
-                            </span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-1">
-                              <h4 className="font-display text-xs font-bold text-white transition-colors group-hover/card:text-emerald-300 truncate">
-                                {item.name}
-                              </h4>
-                              <ArrowRight className="size-3.5 shrink-0 text-white/40 opacity-0 -translate-x-1.5 transition-all duration-300 group-hover/card:opacity-100 group-hover/card:translate-x-0 group-hover/card:text-emerald-400" />
-                            </div>
-                            <p className="mt-0.5 text-[11px] font-medium text-white/60 leading-tight line-clamp-1">
-                              {item.desc}
-                            </p>
-                          </div>
-                        </div>
+                        <span>Browse Full Product Catalog</span>
+                        <ArrowRight className="size-4 transition-transform duration-200 group-hover/cta:translate-x-1" />
                       </Link>
-                    ))}
+                    </div>
+
+                    {/* Right Column: Category Cards with Photos */}
+                    <div className="col-span-8 grid grid-cols-3 gap-3.5 pl-2">
+                      {[
+                        {
+                          name: "Solar Panels",
+                          desc: "Mono-PERC & Bifacial N-Type",
+                          icon: Sun,
+                          color: "#0ea5e9",
+                          image: panelImg,
+                        },
+                        {
+                          name: "Hybrid Inverters",
+                          desc: "On-Grid & Off-Grid Controllers",
+                          icon: Gauge,
+                          color: "#6366f1",
+                          image: inverterImg,
+                        },
+                        {
+                          name: "Energy Storage",
+                          desc: "LiFePO4 Powerwalls & Batteries",
+                          icon: BatteryCharging,
+                          color: "#10b981",
+                          image: batteryImg,
+                        },
+                        {
+                          name: "Cables & Wiring",
+                          desc: "Solar DC Cables & Copper Armor",
+                          icon: Cable,
+                          color: "#f59e0b",
+                          image: cableImg,
+                        },
+                        {
+                          name: "Solar Lighting",
+                          desc: "Smart Street & All-in-One Lights",
+                          icon: Lightbulb,
+                          color: "#ec4899",
+                          image: lightImg,
+                        },
+                        {
+                          name: "Switchgear & Panels",
+                          desc: "Industrial Distribution & Breakers",
+                          icon: PanelsTopLeft,
+                          color: "#8b5cf6",
+                          image: switchgearImg,
+                        },
+                      ].map((item) => (
+                        <Link
+                          key={item.name}
+                          to="/shop"
+                          onClick={() => setActiveMenu(null)}
+                          className="group/card relative overflow-hidden rounded-xl border border-white/12 bg-[#082218] transition-all duration-300 hover:border-white/30 hover:shadow-[0_12px_30px_rgba(0,0,0,0.7)] h-full min-h-[92px]"
+                        >
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="absolute inset-0 size-full object-cover opacity-25 transition-transform duration-500 group-hover/card:scale-110 group-hover/card:opacity-40"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-r from-[#051a12]/95 via-[#051a12]/85 to-[#051a12]/50" />
+                          <div className="relative flex items-center gap-3 p-3 z-10 h-full">
+                            <div className="relative shrink-0">
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="size-11 rounded-lg border border-white/20 object-cover shadow-md transition-transform duration-300 group-hover/card:scale-105"
+                              />
+                              <span
+                                className="absolute -bottom-1 -right-1 grid size-5 place-items-center rounded-md border border-white/20 text-[10px] shadow-sm"
+                                style={{ background: item.color, color: "#fff" }}
+                              >
+                                <item.icon className="size-3" strokeWidth={2.2} />
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <h4 className="font-display text-xs font-bold text-white transition-colors group-hover/card:text-emerald-300 truncate">
+                                  {item.name}
+                                </h4>
+                                <ArrowRight className="size-3.5 shrink-0 text-white/40 opacity-0 -translate-x-1.5 transition-all duration-300 group-hover/card:opacity-100 group-hover/card:translate-x-0 group-hover/card:text-emerald-400" />
+                              </div>
+                              <p className="mt-0.5 text-[11px] font-medium text-white/60 leading-tight line-clamp-1">
+                                {item.desc}
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* ═══════════════ 2. SOLAR SOLUTIONS MEGA MENU POP-OVER ═══════════════ */}
@@ -445,94 +532,108 @@ export function Navbar() {
               onMouseEnter={() => handleMenuEnter("Solar Solutions")}
               onMouseLeave={handleMenuLeave}
             >
-              <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#051711]/98 p-7 shadow-[0_35px_80px_-10px_rgba(0,0,0,0.9)] backdrop-blur-3xl">
-                <div className="grid grid-cols-12 gap-8 items-stretch">
-                  {/* Left Column: Solution Highlights */}
-                  <div className="col-span-4 flex flex-col justify-between border-r border-white/10 pr-8">
-                    <div>
-                      <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-sky-300">
-                        <Sun className="size-3.5" />
-                        <span>EPC & Engineering Services</span>
+              {activeMenu === "Solar Solutions" && (
+                <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#051711]/98 p-7 shadow-[0_35px_80px_-10px_rgba(0,0,0,0.9)] backdrop-blur-3xl">
+                  <div className="grid grid-cols-12 gap-8 items-stretch">
+                    {/* Left Column: Solution Highlights */}
+                    <div className="col-span-4 flex flex-col justify-between border-r border-white/10 pr-8">
+                      <div>
+                        <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-sky-300">
+                          <Sun className="size-3.5" />
+                          <span>EPC & Engineering Services</span>
+                        </div>
+
+                        <h3 className="mt-3 font-display text-xl font-bold text-white tracking-tight leading-snug">
+                          Turnkey Solar EPC & Grid Approvals
+                        </h3>
+
+                        <p className="mt-2.5 text-xs text-white/60 leading-relaxed">
+                          Custom solar engineering for residential rooftops, factory power plants,
+                          mountain resorts, and NEA net-metering synchronization.
+                        </p>
                       </div>
 
-                      <h3 className="mt-3 font-display text-xl font-bold text-white tracking-tight leading-snug">
-                        Turnkey Solar EPC & Grid Approvals
-                      </h3>
-
-                      <p className="mt-2.5 text-xs text-white/60 leading-relaxed">
-                        Custom solar engineering for residential rooftops, factory power plants, mountain resorts, and NEA net-metering synchronization.
-                      </p>
-                    </div>
-
-                    <Link
-                      to="/solar-solutions"
-                      onClick={() => setActiveMenu(null)}
-                      className="group/cta mt-6 inline-flex items-center justify-between rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-2.5 text-xs font-bold text-sky-300 transition-all duration-300 hover:border-sky-400 hover:bg-sky-500/20 hover:text-white"
-                    >
-                      <span>View All Solar Solutions</span>
-                      <ArrowRight className="size-4 transition-transform duration-200 group-hover/cta:translate-x-1" />
-                    </Link>
-                  </div>
-
-                  {/* Right Column: 4 Key Solution Cards */}
-                  <div className="col-span-8 grid grid-cols-2 gap-4 pl-2">
-                    {[
-                      {
-                        title: "Residential Rooftop Systems",
-                        desc: "3 kW to 15 kW Systems with Intelligent Auto-Backup & NEA Net Metering",
-                        icon: Sun,
-                        color: "#38bdf8",
-                        image: heroImg,
-                      },
-                      {
-                        title: "Commercial & Industrial EPC",
-                        desc: "50 kW to 1 MW+ Solar Plants for Factories, Hotels & Hospitals",
-                        icon: Cpu,
-                        color: "#818cf8",
-                        image: projectImg,
-                      },
-                      {
-                        title: "Off-Grid & Resort Microgrids",
-                        desc: "Sub-Zero LiFePO4 Battery Storage for Himalayan Lodges & Remote Sites",
-                        icon: BatteryCharging,
-                        color: "#2dd4bf",
-                        image: heroImg,
-                      },
-                      {
-                        title: "NEA Net-Metering Approvals",
-                        desc: "End-to-End Sanctioned Load Study, Wiring Diagrams & Inspection",
-                        icon: FileCheck,
-                        color: "#fbbf24",
-                        image: projectImg,
-                      },
-                    ].map((sol) => (
                       <Link
-                        key={sol.title}
                         to="/solar-solutions"
                         onClick={() => setActiveMenu(null)}
-                        className="group/sol relative overflow-hidden rounded-xl border border-white/12 bg-[#082218] p-4 transition-all duration-300 hover:border-white/30 hover:shadow-[0_12px_30px_rgba(0,0,0,0.7)] flex flex-col justify-between"
+                        className="group/cta mt-6 inline-flex items-center justify-between rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-2.5 text-xs font-bold text-sky-300 transition-all duration-300 hover:border-sky-400 hover:bg-sky-500/20 hover:text-white"
                       >
-                        <img src={sol.image} alt={sol.title} className="absolute inset-0 size-full object-cover opacity-20 transition-transform duration-500 group-hover/sol:scale-110 group-hover/sol:opacity-35" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#051a12]/95 via-[#051a12]/85 to-[#051a12]/60" />
-
-                        <div className="relative z-10 flex items-start gap-3">
-                          <span className="grid size-10 shrink-0 place-items-center rounded-xl transition-transform duration-300 group-hover/sol:scale-110" style={{ background: `color-mix(in srgb, ${sol.color} 20%, transparent)`, color: sol.color, border: `1px solid ${sol.color}40` }}>
-                            <sol.icon className="size-5" strokeWidth={1.8} />
-                          </span>
-                          <div>
-                            <h4 className="font-display text-sm font-bold text-white transition-colors group-hover/sol:text-sky-300">
-                              {sol.title}
-                            </h4>
-                            <p className="mt-1 text-[11px] font-medium text-white/60 leading-snug">
-                              {sol.desc}
-                            </p>
-                          </div>
-                        </div>
+                        <span>View All Solar Solutions</span>
+                        <ArrowRight className="size-4 transition-transform duration-200 group-hover/cta:translate-x-1" />
                       </Link>
-                    ))}
+                    </div>
+
+                    {/* Right Column: 4 Key Solution Cards */}
+                    <div className="col-span-8 grid grid-cols-2 gap-4 pl-2">
+                      {[
+                        {
+                          title: "Residential Rooftop Systems",
+                          desc: "3 kW to 15 kW Systems with Intelligent Auto-Backup & NEA Net Metering",
+                          icon: Sun,
+                          color: "#38bdf8",
+                          image: heroImg,
+                        },
+                        {
+                          title: "Commercial & Industrial EPC",
+                          desc: "50 kW to 1 MW+ Solar Plants for Factories, Hotels & Hospitals",
+                          icon: Cpu,
+                          color: "#818cf8",
+                          image: projectImg,
+                        },
+                        {
+                          title: "Off-Grid & Resort Microgrids",
+                          desc: "Sub-Zero LiFePO4 Battery Storage for Himalayan Lodges & Remote Sites",
+                          icon: BatteryCharging,
+                          color: "#2dd4bf",
+                          image: heroImg,
+                        },
+                        {
+                          title: "NEA Net-Metering Approvals",
+                          desc: "End-to-End Sanctioned Load Study, Wiring Diagrams & Inspection",
+                          icon: FileCheck,
+                          color: "#fbbf24",
+                          image: projectImg,
+                        },
+                      ].map((sol) => (
+                        <Link
+                          key={sol.title}
+                          to="/solar-solutions"
+                          onClick={() => setActiveMenu(null)}
+                          className="group/sol relative overflow-hidden rounded-xl border border-white/12 bg-[#082218] p-4 transition-all duration-300 hover:border-white/30 hover:shadow-[0_12px_30px_rgba(0,0,0,0.7)] flex flex-col justify-between"
+                        >
+                          <img
+                            src={sol.image}
+                            alt={sol.title}
+                            className="absolute inset-0 size-full object-cover opacity-20 transition-transform duration-500 group-hover/sol:scale-110 group-hover/sol:opacity-35"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#051a12]/95 via-[#051a12]/85 to-[#051a12]/60" />
+
+                          <div className="relative z-10 flex items-start gap-3">
+                            <span
+                              className="grid size-10 shrink-0 place-items-center rounded-xl transition-transform duration-300 group-hover/sol:scale-110"
+                              style={{
+                                background: `color-mix(in srgb, ${sol.color} 20%, transparent)`,
+                                color: sol.color,
+                                border: `1px solid ${sol.color}40`,
+                              }}
+                            >
+                              <sol.icon className="size-5" strokeWidth={1.8} />
+                            </span>
+                            <div>
+                              <h4 className="font-display text-sm font-bold text-white transition-colors group-hover/sol:text-sky-300">
+                                {sol.title}
+                              </h4>
+                              <p className="mt-1 text-[11px] font-medium text-white/60 leading-snug">
+                                {sol.desc}
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* ═══════════════ 3. PROJECTS MEGA MENU POP-OVER ═══════════════ */}
@@ -546,96 +647,106 @@ export function Navbar() {
               onMouseEnter={() => handleMenuEnter("Projects")}
               onMouseLeave={handleMenuLeave}
             >
-              <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#051711]/98 p-7 shadow-[0_35px_80px_-10px_rgba(0,0,0,0.9)] backdrop-blur-3xl">
-                <div className="grid grid-cols-12 gap-8 items-stretch">
-                  {/* Left Column: Track Record Summary */}
-                  <div className="col-span-4 flex flex-col justify-between border-r border-white/10 pr-8">
-                    <div>
-                      <div className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-teal-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-teal-300">
-                        <Zap className="size-3.5" />
-                        <span>18 MW+ Installed Capacity</span>
+              {activeMenu === "Projects" && (
+                <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#051711]/98 p-7 shadow-[0_35px_80px_-10px_rgba(0,0,0,0.9)] backdrop-blur-3xl">
+                  <div className="grid grid-cols-12 gap-8 items-stretch">
+                    {/* Left Column: Track Record Summary */}
+                    <div className="col-span-4 flex flex-col justify-between border-r border-white/10 pr-8">
+                      <div>
+                        <div className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-teal-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-teal-300">
+                          <Zap className="size-3.5" />
+                          <span>18 MW+ Installed Capacity</span>
+                        </div>
+
+                        <h3 className="mt-3 font-display text-xl font-bold text-white tracking-tight leading-snug">
+                          Proven Track Record Across Nepal
+                        </h3>
+
+                        <p className="mt-2.5 text-xs text-white/60 leading-relaxed">
+                          Over 4,200+ completed installations across all 77 districts — from
+                          industrial factories in Biratnagar to high-altitude lodge microgrids in
+                          Khumbu.
+                        </p>
                       </div>
 
-                      <h3 className="mt-3 font-display text-xl font-bold text-white tracking-tight leading-snug">
-                        Proven Track Record Across Nepal
-                      </h3>
-
-                      <p className="mt-2.5 text-xs text-white/60 leading-relaxed">
-                        Over 4,200+ completed installations across all 77 districts — from industrial factories in Biratnagar to high-altitude lodge microgrids in Khumbu.
-                      </p>
-                    </div>
-
-                    <Link
-                      to="/projects"
-                      onClick={() => setActiveMenu(null)}
-                      className="group/cta mt-6 inline-flex items-center justify-between rounded-xl border border-teal-500/30 bg-teal-500/10 px-4 py-2.5 text-xs font-bold text-teal-300 transition-all duration-300 hover:border-teal-400 hover:bg-teal-500/20 hover:text-white"
-                    >
-                      <span>Explore All Project Case Studies</span>
-                      <ArrowRight className="size-4 transition-transform duration-200 group-hover/cta:translate-x-1" />
-                    </Link>
-                  </div>
-
-                  {/* Right Column: 3 Featured Project Case Studies */}
-                  <div className="col-span-8 grid grid-cols-3 gap-3.5 pl-2">
-                    {[
-                      {
-                        title: "320 kW Industrial Rooftop",
-                        location: "Bhaktapur • Textile Factory",
-                        stat: "74% Bill Offset",
-                        icon: Factory,
-                        color: "#38bdf8",
-                        image: projectImg,
-                      },
-                      {
-                        title: "Resort Off-Grid Microgrid",
-                        location: "Khumbu Valley • Hospitality",
-                        stat: "100% Diesel Free",
-                        icon: Hotel,
-                        color: "#2dd4bf",
-                        image: heroImg,
-                      },
-                      {
-                        title: "Municipal Smart LED Lighting",
-                        location: "Pokhara • 2,400 Luminaires",
-                        stat: "Zero Grid Power",
-                        icon: Building2,
-                        color: "#fbbf24",
-                        image: projectImg,
-                      },
-                    ].map((proj) => (
                       <Link
-                        key={proj.title}
                         to="/projects"
                         onClick={() => setActiveMenu(null)}
-                        className="group/proj relative overflow-hidden rounded-xl border border-white/12 bg-[#082218] p-4 transition-all duration-300 hover:border-white/30 hover:shadow-[0_12px_30px_rgba(0,0,0,0.7)] flex flex-col justify-between h-full min-h-[140px]"
+                        className="group/cta mt-6 inline-flex items-center justify-between rounded-xl border border-teal-500/30 bg-teal-500/10 px-4 py-2.5 text-xs font-bold text-teal-300 transition-all duration-300 hover:border-teal-400 hover:bg-teal-500/20 hover:text-white"
                       >
-                        <img src={proj.image} alt={proj.title} className="absolute inset-0 size-full object-cover opacity-30 transition-transform duration-500 group-hover/proj:scale-110 group-hover/proj:opacity-45" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#051a12]/98 via-[#051a12]/80 to-transparent" />
-
-                        <div className="relative z-10 flex items-center justify-between">
-                          <span className="grid size-9 place-items-center rounded-lg text-white" style={{ background: proj.color }}>
-                            <proj.icon className="size-4" />
-                          </span>
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-md border border-emerald-500/30">
-                            {proj.stat}
-                          </span>
-                        </div>
-
-                        <div className="relative z-10 mt-6">
-                          <h4 className="font-display text-xs font-bold text-white transition-colors group-hover/proj:text-teal-300">
-                            {proj.title}
-                          </h4>
-                          <p className="mt-1 text-[10px] font-medium text-white/60">
-                            {proj.location}
-                          </p>
-                        </div>
+                        <span>Explore All Project Case Studies</span>
+                        <ArrowRight className="size-4 transition-transform duration-200 group-hover/cta:translate-x-1" />
                       </Link>
-                    ))}
+                    </div>
+
+                    {/* Right Column: 3 Featured Project Case Studies */}
+                    <div className="col-span-8 grid grid-cols-3 gap-3.5 pl-2">
+                      {[
+                        {
+                          title: "320 kW Industrial Rooftop",
+                          location: "Bhaktapur • Textile Factory",
+                          stat: "74% Bill Offset",
+                          icon: Factory,
+                          color: "#38bdf8",
+                          image: projectImg,
+                        },
+                        {
+                          title: "Resort Off-Grid Microgrid",
+                          location: "Khumbu Valley • Hospitality",
+                          stat: "100% Diesel Free",
+                          icon: Hotel,
+                          color: "#2dd4bf",
+                          image: heroImg,
+                        },
+                        {
+                          title: "Municipal Smart LED Lighting",
+                          location: "Pokhara • 2,400 Luminaires",
+                          stat: "Zero Grid Power",
+                          icon: Building2,
+                          color: "#fbbf24",
+                          image: projectImg,
+                        },
+                      ].map((proj) => (
+                        <Link
+                          key={proj.title}
+                          to="/projects"
+                          onClick={() => setActiveMenu(null)}
+                          className="group/proj relative overflow-hidden rounded-xl border border-white/12 bg-[#082218] p-4 transition-all duration-300 hover:border-white/30 hover:shadow-[0_12px_30px_rgba(0,0,0,0.7)] flex flex-col justify-between h-full min-h-[140px]"
+                        >
+                          <img
+                            src={proj.image}
+                            alt={proj.title}
+                            className="absolute inset-0 size-full object-cover opacity-30 transition-transform duration-500 group-hover/proj:scale-110 group-hover/proj:opacity-45"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#051a12]/98 via-[#051a12]/80 to-transparent" />
+
+                          <div className="relative z-10 flex items-center justify-between">
+                            <span
+                              className="grid size-9 place-items-center rounded-lg text-white"
+                              style={{ background: proj.color }}
+                            >
+                              <proj.icon className="size-4" />
+                            </span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-md border border-emerald-500/30">
+                              {proj.stat}
+                            </span>
+                          </div>
+
+                          <div className="relative z-10 mt-6">
+                            <h4 className="font-display text-xs font-bold text-white transition-colors group-hover/proj:text-teal-300">
+                              {proj.title}
+                            </h4>
+                            <p className="mt-1 text-[10px] font-medium text-white/60">
+                              {proj.location}
+                            </p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
-
           </nav>
 
           {/* ═══════════════ SEARCH MODAL DIALOG ═══════════════ */}
@@ -680,15 +791,17 @@ export function Navbar() {
                   <span className="text-[11px] font-bold uppercase tracking-wider text-white/40 mr-1">
                     Quick Search:
                   </span>
-                  {["Solar Panel", "Inverter", "Battery", "Cable", "Lighting", "Switchgear"].map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => setSearchQuery(tag)}
-                      className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/70 hover:border-emerald-400/50 hover:bg-emerald-500/10 hover:text-emerald-300 transition-all"
-                    >
-                      {tag}
-                    </button>
-                  ))}
+                  {["Solar Panel", "Inverter", "Battery", "Cable", "Lighting", "Switchgear"].map(
+                    (tag) => (
+                      <button
+                        key={tag}
+                        onClick={() => setSearchQuery(tag)}
+                        className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/70 hover:border-emerald-400/50 hover:bg-emerald-500/10 hover:text-emerald-300 transition-all"
+                      >
+                        {tag}
+                      </button>
+                    ),
+                  )}
                 </div>
 
                 {/* Matching Results List */}
@@ -716,14 +829,16 @@ export function Navbar() {
                               {formatNPR(p.price)}
                             </span>
                           </div>
-                          <p className="text-xs text-white/50 truncate mt-0.5">{p.shortDesc}</p>
+                          <p className="text-xs text-white/50 truncate mt-0.5">{p.tagline}</p>
                         </div>
                         <ArrowRight className="size-4 text-white/30 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0" />
                       </Link>
                     ))
                   ) : (
                     <div className="py-12 text-center text-white/50 text-sm">
-                      No products found for "{searchQuery}". Try searching for <span className="text-emerald-400">Panel</span> or <span className="text-emerald-400">Inverter</span>.
+                      No products found for "{searchQuery}". Try searching for{" "}
+                      <span className="text-emerald-400">Panel</span> or{" "}
+                      <span className="text-emerald-400">Inverter</span>.
                     </div>
                   )}
                 </div>
@@ -734,13 +849,29 @@ export function Navbar() {
           {/* ═══════════════ MOBILE DRAWER ═══════════════ */}
           <div
             className={cn(
-              "mt-2 overflow-hidden rounded-2xl border border-white/10 bg-[#071b14]/92 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden",
+              "mt-2 overflow-y-auto rounded-2xl border border-white/10 bg-[#071b14]/92 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden",
               open
-                ? "max-h-[36rem] opacity-100 shadow-[0_20px_50px_-8px_rgba(0,0,0,0.65)]"
+                ? "max-h-[calc(100dvh-9.5rem)] opacity-100 shadow-[0_20px_50px_-8px_rgba(0,0,0,0.65)]"
                 : "max-h-0 opacity-0 shadow-none",
             )}
           >
             <div className="p-3">
+              {/* Mobile Drawer Search Row */}
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setSearchOpen(true);
+                }}
+                className="group mb-3 flex h-11 w-full cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-medium text-white/70 transition-all duration-200 hover:border-emerald-400/50 hover:bg-white/[0.08] hover:text-white"
+              >
+                <Search className="size-4 shrink-0 text-white/45 transition-colors group-hover:text-emerald-400" />
+                <span className="truncate">Search products & solutions</span>
+                <span className="ml-auto hidden shrink-0 items-center gap-1 rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-white/40 sm:inline-flex">
+                  Ctrl K
+                </span>
+              </button>
+
               <ul className="space-y-0.5">
                 {links.map((l, i) => {
                   const isActive =
@@ -825,15 +956,25 @@ export function Navbar() {
       {/* ═══════════════ DARAZ-STYLE FIXED MOBILE BOTTOM NAV BAR ═══════════════ */}
       <nav
         aria-label="Mobile Bottom Navigation"
-        className="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-[#051710]/95 backdrop-blur-xl border-t border-white/10 px-4 py-1.5 flex items-center justify-around text-white shadow-2xl"
+        className="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-[#051710]/95 backdrop-blur-xl border-t border-white/10 px-4 py-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] flex items-center justify-around text-white shadow-2xl"
       >
-        <Link to="/" className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400">
-          <span className="grid size-6 place-items-center text-sm">🏠</span>
+        <Link
+          to="/"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400"
+        >
+          <span className="grid size-6 place-items-center">
+            <Home className="size-4.5" />
+          </span>
           <span>Home</span>
         </Link>
 
-        <Link to="/shop" className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400">
-          <span className="grid size-6 place-items-center text-sm">🛍️</span>
+        <Link
+          to="/shop"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400"
+        >
+          <span className="grid size-6 place-items-center">
+            <ShoppingBag className="size-4.5" />
+          </span>
           <span>Shop</span>
         </Link>
 
@@ -854,13 +995,23 @@ export function Navbar() {
           <span>Cart</span>
         </button>
 
-        <Link to="/projects" className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400">
-          <span className="grid size-6 place-items-center text-sm">⚡</span>
+        <Link
+          to="/projects"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400"
+        >
+          <span className="grid size-6 place-items-center">
+            <Zap className="size-4.5" />
+          </span>
           <span>Projects</span>
         </Link>
 
-        <Link to="/auth" className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400">
-          <span className="grid size-6 place-items-center text-sm">👤</span>
+        <Link
+          to="/auth"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400"
+        >
+          <span className="grid size-6 place-items-center">
+            <User className="size-4.5" />
+          </span>
           <span>Account</span>
         </Link>
       </nav>

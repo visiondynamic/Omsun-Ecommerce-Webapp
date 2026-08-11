@@ -20,6 +20,14 @@ export function Reveal({
       setShown(true);
       return;
     }
+
+    // If already within the viewport on mount, reveal immediately.
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      setShown(true);
+      return;
+    }
+
     const io = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
@@ -27,10 +35,20 @@ export function Reveal({
           io.disconnect();
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -60px 0px" },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" },
     );
     io.observe(el);
-    return () => io.disconnect();
+
+    // Safety net: never leave content hidden, even if the observer stalls.
+    const fallback = setTimeout(() => {
+      setShown(true);
+      io.disconnect();
+    }, 4000);
+
+    return () => {
+      io.disconnect();
+      clearTimeout(fallback);
+    };
   }, []);
 
   return (
@@ -39,7 +57,7 @@ export function Reveal({
       style={{ transitionDelay: `${delay}ms` }}
       className={cn(
         "transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
-        shown ? "translate-y-0 opacity-100 blur-0" : "translate-y-8 opacity-0 blur-[2px]",
+        shown ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
         className,
       )}
     >

@@ -61,13 +61,55 @@ export const Route = createFileRoute("/shop")({
 });
 
 const categoryCards = [
-  { name: "All Products", categoryKey: "All", icon: LayoutGrid, count: products.length, image: null },
-  { name: "Solar Panels", categoryKey: "Solar Panels", icon: Sun, count: products.filter((p) => p.category === "Solar Panels").length, image: panelImg },
-  { name: "Inverters", categoryKey: "Inverters", icon: Gauge, count: products.filter((p) => p.category === "Inverters").length, image: inverterImg },
-  { name: "Energy Storage", categoryKey: "Energy Storage", icon: BatteryCharging, count: products.filter((p) => p.category === "Energy Storage").length, image: batteryImg },
-  { name: "Cables & Wiring", categoryKey: "Cables & Wiring", icon: Cable, count: products.filter((p) => p.category === "Cables & Wiring").length, image: cableImg },
-  { name: "Lighting", categoryKey: "Lighting", icon: Lightbulb, count: products.filter((p) => p.category === "Lighting").length, image: lightImg },
-  { name: "Switchgear & Panels", categoryKey: "Switchgear & Panels", icon: PanelsTopLeft, count: products.filter((p) => p.category === "Switchgear & Panels").length, image: switchgearImg },
+  {
+    name: "All Products",
+    categoryKey: "All",
+    icon: LayoutGrid,
+    count: products.length,
+    image: null,
+  },
+  {
+    name: "Solar Panels",
+    categoryKey: "Solar Panels",
+    icon: Sun,
+    count: products.filter((p) => p.category === "Solar Panels").length,
+    image: panelImg,
+  },
+  {
+    name: "Inverters",
+    categoryKey: "Inverters",
+    icon: Gauge,
+    count: products.filter((p) => p.category === "Inverters").length,
+    image: inverterImg,
+  },
+  {
+    name: "Energy Storage",
+    categoryKey: "Energy Storage",
+    icon: BatteryCharging,
+    count: products.filter((p) => p.category === "Energy Storage").length,
+    image: batteryImg,
+  },
+  {
+    name: "Cables & Wiring",
+    categoryKey: "Cables & Wiring",
+    icon: Cable,
+    count: products.filter((p) => p.category === "Cables & Wiring").length,
+    image: cableImg,
+  },
+  {
+    name: "Lighting",
+    categoryKey: "Lighting",
+    icon: Lightbulb,
+    count: products.filter((p) => p.category === "Lighting").length,
+    image: lightImg,
+  },
+  {
+    name: "Switchgear & Panels",
+    categoryKey: "Switchgear & Panels",
+    icon: PanelsTopLeft,
+    count: products.filter((p) => p.category === "Switchgear & Panels").length,
+    image: switchgearImg,
+  },
 ];
 
 function Shop() {
@@ -130,7 +172,10 @@ function Shop() {
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pb-28 pt-28 sm:pt-36">
         {/* ── BREADCRUMB & PAGE HEADER ── */}
         <div className="flex items-center justify-between">
-          <nav aria-label="Breadcrumb" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <nav
+            aria-label="Breadcrumb"
+            className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+          >
             <Link to="/" className="hover:text-primary transition-colors">
               Home
             </Link>
@@ -150,7 +195,8 @@ function Shop() {
               Solar & Electrical Hardware Catalog
             </h1>
             <p className="mt-2 text-sm text-muted-foreground font-medium max-w-2xl">
-              Showing {results.length} of {products.length} certified products · Direct import with serialised 25-year performance warranties across Nepal.
+              Showing {results.length} of {products.length} certified products · Direct import with
+              serialised 25-year performance warranties across Nepal.
             </p>
           </div>
 
@@ -173,7 +219,10 @@ function Shop() {
                 size="icon"
                 aria-label="Grid view"
                 onClick={() => setView("grid")}
-                className={cn("h-9 w-9 rounded-lg transition-all", view === "grid" && "bg-emerald-500 text-black font-bold shadow-md")}
+                className={cn(
+                  "h-9 w-9 rounded-lg transition-all",
+                  view === "grid" && "bg-emerald-500 text-black font-bold shadow-md",
+                )}
               >
                 <LayoutGrid className="size-4" />
               </Button>
@@ -182,44 +231,16 @@ function Shop() {
                 size="icon"
                 aria-label="List view"
                 onClick={() => setView("list")}
-                className={cn("h-9 w-9 rounded-lg transition-all", view === "list" && "bg-emerald-500 text-black font-bold shadow-md")}
+                className={cn(
+                  "h-9 w-9 rounded-lg transition-all",
+                  view === "list" && "bg-emerald-500 text-black font-bold shadow-md",
+                )}
               >
                 <Rows3 className="size-4" />
               </Button>
             </div>
           </div>
         </header>
-
-        {/* ═══════════════ DARAZ-STYLE HORIZONTAL REEL TABS ═══════════════ */}
-        <div className="mt-6 flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 text-xs font-bold text-white/80">
-          {[
-            { label: "For You", icon: "🔥", active: true },
-            { label: "Fast Delivery", icon: "🚚", active: false },
-            { label: "Tier-1 Panels", icon: "☀️", active: false },
-            { label: "Battery Storage", icon: "🔋", active: false },
-            { label: "Hybrid Inverters", icon: "⚡", active: false },
-            { label: "Top Rated", icon: "⭐", active: false },
-          ].map((tab) => (
-            <button
-              key={tab.label}
-              onClick={() => {
-                if (tab.label === "For You") clearAllFilters();
-                else if (tab.label === "Tier-1 Panels") selectSingleCategory("Solar Panels");
-                else if (tab.label === "Battery Storage") selectSingleCategory("Energy Storage");
-                else if (tab.label === "Hybrid Inverters") selectSingleCategory("Inverters");
-              }}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-extrabold shrink-0 transition-all shadow-sm",
-                tab.active || (tab.label === "For You" && cats.length === 0)
-                  ? "border-emerald-500 bg-emerald-500 text-black"
-                  : "border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/30",
-              )}
-            >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </div>
 
         {/* ═══════════════ SLIDABLE HORIZONTAL CATEGORY CAROUSEL ═══════════════ */}
         <section className="mt-6">
@@ -261,9 +282,7 @@ function Shop() {
           >
             {categoryCards.map((card) => {
               const isSelected =
-                card.categoryKey === "All"
-                  ? cats.length === 0
-                  : cats.includes(card.categoryKey);
+                card.categoryKey === "All" ? cats.length === 0 : cats.includes(card.categoryKey);
 
               return (
                 <button
@@ -281,6 +300,8 @@ function Shop() {
                     <img
                       src={card.image}
                       alt={card.name}
+                      loading="lazy"
+                      decoding="async"
                       className="absolute inset-0 size-full object-cover opacity-15 group-hover:opacity-25 transition-opacity"
                     />
                   )}
@@ -301,7 +322,9 @@ function Shop() {
                     <h4
                       className={cn(
                         "font-display text-xs font-bold truncate transition-colors",
-                        isSelected ? "text-emerald-300 font-extrabold" : "text-foreground group-hover:text-emerald-400",
+                        isSelected
+                          ? "text-emerald-300 font-extrabold"
+                          : "text-foreground group-hover:text-emerald-400",
                       )}
                     >
                       {card.name}
@@ -435,9 +458,12 @@ function Shop() {
             {results.length === 0 ? (
               <div className="rounded-3xl border border-slate-200 dark:border-white/12 bg-card grid place-items-center gap-3 p-16 text-center shadow-lg">
                 <Search className="size-10 text-muted-foreground" />
-                <h2 className="font-display text-xl font-bold">No products match specified criteria</h2>
+                <h2 className="font-display text-xl font-bold">
+                  No products match specified criteria
+                </h2>
                 <p className="text-xs text-muted-foreground max-w-sm">
-                  Try clearing your search keyword, adjusting the price ceiling, or selecting "All Products".
+                  Try clearing your search keyword, adjusting the price ceiling, or selecting "All
+                  Products".
                 </p>
                 <Button
                   onClick={clearAllFilters}
@@ -493,8 +519,16 @@ function CheckRow({
 }) {
   return (
     <div className="flex items-center gap-2.5 group cursor-pointer" onClick={onChange}>
-      <Checkbox id={id} checked={checked} onCheckedChange={onChange} className="size-4 rounded-md" />
-      <Label htmlFor={id} className="cursor-pointer text-xs font-semibold text-foreground/80 group-hover:text-emerald-500 transition-colors">
+      <Checkbox
+        id={id}
+        checked={checked}
+        onCheckedChange={onChange}
+        className="size-4 rounded-md"
+      />
+      <Label
+        htmlFor={id}
+        className="cursor-pointer text-xs font-semibold text-foreground/80 group-hover:text-emerald-500 transition-colors"
+      >
         {label}
       </Label>
     </div>

@@ -1,6 +1,11 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../lib/auth";
+import { Navbar } from "@/components/site/Navbar";
+import { Footer } from "@/components/site/Footer";
+import { User, ShieldCheck, Zap } from "lucide-react";
+import solarFarmImg from "@/assets/banner-solar-farm.webp";
+import heroPortalBg from "@/assets/hero-portal-bg.webp";
 
 export const Route = createFileRoute("/_protected")({
   component: ProtectedLayout,
@@ -23,18 +28,62 @@ function ProtectedLayout() {
 
   if (!isMounted || !isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center pt-24 text-white">
-        Loading...
+      <div className="min-h-dvh flex items-center justify-center bg-background text-foreground">
+        <div className="flex items-center gap-3 text-sm font-bold">
+          <div className="size-5 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
+          <span>Authenticating Session...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="pt-32 min-h-screen bg-slate-900 pb-16">
-      <div className="max-w-7xl mx-auto px-4 text-white">
-        <h1 className="text-3xl font-bold mb-8">Welcome, {user?.name}</h1>
-        <Outlet />
-      </div>
+    <div className="min-h-dvh flex flex-col bg-background text-foreground">
+      <Navbar />
+
+      <main className="flex-1 pb-20">
+        {/* ── HERO BANNER FOR PROTECTED PORTAL ── */}
+        <section className="relative overflow-hidden bg-[#041a12] pt-28 pb-12 sm:pt-36 sm:pb-16 text-white border-b border-emerald-950 mb-10">
+          <img
+            src={heroPortalBg}
+            alt="OMSUN Portal Background"
+            decoding="async"
+            className="absolute inset-0 size-full object-cover object-center pointer-events-none opacity-60"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#03150e]/90 via-[#03150e]/70 to-[#03150e]/85" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#03150e]/40 via-transparent to-[#041a12]" />
+
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#03C987]/30 bg-[#03C987]/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#03C987] mb-3">
+                  <User className="size-3.5" />
+                  <span>Customer Portal & Dashboard</span>
+                </span>
+                <h1 className="font-display text-3xl font-extrabold sm:text-4xl text-white">
+                  Welcome back, {user?.name}
+                </h1>
+                <p className="mt-1 text-xs text-slate-300 font-medium">
+                  Manage your solar orders, warranty certificates, and NEA net-metering status.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-xs font-extrabold text-[#03C987] shadow-sm">
+                  <ShieldCheck className="size-4 text-[#03C987]" />
+                  <span>Verified Customer Account</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <Outlet />
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }

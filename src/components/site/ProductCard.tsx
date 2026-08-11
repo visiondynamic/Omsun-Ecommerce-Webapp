@@ -16,12 +16,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatNPR, type Product } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
@@ -76,7 +71,10 @@ export function ProductCard({
               return (
                 <span
                   key={b}
-                  className={cn("rounded-lg px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm", badgeBg)}
+                  className={cn(
+                    "rounded-lg px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm",
+                    badgeBg,
+                  )}
                 >
                   {b}
                 </span>
@@ -142,11 +140,21 @@ export function ProductCard({
 
             {/* Price & Discount Row (OMSUN Theme) */}
             <div className="mt-2 flex flex-wrap items-baseline gap-1.5">
-              <span className={cn("font-display text-sm sm:text-base font-extrabold", isLight ? "text-emerald-700" : "text-emerald-400")}>
+              <span
+                className={cn(
+                  "font-display text-sm sm:text-base font-extrabold",
+                  isLight ? "text-emerald-700" : "text-emerald-400",
+                )}
+              >
                 {formatNPR(product.price)}
               </span>
               {product.compareAt ? (
-                <span className={cn("text-[11px] line-through font-mono", isLight ? "text-slate-400" : "text-white/40")}>
+                <span
+                  className={cn(
+                    "text-[11px] line-through font-mono",
+                    isLight ? "text-slate-400" : "text-white/40",
+                  )}
+                >
                   {formatNPR(product.compareAt)}
                 </span>
               ) : null}
@@ -278,7 +286,10 @@ export function ProductCard({
                     "Built for High-Altitude & Monsoonal Conditions",
                     "Nepal Grid Net-Metering Paperwork Included",
                   ].map((h) => (
-                    <div key={h} className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-emerald-300">
+                    <div
+                      key={h}
+                      className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-emerald-300"
+                    >
                       <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
                       <span>{h}</span>
                     </div>
@@ -301,9 +312,7 @@ export function ProductCard({
                     >
                       <Minus className="size-3.5" />
                     </button>
-                    <span className="w-10 text-center font-mono text-sm font-bold">
-                      {quantity}
-                    </span>
+                    <span className="w-10 text-center font-mono text-sm font-bold">{quantity}</span>
                     <button
                       type="button"
                       disabled={quantity >= (product.stock || 1)}

@@ -1,33 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Minus,
-  Plus,
-  ShieldCheck,
-  ShoppingCart,
-  Trash2,
-  Truck,
-} from "lucide-react";
+import { ArrowRight, Minus, Plus, ShieldCheck, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { formatNPR } from "@/lib/products";
 
 export function CartDrawer() {
-  const {
-    cart,
-    isCartOpen,
-    setIsCartOpen,
-    updateQuantity,
-    removeFromCart,
-    subtotal,
-    totalItems,
-  } = useCart();
+  const { cart, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart, subtotal, totalItems } =
+    useCart();
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
@@ -58,7 +38,8 @@ export function CartDrawer() {
               <div className="space-y-1">
                 <h3 className="font-display text-lg font-bold text-white">Your cart is empty</h3>
                 <p className="text-xs text-white/60 max-w-xs">
-                  Browse our certified solar panels, hybrid inverters, and battery storage solutions.
+                  Browse our certified solar panels, hybrid inverters, and battery storage
+                  solutions.
                 </p>
               </div>
               <Button
@@ -77,11 +58,7 @@ export function CartDrawer() {
               >
                 {/* Thumbnail */}
                 <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-black/40 border border-white/10">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="size-full object-cover"
-                  />
+                  <img src={product.image} alt={product.name} className="size-full object-cover" />
                 </div>
 
                 {/* Details */}
@@ -171,7 +148,7 @@ export function CartDrawer() {
                 onClick={() => setIsCartOpen(false)}
                 className="h-12 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 font-bold text-xs text-white shadow-lg hover:from-emerald-400 hover:to-teal-500"
               >
-                <Link to="/protected/checkout" className="flex items-center justify-center gap-2">
+                <Link to="/checkout" className="flex items-center justify-center gap-2">
                   <span>Proceed to Checkout</span>
                   <ArrowRight className="size-4" />
                 </Link>

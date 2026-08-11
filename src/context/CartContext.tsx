@@ -77,9 +77,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const existingIndex = prev.findIndex((item) => item.product.id === product.id);
       if (existingIndex > -1) {
         const updated = [...prev];
-        const newQty = updated[existingIndex].quantity + quantity;
+        const item = updated[existingIndex];
+        if (!item) return prev;
+        const newQty = item.quantity + quantity;
         updated[existingIndex] = {
-          ...updated[existingIndex],
+          ...item,
           quantity: Math.min(newQty, product.stock || 99),
         };
         return updated;
@@ -112,7 +114,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     // User is logged in -> Add & redirect to Checkout
     addToCart(product, quantity, false);
-    window.location.href = "/protected/checkout";
+    window.location.href = "/checkout";
   };
 
   const removeFromCart = (productId: string) => {
@@ -126,9 +128,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     setCart((prev) =>
-      prev.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item,
-      ),
+      prev.map((item) => (item.product.id === productId ? { ...item, quantity } : item)),
     );
   };
 

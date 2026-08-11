@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import omsunLogo from "@/assets/Omsun Nepal logo-WA0006.webp";
 
 const columns = [
@@ -43,10 +44,10 @@ const columns = [
     title: "Company & Trust",
     items: [
       { label: "Why OMSUN", to: "/why-omsun" },
+      { label: "Contact Us", to: "/contact" },
       { label: "Case Studies & Projects", to: "/projects" },
-      { label: "Warranty & Support", to: "/why-omsun" },
-      { label: "Central Kathmandu Hub", to: "/why-omsun" },
-      { label: "Careers & Integration", to: "/why-omsun" },
+      { label: "Central Kathmandu Hub", to: "/contact" },
+      { label: "Warranty & Support", to: "/contact" },
     ],
   },
 ];
@@ -58,7 +59,7 @@ export function Footer() {
       <div className="pointer-events-none absolute -top-40 left-1/4 size-[500px] rounded-full bg-white/15 blur-[130px]" />
       <div className="pointer-events-none absolute bottom-0 right-0 size-[400px] rounded-full bg-[#0A2E20]/10 blur-[120px]" />
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 pt-16 pb-12">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 pt-16 pb-28 lg:pb-12">
         {/* ── TOP NEWSLETTER BANNER (DEEP NAVY ON ELECTRIC MINT GREEN) ── */}
         <div className="rounded-3xl border border-[#0A2E20] bg-[#0A2E20] p-8 sm:p-10 shadow-2xl mb-16 flex flex-col lg:flex-row items-center justify-between gap-8 text-white">
           <div className="max-w-xl">
@@ -70,14 +71,18 @@ export function Footer() {
               Stay Informed on Solar Pricing & Tech
             </h3>
             <p className="mt-2 text-xs font-medium text-slate-300 leading-relaxed">
-              Subscribe to OMSUN's engineering newsletter for market tariff updates, new N-type module shipments, and net-metering policy changes.
+              Subscribe to OMSUN's engineering newsletter for market tariff updates, new N-type
+              module shipments, and net-metering policy changes.
             </p>
           </div>
 
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              alert("Thank you for subscribing to OMSUN Nepal updates!");
+              toast.success("Subscribed to OMSUN Nepal updates!", {
+                description:
+                  "Market tariff updates, N-type module shipments & net-metering policy changes.",
+              });
             }}
             className="flex flex-col sm:flex-row w-full sm:w-auto items-stretch sm:items-center gap-2.5 shrink-0 max-w-md"
           >
@@ -110,7 +115,9 @@ export function Footer() {
             </Link>
 
             <p className="text-xs font-semibold text-[#173226]/90 leading-relaxed max-w-md">
-              OMSUN Nepal Pvt. Ltd. is a premier EPC contractor, importer, and distributor of Tier-1 solar panels, hybrid inverters, LiFePO4 batteries, copper cables, and switchgear in Nepal.
+              OMSUN Nepal Pvt. Ltd. is a premier EPC contractor, importer, and distributor of Tier-1
+              solar panels, hybrid inverters, LiFePO4 batteries, copper cables, and switchgear in
+              Nepal.
             </p>
 
             <ul className="space-y-3 text-xs text-[#173226] font-bold">
@@ -127,7 +134,9 @@ export function Footer() {
                 </span>
                 <div className="flex flex-col">
                   <span>+977 1 5320 118 / +977 9801 234 567</span>
-                  <span className="text-[10px] text-[#173226]/80 font-medium">Mon–Fri: 9:00 AM – 6:00 PM</span>
+                  <span className="text-[10px] text-[#173226]/80 font-medium">
+                    Mon–Fri: 9:00 AM – 6:00 PM
+                  </span>
                 </div>
               </li>
 

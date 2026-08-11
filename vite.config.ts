@@ -39,7 +39,10 @@ export default defineConfig(async ({ command, mode }): Promise<UserConfig> => {
 
   if (command === "build") {
     const { nitro } = await import("nitro/vite");
-    const defaultPreset = process.env.VERCEL || process.env.VERCEL_ENV ? "vercel" : (process.env.NITRO_PRESET || "cloudflare-module");
+    const defaultPreset =
+      process.env["VERCEL"] || process.env["VERCEL_ENV"]
+        ? "vercel"
+        : process.env["NITRO_PRESET"] || "cloudflare-module";
     plugins.push(nitro({ defaultPreset }));
   }
 

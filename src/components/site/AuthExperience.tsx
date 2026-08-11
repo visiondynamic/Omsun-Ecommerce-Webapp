@@ -14,7 +14,9 @@ import {
   Building2,
 } from "lucide-react";
 import omsunLogo from "@/assets/Omsun Nepal logo-WA0006.webp";
-import welcomeChar from "@/assets/robot.png";
+import welcomeChar from "@/assets/robot.webp";
+import solarFarmImg from "@/assets/banner-solar-farm.webp";
+import heroPortalBg from "@/assets/hero-portal-bg.webp";
 
 /* ─── tiny field component ─── */
 function Field({
@@ -118,7 +120,13 @@ export default function AuthExperience() {
           className={`auth-slide-panel ${isLogin ? "auth-slide-panel--right" : "auth-slide-panel--left"}`}
         >
           {/* inner gradient layer */}
-          <div className="auth-slide-inner">
+          <div className="auth-slide-inner relative overflow-hidden">
+            <img
+              src={heroPortalBg}
+              alt="OMSUN Solar Background"
+              decoding="async"
+              className="absolute inset-0 size-full object-cover opacity-35 mix-blend-overlay pointer-events-none"
+            />
             {/* glow blobs */}
             <div className="auth-panel-blob auth-panel-blob--a" />
             <div className="auth-panel-blob auth-panel-blob--b" />
@@ -134,16 +142,21 @@ export default function AuthExperience() {
               </div>
             </div>
 
-            <div className="auth-panel-headline">
+            <div
+              key={isLogin ? "login" : "register"}
+              className="auth-panel-headline auth-content-in"
+            >
               <div className="auth-character-wrap">
-                <img src={welcomeChar} alt="Welcome" className="auth-character" />
+                <img src={welcomeChar} alt="Welcome" decoding="async" className="auth-character" />
               </div>
-              <h2 className="auth-panel-h2">{isLogin ? "Welcome Back!" : "Join OMSUN Nepal"}</h2>
-              <p className="auth-panel-p">
-                {isLogin
-                  ? "Sign in to access your solar dashboard, orders and engineering support."
-                  : "Nepal's premier clean-energy platform — solar, storage, switchgear & more."}
-              </p>
+              <div className="auth-panel-text">
+                <h2 className="auth-panel-h2">{isLogin ? "Welcome Back!" : "Join OMSUN Nepal"}</h2>
+                <p className="auth-panel-p">
+                  {isLogin
+                    ? "Sign in to access your solar dashboard, orders and engineering support."
+                    : "Nepal's premier clean-energy platform — solar, storage, switchgear & more."}
+                </p>
+              </div>
             </div>
 
             {/* Stats */}

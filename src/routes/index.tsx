@@ -196,6 +196,8 @@ function Home() {
                   <img
                     src={brand.logo}
                     alt={brand.name}
+                    loading="lazy"
+                    decoding="async"
                     className="h-8 sm:h-9 w-auto max-w-[120px] object-contain transition-all duration-300 group-hover:scale-105"
                   />
                 </div>
@@ -220,7 +222,8 @@ function Home() {
                   Shop by Engineering Category
                 </h2>
                 <p className="mt-4 text-base text-[#0A2E20]/90 font-medium leading-relaxed">
-                  Six certified product families engineered for Nepal's climate. Stocked in our central Kathmandu warehouse and dispatched nationwide with serialised warranties.
+                  Six certified product families engineered for Nepal's climate. Stocked in our
+                  central Kathmandu warehouse and dispatched nationwide with serialised warranties.
                 </p>
               </div>
               <Button
@@ -246,6 +249,8 @@ function Home() {
                     <img
                       src={c.image}
                       alt={c.name}
+                      loading="lazy"
+                      decoding="async"
                       className="absolute inset-0 size-full object-cover opacity-90 transition-transform duration-700 ease-out group-hover:scale-110 group-hover:opacity-100"
                     />
                     {/* Subtle Dark Vignette for Text Readability (No White Overlay!) */}
@@ -311,7 +316,8 @@ function Home() {
                   Featured Power Systems
                 </h2>
                 <p className="mt-3 text-sm text-[#475569] font-medium">
-                  Top-tier monocrystalline solar modules, hybrid string inverters, and high-density LiFePO4 energy storage.
+                  Top-tier monocrystalline solar modules, hybrid string inverters, and high-density
+                  LiFePO4 energy storage.
                 </p>
               </div>
               <Button
@@ -351,7 +357,8 @@ function Home() {
                     </h2>
 
                     <p className="mt-4 text-sm text-[#475569] leading-relaxed">
-                      Field-proven across monsoon humidity and high-altitude Himalayan winters. Every system ships with serialised warranty cards and local technical support.
+                      Field-proven across monsoon humidity and high-altitude Himalayan winters.
+                      Every system ships with serialised warranty cards and local technical support.
                     </p>
 
                     <div className="mt-8 space-y-3 border-t border-[#03C987]/30 pt-6">
@@ -360,7 +367,10 @@ function Home() {
                         "48-Hour Kathmandu Warehouse Dispatch",
                         "Full Nepal Net-Metering Paperwork Support",
                       ].map((h) => (
-                        <div key={h} className="flex items-center gap-2.5 text-xs font-bold text-[#0A2E20]">
+                        <div
+                          key={h}
+                          className="flex items-center gap-2.5 text-xs font-bold text-[#0A2E20]"
+                        >
                           <CheckCircle2 className="size-4 text-[#03C987] shrink-0" />
                           <span>{h}</span>
                         </div>
@@ -483,7 +493,9 @@ function Home() {
                     </div>
                     <div className="mt-6 pt-4 border-t border-[#43B987]/25 flex items-center justify-between">
                       <div>
-                        <div className="font-bold text-sm font-display text-[#173226]">{t.name}</div>
+                        <div className="font-bold text-sm font-display text-[#173226]">
+                          {t.name}
+                        </div>
                         <div className="text-xs font-semibold text-[#43B987]">{t.role}</div>
                       </div>
                       <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#475569] bg-white px-2.5 py-1 rounded-full border border-[#43B987]/30">
@@ -516,7 +528,8 @@ function Home() {
                 </h2>
 
                 <p className="mt-4 max-w-xl mx-auto text-sm text-[#0A2E20]/90 font-medium leading-relaxed">
-                  Get a free technical site survey, 3D shadow analysis, and financial payback proposal from OMSUN's licensed engineering team in Nepal.
+                  Get a free technical site survey, 3D shadow analysis, and financial payback
+                  proposal from OMSUN's licensed engineering team in Nepal.
                 </p>
 
                 <div className="mt-8 flex flex-wrap justify-center items-center gap-4">
