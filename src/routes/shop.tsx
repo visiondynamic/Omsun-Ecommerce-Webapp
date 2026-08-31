@@ -11,6 +11,7 @@ import {
   PanelsTopLeft,
   Rows3,
   Search,
+  ShieldCheck,
   SlidersHorizontal,
   Sun,
   X,
@@ -151,13 +152,18 @@ function Shop() {
     setSelectedSubcategory(null);
   };
 
-  const selectCategoryCard = (categoryKey: string, subcategoryKey: string | null = null) => {
+  const selectCategoryCard = (categoryKey: string) => {
     if (categoryKey === "All") {
       setCats([]);
       setSelectedSubcategory(null);
     } else {
-      setCats([categoryKey]);
-      setSelectedSubcategory(subcategoryKey);
+      if (cats.length === 1 && cats[0] === categoryKey) {
+        setCats([]);
+        setSelectedSubcategory(null);
+      } else {
+        setCats([categoryKey]);
+        setSelectedSubcategory(null);
+      }
     }
   };
 
@@ -174,72 +180,56 @@ function Shop() {
     {
       name: "All Products",
       categoryKey: "All",
-      subcategoryKey: null,
       icon: LayoutGrid,
       count: allProducts.length,
       image: null,
       badge: "Full Catalog",
-      tag: "All 32 Items",
+      tag: "All Equipment",
     },
     {
-      name: "Single Phase Servo",
+      name: "Stabilizer",
       categoryKey: "Stabilizer",
-      subcategoryKey: "Servo Stabilizer",
       icon: Gauge,
-      count: allProducts.filter((p) => p.subcategory === "Servo Stabilizer").length,
+      count: allProducts.filter((p) => p.category === "Stabilizer").length,
       image: switchgearImg,
-      badge: "OMSUN MTER/MSER",
-      tag: "1kVA – 15kVA (1:1)",
+      badge: "Voltage Control",
+      tag: "Servo, AVR & Industrial",
     },
     {
-      name: "Three Phase Servo",
-      categoryKey: "Stabilizer",
-      subcategoryKey: "Three Phase Servo Stabilizer",
-      icon: Gauge,
-      count: allProducts.filter((p) => p.subcategory === "Three Phase Servo Stabilizer").length,
-      image: switchgearImg,
-      badge: "OMSUN 3-Phase",
-      tag: "10kVA & 15kVA (3:3)",
-    },
-    {
-      name: "Green Volt Relay AVR",
-      categoryKey: "Stabilizer",
-      subcategoryKey: "Relay Based Stabilizer / AVR",
-      icon: Zap,
-      count: allProducts.filter((p) => p.subcategory === "Relay Based Stabilizer / AVR").length,
-      image: switchgearImg,
-      badge: "Green Volt",
-      tag: "1kVA – 5kVA (90V/110V)",
-    },
-    {
-      name: "Oil Cooled Servo",
-      categoryKey: "Stabilizer",
-      subcategoryKey: "Oil Cooled Servo Stabilizer",
-      icon: Gauge,
-      count: allProducts.filter((p) => p.subcategory === "Oil Cooled Servo Stabilizer").length,
-      image: switchgearImg,
-      badge: "OMSUN Industrial",
-      tag: "30kVA – 150kVA (300V–470V)",
-    },
-    {
-      name: "Online LF UPS",
+      name: "UPS",
       categoryKey: "UPS",
-      subcategoryKey: "Online LF UPS",
       icon: Zap,
-      count: allProducts.filter((p) => p.subcategory === "Online LF UPS").length,
+      count: allProducts.filter((p) => p.category === "UPS").length,
       image: inverterImg,
-      badge: "OMSUN LF Isolation",
-      tag: "5kVA – 20kVA (1:1 / 3:1)",
+      badge: "Power Backup",
+      tag: "Online LF & Industrial",
     },
     {
-      name: "Power-One Online UPS",
-      categoryKey: "UPS",
-      subcategoryKey: "Industrial Online UPS",
-      icon: Zap,
-      count: allProducts.filter((p) => p.subcategory === "Industrial Online UPS").length,
-      image: inverterImg,
-      badge: "Power-One Enterprise",
-      tag: "10kVA – 30kVA (3:1 / 3:3)",
+      name: "Solar",
+      categoryKey: "Solar",
+      icon: Sun,
+      count: allProducts.filter((p) => p.category === "Solar").length,
+      image: panelImg,
+      badge: "Renewable PV",
+      tag: "Panels, Inverters & Kits",
+    },
+    {
+      name: "Battery",
+      categoryKey: "Battery",
+      icon: BatteryCharging,
+      count: allProducts.filter((p) => p.category === "Battery").length,
+      image: batteryImg,
+      badge: "Energy Storage",
+      tag: "LiFePO4 & Tubular",
+    },
+    {
+      name: "Security",
+      categoryKey: "Security",
+      icon: ShieldCheck,
+      count: allProducts.filter((p) => p.category === "Security").length,
+      image: lightImg,
+      badge: "Surveillance",
+      tag: "4K PoE & Solar PTZ",
     },
   ];
 
@@ -249,20 +239,49 @@ function Shop() {
       const match = PRODUCT_TAXONOMY.find((t) => t.name === cats[0]);
       return match ? match.subcategories : [];
     }
+    if (cats.length > 1) {
+      return PRODUCT_TAXONOMY.filter((t) => cats.includes(t.name)).flatMap((t) => t.subcategories);
+    }
     return PRODUCT_TAXONOMY.flatMap((t) => t.subcategories);
   }, [cats]);
 
-  const results = useMemo(() => {
-    const filtered = allProducts.filter(
-      (p) =>
-        (!query ||
-          `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand}`.toLowerCase().includes(query.toLowerCase())) &&
-        (cats.length === 0 || cats.includes(p.category)) &&
-        (!selectedSubcategory || p.subcategory === selectedSubcategory) &&
-        (brands.length === 0 || brands.includes(p.brand)) &&
-        p.price <= maxPrice &&
-        (!inStockOnly || p.stock > 0),
+  const activeFilterCount = useMemo(() => {
+    return (
+      cats.length +
+      brands.length +
+      (selectedSubcategory ? 1 : 0) +
+      (inStockOnly ? 1 : 0) +
+      (query.trim() ? 1 : 0) +
+      (maxPrice < 1500000 ? 1 : 0)
     );
+  }, [cats, brands, selectedSubcategory, inStockOnly, query, maxPrice]);
+
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = allProducts.filter((p) => {
+      if (q) {
+        const specsStr = (p.specs || []).map((s) => `${s.label} ${s.value}`).join(" ");
+        const corpus = `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand} ${p.tagline || ""} ${specsStr}`.toLowerCase();
+        if (!corpus.includes(q)) return false;
+      }
+      if (cats.length > 0 && !cats.includes(p.category)) {
+        return false;
+      }
+      if (selectedSubcategory && p.subcategory !== selectedSubcategory) {
+        return false;
+      }
+      if (brands.length > 0 && !brands.includes(p.brand)) {
+        return false;
+      }
+      if (p.price > maxPrice) {
+        return false;
+      }
+      if (inStockOnly && p.stock <= 0) {
+        return false;
+      }
+      return true;
+    });
+
     if (sort === "price-asc") return [...filtered].sort((a, b) => a.price - b.price);
     if (sort === "price-desc") return [...filtered].sort((a, b) => b.price - a.price);
     if (sort === "rating") return [...filtered].sort((a, b) => b.rating - a.rating);
@@ -354,9 +373,9 @@ function Shop() {
                 <SlidersHorizontal className="size-3.5 text-emerald-500" />
                 <span>Product Categories</span>
               </span>
-              {(cats.length > 0 || brands.length > 0 || query || inStockOnly) && (
+              {activeFilterCount > 0 && (
                 <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
-                  Filters Active
+                  {activeFilterCount} {activeFilterCount === 1 ? "Filter Active" : "Filters Active"}
                 </span>
               )}
             </div>
@@ -387,15 +406,13 @@ function Shop() {
             {categoryCards.map((card) => {
               const isSelected =
                 card.categoryKey === "All"
-                  ? cats.length === 0 && selectedSubcategory === null
-                  : card.subcategoryKey
-                  ? cats.includes(card.categoryKey) && selectedSubcategory === card.subcategoryKey
-                  : cats.includes(card.categoryKey) && selectedSubcategory === null;
+                  ? cats.length === 0
+                  : cats.length === 1 && cats[0] === card.categoryKey;
 
               return (
                 <button
                   key={card.name}
-                  onClick={() => selectCategoryCard(card.categoryKey, card.subcategoryKey)}
+                  onClick={() => selectCategoryCard(card.categoryKey)}
                   className={cn(
                     "group relative shrink-0 snap-start flex items-center gap-3.5 rounded-2xl border p-3.5 min-w-[240px] transition-all duration-300 overflow-hidden text-left shadow-lg cursor-pointer",
                     isSelected
@@ -454,11 +471,11 @@ function Shop() {
             })}
           </div>
 
-          {/* ── Subcategory Quick Chips ── */}
-          {activeSubcategories.length > 0 && (
-            <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+          {/* ── Subcategory Quick Chips (Dynamic based on selected category) ── */}
+          {cats.length === 1 && activeSubcategories.length > 0 && (
+            <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar animate-in fade-in duration-200">
               <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap mr-1">
-                Subcategories:
+                {cats[0]} Types:
               </span>
               <button
                 onClick={() => setSelectedSubcategory(null)}
@@ -469,7 +486,7 @@ function Shop() {
                     : "bg-card text-muted-foreground border-white/10 hover:border-emerald-500/40 hover:text-white",
                 )}
               >
-                All Subcategories
+                All {cats[0]}
               </button>
               {activeSubcategories.map((sub) => {
                 const isSubSelected = selectedSubcategory === sub;
@@ -506,7 +523,7 @@ function Shop() {
                 <span>{mobileFilterOpen ? "Hide Filter Engine" : "Filter Products & Brands"}</span>
               </span>
               <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-extrabold">
-                {cats.length + brands.length + (inStockOnly ? 1 : 0) + (query ? 1 : 0)} Active
+                {activeFilterCount} Active
               </span>
             </Button>
           </div>
@@ -523,10 +540,10 @@ function Shop() {
                 <SlidersHorizontal className="size-4 text-emerald-500" />
                 <span>Filter Engine</span>
               </span>
-              {(cats.length > 0 || brands.length > 0 || query || inStockOnly) && (
+              {activeFilterCount > 0 && (
                 <button
                   onClick={clearAllFilters}
-                  className="text-[11px] font-bold text-emerald-500 hover:underline"
+                  className="text-[11px] font-bold text-emerald-500 hover:underline cursor-pointer"
                 >
                   Reset All
                 </button>
@@ -553,7 +570,7 @@ function Shop() {
             </div>
 
             {/* Category Checkbox List */}
-            <FilterGroup title="Product Families">
+            <FilterGroup title="Product Categories">
               {CATEGORIES.map((c) => (
                 <CheckRow
                   key={c}
@@ -642,8 +659,19 @@ function Shop() {
               </div>
 
               {/* Active Filter Chips */}
-              {(selectedSubcategory || cats.length > 0 || brands.length > 0 || query) && (
+              {activeFilterCount > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                  {query && (
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-1 border border-emerald-500/20">
+                      Search: &ldquo;{query}&rdquo;
+                      <button
+                        onClick={() => setQuery("")}
+                        className="hover:text-emerald-800 dark:hover:text-emerald-200 cursor-pointer font-black"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
                   {cats.map((c) => (
                     <span
                       key={c}
@@ -655,7 +683,7 @@ function Shop() {
                           setCats((prev) => prev.filter((item) => item !== c));
                           setSelectedSubcategory(null);
                         }}
-                        className="hover:text-emerald-800 dark:hover:text-emerald-200"
+                        className="hover:text-emerald-800 dark:hover:text-emerald-200 cursor-pointer font-black"
                       >
                         ×
                       </button>
@@ -666,7 +694,7 @@ function Shop() {
                       {selectedSubcategory}
                       <button
                         onClick={() => setSelectedSubcategory(null)}
-                        className="hover:opacity-80 font-black ml-1"
+                        className="hover:opacity-80 font-black ml-1 cursor-pointer"
                       >
                         ×
                       </button>
@@ -680,15 +708,37 @@ function Shop() {
                       {b}
                       <button
                         onClick={() => setBrands((prev) => prev.filter((item) => item !== b))}
-                        className="hover:text-blue-800 dark:hover:text-blue-200"
+                        className="hover:text-blue-800 dark:hover:text-blue-200 cursor-pointer font-black"
                       >
                         ×
                       </button>
                     </span>
                   ))}
+                  {maxPrice < 1500000 && (
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-1 border border-amber-500/20">
+                      Under {formatNPR(maxPrice)}
+                      <button
+                        onClick={() => setMaxPrice(1500000)}
+                        className="hover:text-amber-800 dark:hover:text-amber-200 cursor-pointer font-black"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  {inStockOnly && (
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 font-bold px-2.5 py-1 border border-teal-500/20">
+                      In Stock Only
+                      <button
+                        onClick={() => setInStockOnly(false)}
+                        className="hover:text-teal-800 dark:hover:text-teal-200 cursor-pointer font-black"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
                   <button
                     onClick={clearAllFilters}
-                    className="text-xs font-bold text-rose-500 hover:underline px-2 py-1"
+                    className="text-xs font-bold text-rose-500 hover:underline px-2 py-1 cursor-pointer"
                   >
                     Clear All
                   </button>
@@ -759,16 +809,19 @@ function CheckRow({
   onChange: () => void;
 }) {
   return (
-    <div className="flex items-center gap-2.5 group cursor-pointer" onClick={onChange}>
+    <div
+      className="flex items-center gap-2.5 group cursor-pointer select-none py-0.5"
+      onClick={onChange}
+    >
       <Checkbox
         id={id}
         checked={checked}
-        onCheckedChange={onChange}
-        className="size-4 rounded-md"
+        tabIndex={-1}
+        className="size-4 rounded-md pointer-events-none transition-transform group-hover:scale-105"
       />
       <Label
         htmlFor={id}
-        className="cursor-pointer text-xs font-semibold text-foreground/80 group-hover:text-emerald-500 transition-colors"
+        className="cursor-pointer text-xs font-semibold text-foreground/80 group-hover:text-emerald-500 transition-colors pointer-events-none"
       >
         {label}
       </Label>

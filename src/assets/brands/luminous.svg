@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 90" fill="none">
+  <!-- Radiant Arc / Energy Glow -->
+  <g transform="translate(14, 18)">
+    <path d="M 6 42 A 28 28 0 0 1 52 16" stroke="#004D9D" stroke-width="6.5" stroke-linecap="round" fill="none" />
+    <path d="M 16 42 A 18 18 0 0 1 46 24" stroke="#F39200" stroke-width="4.5" stroke-linecap="round" fill="none" />
+    <circle cx="31" cy="31" r="5" fill="#F39200" />
+  </g>
+
+  <!-- Official LUMINOUS Wordmark -->
+  <text x="82" y="52" font-family="'Helvetica Neue', Arial, 'Inter', sans-serif" font-size="38" font-weight="900" fill="#004D9D" letter-spacing="1">
+    LUMINOUS
+  </text>
+  <text x="84" y="70" font-family="'Helvetica Neue', Arial, 'Inter', sans-serif" font-size="9" font-weight="700" fill="#6B7280" letter-spacing="2.5">
+    INDIA'S NO. 1 SOLAR &amp; POWER
+  </text>
+</svg>

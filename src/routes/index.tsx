@@ -58,54 +58,59 @@ export const Route = createFileRoute("/")({
 
 const categories = [
   {
-    name: "UPS Systems",
-    icon: Zap,
-    note: "Online, Offline & Line Interactive double-conversion systems",
-    tag: "Zero Switch Time",
-    specs: "DSP Controlled Pure Sine Wave Output",
-    badge: "1kVA – 200kVA Industrial",
-    color: "#10b981",
-    image: inverterImg,
-  },
-  {
     name: "Stabilizers",
+    categoryKey: "Stabilizer",
     icon: Gauge,
     note: "Precision servo, oil-cooled & digital automatic voltage regulators",
     tag: "±1% Output Precision",
     specs: "Copper Wound Motorized & Oil Immersed",
     badge: "1kVA – 500kVA 3-Phase",
-    color: "#6366f1",
+    color: "#10b981",
     image: switchgearImg,
   },
   {
-    name: "Security & CCTV",
-    icon: Lightbulb,
-    note: "4K Solar PTZ cameras, PoE surveillance kits & AI security",
-    tag: "Solar + 4G SIM Powered",
-    specs: "Full Color Night Vision & AI Motion Detection",
-    badge: "IP66 Heavy Weatherproof",
-    color: "#f59e0b",
-    image: lightImg,
+    name: "UPS Systems",
+    categoryKey: "UPS",
+    icon: Zap,
+    note: "Online, Offline & Line Interactive double-conversion systems",
+    tag: "Zero Switch Time",
+    specs: "DSP Controlled Pure Sine Wave Output",
+    badge: "1kVA – 200kVA Industrial",
+    color: "#3b82f6",
+    image: inverterImg,
   },
   {
     name: "Solar Energy",
+    categoryKey: "Solar",
     icon: Sun,
     note: "Tier-1 N-Type TOPCon panels & hybrid net-metering systems",
     tag: "NEA Net-Meter Approved",
     specs: "25-Year Linear Output Guarantee",
     badge: "580W N-Type Tier-1",
-    color: "#0ea5e9",
+    color: "#f59e0b",
     image: panelImg,
   },
   {
     name: "Battery Storage",
+    categoryKey: "Battery",
     icon: BatteryCharging,
     note: "LiFePO4 wall-mount & high-capacity tubular battery racks",
     tag: "6,000+ Deep Cycles",
     specs: "Sub-Zero Thermal Insulation & Smart BMS",
     badge: "10-Year Replacement Guarantee",
-    color: "#10b981",
+    color: "#06b6d4",
     image: batteryImg,
+  },
+  {
+    name: "Security & CCTV",
+    categoryKey: "Security",
+    icon: ShieldCheck,
+    note: "4K Solar PTZ cameras, PoE surveillance kits & AI security",
+    tag: "Solar + 4G SIM Powered",
+    specs: "Full Color Night Vision & AI Motion Detection",
+    badge: "IP66 Heavy Weatherproof",
+    color: "#8b5cf6",
+    image: lightImg,
   },
 ];
 
@@ -249,6 +254,7 @@ function Home() {
                 <Reveal key={c.name} delay={Math.min(i * 30, 90)}>
                   <Link
                     to="/shop"
+                    search={{ category: c.categoryKey }}
                     className="group relative flex flex-col justify-between overflow-hidden rounded-[24px] border border-white/40 bg-black/40 p-6 sm:p-8 shadow-xl transition-all duration-300 hover:border-white hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] hover:-translate-y-1 h-full min-h-[280px] sm:min-h-[310px]"
                   >
                     {/* Natural Category Image in 100% Full Color */}
