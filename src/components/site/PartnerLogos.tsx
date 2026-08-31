@@ -1,5 +1,5 @@
 import smartenLogo from "@/assets/brands/smarten.svg";
-import luminousLogo from "@/assets/brands/luminous.svg";
+import luminousLogo from "@/assets/brands/luminous.png";
 import dynaPlusLogo from "@/assets/brands/dyna-plus.png";
 import greenvoltLogo from "@/assets/brands/greenvolt.png";
 
