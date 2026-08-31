@@ -1,7 +1,7 @@
 import smartenLogo from "@/assets/brands/smarten.svg";
 import luminousLogo from "@/assets/brands/luminous.svg";
-import dynaPlusLogo from "@/assets/brands/dyna-plus.svg";
-import greenvoltLogo from "@/assets/brands/greenvolt.svg";
+import dynaPlusLogo from "@/assets/brands/dyna-plus.png";
+import greenvoltLogo from "@/assets/brands/greenvolt.png";
 
 export interface PartnerBrand {
   name: string;
