@@ -928,7 +928,9 @@ export async function setup() {
   // Purge obsolete products not in the active catalog
   const activeProductIds = products.map((p) => p.id);
   if (activeProductIds.length > 0) {
+    await conn.query("SET FOREIGN_KEY_CHECKS = 0");
     await conn.query("DELETE FROM products WHERE id NOT IN (?)", [activeProductIds]);
+    await conn.query("SET FOREIGN_KEY_CHECKS = 1");
   }
   console.log(`✓ Synchronized all ${products.length} official products and purged obsolete items!`);
 
