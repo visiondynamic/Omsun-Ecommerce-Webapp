@@ -20,11 +20,18 @@ if (!fs.existsSync(uploadsDir)) {
 // Auto-bootstrap MySQL schema & catalog seed on fresh databases (e.g. Railway)
 async function autoInitDatabase() {
   try {
-    const tables = await query("SHOW TABLES LIKE 'users'");
+    const tables = await query("SHOW TABLES LIKE 'products'");
     if (tables.length === 0) {
       console.log("[omsun-api] Database tables missing. Running automatic setup & seeding...");
       await setup();
       console.log("[omsun-api] Automatic setup & seeding completed!");
+    } else {
+      const rows = await query("SELECT COUNT(*) as count FROM products");
+      if (rows[0].count !== 32) {
+        console.log("[omsun-api] Upgrading catalog to official 32 products...");
+        await setup();
+        console.log("[omsun-api] Official 32 products synchronized!");
+      }
     }
   } catch (err) {
     console.log("[omsun-api] Auto database init check note:", err.message);
