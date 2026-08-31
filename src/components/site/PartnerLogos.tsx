@@ -1,11 +1,7 @@
-import schneiderLogo from "@/assets/brands/schneider.svg";
-import abbLogo from "@/assets/brands/abb.svg";
-import huaweiLogo from "@/assets/brands/huawei.svg";
-import longiLogo from "@/assets/brands/longi.svg";
-import growattLogo from "@/assets/brands/growatt.svg";
-import havellsLogo from "@/assets/brands/havells.svg";
-import siemensLogo from "@/assets/brands/siemens.svg";
-import jinkoLogo from "@/assets/brands/jinko.svg";
+import smartenLogo from "@/assets/brands/smarten.svg";
+import luminousLogo from "@/assets/brands/luminous.svg";
+import dynaPlusLogo from "@/assets/brands/dyna-plus.svg";
+import greenvoltLogo from "@/assets/brands/greenvolt.svg";
 
 export interface PartnerBrand {
   name: string;
@@ -13,12 +9,8 @@ export interface PartnerBrand {
 }
 
 export const partnerBrandLogos: PartnerBrand[] = [
-  { name: "Schneider Electric", logo: schneiderLogo },
-  { name: "ABB", logo: abbLogo },
-  { name: "Huawei", logo: huaweiLogo },
-  { name: "LONGi", logo: longiLogo },
-  { name: "Growatt", logo: growattLogo },
-  { name: "Havells", logo: havellsLogo },
-  { name: "Siemens", logo: siemensLogo },
-  { name: "Jinko Solar", logo: jinkoLogo },
+  { name: "Smarten — Fusion is the future", logo: smartenLogo },
+  { name: "Luminous", logo: luminousLogo },
+  { name: "Dyna Plus", logo: dynaPlusLogo },
+  { name: "GreenVolt Power India", logo: greenvoltLogo },
 ];

@@ -190,11 +190,11 @@ function Home() {
             Authorised distributor & integration partner
           </p>
           <div className="relative overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
-            <div className="animate-marquee flex w-max items-center gap-8 sm:gap-12 pr-8 sm:pr-12">
-              {[...partnerBrandLogos, ...partnerBrandLogos].map((brand, i) => (
+            <div className="animate-marquee flex w-max items-center gap-6 sm:gap-10 pr-6 sm:pr-10">
+              {[...partnerBrandLogos, ...partnerBrandLogos, ...partnerBrandLogos, ...partnerBrandLogos].map((brand, i) => (
                 <div
                   key={`${brand.name}-${i}`}
-                  className="group relative flex h-16 min-w-[140px] items-center justify-center rounded-2xl border border-[#43B987]/30 bg-white/95 px-6 py-2 shadow-xs transition-all duration-300 hover:border-[#43B987] hover:shadow-md hover:scale-105"
+                  className="group relative flex h-20 min-w-[190px] sm:min-w-[220px] items-center justify-center rounded-2xl border border-[#43B987]/30 bg-white/95 px-6 py-3 shadow-xs transition-all duration-300 hover:border-[#43B987] hover:shadow-md hover:scale-105"
                   title={brand.name}
                 >
                   <img
@@ -202,9 +202,9 @@ function Home() {
                     alt={brand.name}
                     loading="lazy"
                     decoding="async"
-                    width={120}
-                    height={36}
-                    className="h-8 sm:h-9 w-auto max-w-[120px] object-contain transition-all duration-300 group-hover:scale-105"
+                    width={180}
+                    height={48}
+                    className="h-9 sm:h-11 w-auto max-w-[170px] sm:max-w-[190px] object-contain transition-all duration-300 group-hover:scale-105"
                   />
                 </div>
               ))}
