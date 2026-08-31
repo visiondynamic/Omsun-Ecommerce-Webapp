@@ -25,6 +25,8 @@ interface ProductFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   productToEdit?: Product | null;
+  initialCategory?: string;
+  initialSubcategory?: string;
   onSaveProduct: (product: Product) => void;
 }
 
@@ -32,27 +34,34 @@ export function ProductFormModal({
   isOpen,
   onClose,
   productToEdit,
+  initialCategory,
+  initialSubcategory,
   onSaveProduct,
 }: ProductFormModalProps) {
-  const [formData, setFormData] = useState<Partial<Product> & { description?: string; badgesString?: string }>(() => ({
-    name: "",
-    tagline: "",
-    description: "",
-    category: CATEGORIES[0] || "UPS",
-    subcategory: "Online UPS",
-    brand: BRANDS[0] || "Power-One",
-    price: 65000,
-    compareAt: 72000,
-    stock: 25,
-    rating: 4.9,
-    image: "https://poweroneups.com/img/product/uhf1.png",
-    badges: ["Best Seller"],
-    badgesString: "Best Seller",
-    specs: [
-      { label: "Warranty", value: "2 Years Replacement" },
-      { label: "Topology", value: "True Double Conversion Online" },
-    ],
-  }));
+  const [formData, setFormData] = useState<Partial<Product> & { description?: string; badgesString?: string }>(() => {
+    const initCat = initialCategory && CATEGORIES.includes(initialCategory) ? initialCategory : (CATEGORIES[0] || "Stabilizer");
+    const initTax = PRODUCT_TAXONOMY.find((t) => t.name === initCat);
+    const initSub = initialSubcategory || (initTax?.subcategories[0] || "");
+    return {
+      name: "",
+      tagline: "",
+      description: "",
+      category: initCat,
+      subcategory: initSub,
+      brand: BRANDS[0] || "OMSUN",
+      price: 25000,
+      compareAt: 30000,
+      stock: 25,
+      rating: 4.9,
+      image: "",
+      badges: ["In Stock"],
+      badgesString: "In Stock",
+      specs: [
+        { label: "Warranty", value: "2 Years Replacement" },
+        { label: "Application", value: "Industrial & Commercial Power" },
+      ],
+    };
+  });
 
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -88,28 +97,31 @@ export function ProductFormModal({
         badgesString: productToEdit.badges?.join(", ") || "",
       });
     } else {
+      const initCat = initialCategory && CATEGORIES.includes(initialCategory) ? initialCategory : (CATEGORIES[0] || "Stabilizer");
+      const initTax = PRODUCT_TAXONOMY.find((t) => t.name === initCat);
+      const initSub = initialSubcategory || (initTax?.subcategories[0] || "");
       setFormData({
         id: `sku-${Date.now().toString(36)}`,
         name: "",
         tagline: "",
         description: "",
-        category: CATEGORIES[0] || "UPS",
-        subcategory: "Online UPS",
-        brand: BRANDS[0] || "Power-One",
-        price: 65000,
-        compareAt: 72000,
+        category: initCat,
+        subcategory: initSub,
+        brand: BRANDS[0] || "OMSUN",
+        price: 25000,
+        compareAt: 30000,
         stock: 30,
         rating: 4.9,
-        image: "https://poweroneups.com/img/product/uhf1.png",
-        badges: ["Best Seller"],
-        badgesString: "Best Seller",
+        image: "",
+        badges: ["In Stock"],
+        badgesString: "In Stock",
         specs: [
           { label: "Warranty", value: "2 Years Replacement" },
-          { label: "Topology", value: "True Double Conversion Online" },
+          { label: "Application", value: "Industrial & Commercial Power" },
         ],
       });
     }
-  }, [productToEdit, isOpen]);
+  }, [productToEdit, isOpen, initialCategory, initialSubcategory]);
 
   const handleAddSpec = () => {
     setFormData((prev) => ({

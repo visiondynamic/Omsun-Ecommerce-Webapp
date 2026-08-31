@@ -60,6 +60,7 @@ import {
   formatNPR,
   CATEGORIES,
   BRANDS,
+  PRODUCT_TAXONOMY,
   mapApiProductToProduct,
 } from "@/lib/products";
 import { api } from "@/lib/api";
@@ -211,6 +212,10 @@ function AdminDashboardPage() {
   // Search & Filter States
   const [productQuery, setProductQuery] = useState("");
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("All");
+  const [selectedSubcategoryFilter, setSelectedSubcategoryFilter] = useState("All");
+  const [selectedBrandFilter, setSelectedBrandFilter] = useState("All");
+  const [targetCategoryForAdd, setTargetCategoryForAdd] = useState<string>("Stabilizer");
+  const [targetSubcategoryForAdd, setTargetSubcategoryForAdd] = useState<string>("Servo Stabilizer");
   const [orderQuery, setOrderQuery] = useState("");
   const [selectedOrderStatusFilter, setSelectedOrderStatusFilter] = useState("All");
 
@@ -845,42 +850,172 @@ function AdminDashboardPage() {
           {/* ════════════════════════════════════════════════════════════ */}
           {activeSection === "products" && (
             <div className="space-y-5 sm:space-y-6">
-              {/* Product Header & Filters Bar */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#0c241c] p-4 sm:p-4.5 rounded-3xl border border-[#E2EDE7] dark:border-white/10 shadow-sm">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
-                    <Input
-                      placeholder="Search hardware title or SKU..."
-                      value={productQuery}
-                      onChange={(e) => setProductQuery(e.target.value)}
-                      className="pl-9 rounded-xl text-xs"
-                    />
+              {/* Product Header & Multi-Filter Bar */}
+              <div className="bg-white dark:bg-[#0c241c] p-4 sm:p-5 rounded-3xl border border-[#E2EDE7] dark:border-white/10 shadow-sm space-y-3.5">
+                <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
+                    {/* Search Input */}
+                    <div className="relative flex-1 min-w-[200px]">
+                      <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+                      <Input
+                        placeholder="Search title, SKU, model, specs..."
+                        value={productQuery}
+                        onChange={(e) => setProductQuery(e.target.value)}
+                        className="pl-9 rounded-xl text-xs bg-slate-50/50 dark:bg-white/5"
+                      />
+                    </div>
+
+                    {/* Category Filter */}
+                    <select
+                      value={selectedCategoryFilter}
+                      onChange={(e) => {
+                        setSelectedCategoryFilter(e.target.value);
+                        setSelectedSubcategoryFilter("All");
+                      }}
+                      className="h-9 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0c241c] text-xs font-bold text-[#173226] dark:text-slate-200 shadow-xs cursor-pointer"
+                    >
+                      <option value="All">All Categories ({effectiveProducts.length})</option>
+                      {CATEGORIES.map((c) => {
+                        const count = effectiveProducts.filter((p) => p.category === c).length;
+                        return (
+                          <option key={c} value={c}>
+                            {c} ({count})
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    {/* Subcategory Filter */}
+                    <select
+                      value={selectedSubcategoryFilter}
+                      onChange={(e) => setSelectedSubcategoryFilter(e.target.value)}
+                      className="h-9 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0c241c] text-xs font-bold text-[#173226] dark:text-slate-200 shadow-xs cursor-pointer"
+                    >
+                      <option value="All">All Subcategories</option>
+                      {(selectedCategoryFilter === "All"
+                        ? PRODUCT_TAXONOMY.flatMap((t) => t.subcategories)
+                        : PRODUCT_TAXONOMY.find((t) => t.name === selectedCategoryFilter)?.subcategories || []
+                      ).map((sub) => {
+                        const count = effectiveProducts.filter((p) => p.subcategory === sub).length;
+                        return (
+                          <option key={sub} value={sub}>
+                            {sub} ({count})
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    {/* Brand Filter */}
+                    <select
+                      value={selectedBrandFilter}
+                      onChange={(e) => setSelectedBrandFilter(e.target.value)}
+                      className="h-9 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0c241c] text-xs font-bold text-[#173226] dark:text-slate-200 shadow-xs cursor-pointer"
+                    >
+                      <option value="All">All Brands</option>
+                      {BRANDS.map((b) => {
+                        const count = effectiveProducts.filter((p) => p.brand === b).length;
+                        return (
+                          <option key={b} value={b}>
+                            {b} ({count})
+                          </option>
+                        );
+                      })}
+                    </select>
                   </div>
 
-                  <select
-                    value={selectedCategoryFilter}
-                    onChange={(e) => setSelectedCategoryFilter(e.target.value)}
-                    className="h-9 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-xs font-bold text-[#173226] dark:text-slate-200"
+                  {/* Add Product Button */}
+                  <Button
+                    onClick={() => {
+                      setSelectedProductForEdit(null);
+                      setTargetCategoryForAdd(selectedCategoryFilter !== "All" ? selectedCategoryFilter : "Stabilizer");
+                      setTargetSubcategoryForAdd(selectedSubcategoryFilter !== "All" ? selectedSubcategoryFilter : "Servo Stabilizer");
+                      setIsProductModalOpen(true);
+                    }}
+                    className="h-9 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white font-extrabold text-xs gap-1.5 cursor-pointer shadow-md shadow-emerald-500/20 hover:scale-105 transition-transform shrink-0"
                   >
-                    <option value="All">All Categories ({effectiveProducts.length})</option>
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
+                    <Plus className="size-4" /> Add Hardware SKU
+                  </Button>
                 </div>
 
-                <Button
-                  onClick={() => {
-                    setSelectedProductForEdit(null);
-                    setIsProductModalOpen(true);
-                  }}
-                  className="h-9 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white font-extrabold text-xs gap-1.5 cursor-pointer shadow-md shadow-emerald-500/20 hover:scale-105 transition-transform"
-                >
-                  <Plus className="size-4" /> Add Hardware SKU
-                </Button>
+                {/* Filter Status & Active Pills */}
+                <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-white/10 text-xs">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-slate-400 font-semibold text-[11px]">
+                      Showing{" "}
+                      <strong className="text-[#173226] dark:text-white font-mono">
+                        {
+                          effectiveProducts.filter(
+                            (p) =>
+                              (selectedCategoryFilter === "All" || p.category === selectedCategoryFilter) &&
+                              (selectedSubcategoryFilter === "All" || p.subcategory === selectedSubcategoryFilter) &&
+                              (selectedBrandFilter === "All" || p.brand === selectedBrandFilter) &&
+                              (!productQuery ||
+                                `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand} ${p.id}`
+                                  .toLowerCase()
+                                  .includes(productQuery.toLowerCase())),
+                          ).length
+                        }
+                      </strong>{" "}
+                      of {effectiveProducts.length} items
+                    </span>
+
+                    {selectedCategoryFilter !== "All" && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#38B46A] dark:bg-emerald-950/40 border border-[#38B46A]/30 text-[10px] font-bold">
+                        Category: {selectedCategoryFilter}
+                        <button
+                          onClick={() => {
+                            setSelectedCategoryFilter("All");
+                            setSelectedSubcategoryFilter("All");
+                          }}
+                          className="hover:text-red-500 font-extrabold cursor-pointer ml-0.5"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+
+                    {selectedSubcategoryFilter !== "All" && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sky-50 text-[#2F80ED] dark:bg-sky-950/40 border border-[#2F80ED]/30 text-[10px] font-bold">
+                        Subcategory: {selectedSubcategoryFilter}
+                        <button
+                          onClick={() => setSelectedSubcategoryFilter("All")}
+                          className="hover:text-red-500 font-extrabold cursor-pointer ml-0.5"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+
+                    {selectedBrandFilter !== "All" && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/40 border border-purple-300 text-[10px] font-bold">
+                        Brand: {selectedBrandFilter}
+                        <button
+                          onClick={() => setSelectedBrandFilter("All")}
+                          className="hover:text-red-500 font-extrabold cursor-pointer ml-0.5"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                  </div>
+
+                  {(selectedCategoryFilter !== "All" ||
+                    selectedSubcategoryFilter !== "All" ||
+                    selectedBrandFilter !== "All" ||
+                    productQuery) && (
+                    <button
+                      onClick={() => {
+                        setSelectedCategoryFilter("All");
+                        setSelectedSubcategoryFilter("All");
+                        setSelectedBrandFilter("All");
+                        setProductQuery("");
+                      }}
+                      className="text-[11px] font-bold text-red-500 hover:underline cursor-pointer"
+                    >
+                      Reset All Filters
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Mobile Products Card Stack (< sm) */}
@@ -889,8 +1024,12 @@ function AdminDashboardPage() {
                   .filter(
                     (p) =>
                       (selectedCategoryFilter === "All" || p.category === selectedCategoryFilter) &&
-                      (p.name.toLowerCase().includes(productQuery.toLowerCase()) ||
-                        p.category.toLowerCase().includes(productQuery.toLowerCase())),
+                      (selectedSubcategoryFilter === "All" || p.subcategory === selectedSubcategoryFilter) &&
+                      (selectedBrandFilter === "All" || p.brand === selectedBrandFilter) &&
+                      (!productQuery ||
+                        `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand} ${p.id}`
+                          .toLowerCase()
+                          .includes(productQuery.toLowerCase())),
                   )
                   .map((prod) => (
                     <div
@@ -901,16 +1040,29 @@ function AdminDashboardPage() {
                         <img
                           src={prod.image}
                           alt=""
-                          className="size-12 rounded-xl object-cover border border-slate-200 dark:border-white/10 shrink-0"
+                          className="size-12 rounded-xl object-contain bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 shrink-0 p-1"
                         />
                         <div className="min-w-0 flex-1">
                           <div className="text-xs font-extrabold text-[#173226] dark:text-white truncate">
                             {prod.name}
                           </div>
-                          <div className="text-[11px] text-[#38B46A] font-bold">
-                            {prod.category} • {prod.brand}
+                          <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                            <span
+                              className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded ${
+                                prod.brand === "Green Volt"
+                                  ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300"
+                                  : prod.brand === "Power-One"
+                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
+                                    : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                              }`}
+                            >
+                              {prod.brand}
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-semibold truncate">
+                              {prod.category} {prod.subcategory ? `• ${prod.subcategory}` : ""}
+                            </span>
                           </div>
-                          <div className="text-[10px] font-mono text-slate-400">SKU: {prod.id}</div>
+                          <div className="text-[10px] font-mono text-slate-400 mt-0.5">SKU: {prod.id}</div>
                         </div>
                       </div>
 
@@ -972,7 +1124,8 @@ function AdminDashboardPage() {
                     <thead>
                       <tr className="border-b border-[#E2EDE7] dark:border-white/10 bg-[#F2FBF4] dark:bg-white/5 font-extrabold uppercase text-slate-500">
                         <th className="p-4">Product Details</th>
-                        <th className="p-4">Category & Brand</th>
+                        <th className="p-4">Category & Subcategory</th>
+                        <th className="p-4">Brand</th>
                         <th className="p-4">Selling Price</th>
                         <th className="p-4">Stock Status</th>
                         <th className="p-4">Rating</th>
@@ -983,10 +1136,13 @@ function AdminDashboardPage() {
                       {effectiveProducts
                         .filter(
                           (p) =>
-                            (selectedCategoryFilter === "All" ||
-                              p.category === selectedCategoryFilter) &&
-                            (p.name.toLowerCase().includes(productQuery.toLowerCase()) ||
-                              p.category.toLowerCase().includes(productQuery.toLowerCase())),
+                            (selectedCategoryFilter === "All" || p.category === selectedCategoryFilter) &&
+                            (selectedSubcategoryFilter === "All" || p.subcategory === selectedSubcategoryFilter) &&
+                            (selectedBrandFilter === "All" || p.brand === selectedBrandFilter) &&
+                            (!productQuery ||
+                              `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand} ${p.id}`
+                                .toLowerCase()
+                                .includes(productQuery.toLowerCase())),
                         )
                         .map((prod) => (
                           <tr
@@ -997,7 +1153,7 @@ function AdminDashboardPage() {
                               <img
                                 src={prod.image}
                                 alt=""
-                                className="size-11 rounded-xl object-cover border border-slate-200 dark:border-white/10 shadow-xs"
+                                className="size-11 rounded-xl object-contain bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-xs p-1"
                               />
                               <div>
                                 <div className="text-xs font-extrabold">{prod.name}</div>
@@ -1010,9 +1166,24 @@ function AdminDashboardPage() {
                               <div className="font-bold text-slate-700 dark:text-slate-300">
                                 {prod.category}
                               </div>
-                              <div className="text-[10px] font-bold text-[#38B46A]">
+                              {prod.subcategory && (
+                                <div className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-md inline-block mt-0.5">
+                                  {prod.subcategory}
+                                </div>
+                              )}
+                            </td>
+                            <td className="p-4">
+                              <span
+                                className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${
+                                  prod.brand === "Green Volt"
+                                    ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300 border border-cyan-200"
+                                    : prod.brand === "Power-One"
+                                      ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200"
+                                      : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200"
+                                }`}
+                              >
                                 {prod.brand}
-                              </div>
+                              </span>
                             </td>
                             <td className="p-4 font-mono font-extrabold text-[#38B46A] text-sm">
                               {formatNPR(prod.price)}
@@ -1085,22 +1256,28 @@ function AdminDashboardPage() {
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
                   <h3 className="font-display font-extrabold text-lg text-[#173226] dark:text-white">
-                    OMSUN Hardware Portfolio Categories
+                    OMSUN Hardware Portfolio Categories & Subcategories
                   </h3>
                   <p className="text-xs text-slate-500">
-                    5 core energy & power hardware verticals with specialized subcategories
+                    5 core energy & power hardware verticals with live product distribution
                   </p>
                 </div>
                 <Button
-                  onClick={() => toast.info("Category management active.")}
+                  onClick={() => {
+                    setSelectedProductForEdit(null);
+                    setTargetCategoryForAdd("Stabilizer");
+                    setTargetSubcategoryForAdd("Servo Stabilizer");
+                    setIsProductModalOpen(true);
+                  }}
                   className="h-9 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white text-xs font-extrabold gap-1 cursor-pointer hover:scale-105 transition-transform"
                 >
-                  <Plus className="size-4" /> Add Category
+                  <Plus className="size-4" /> Add Hardware SKU
                 </Button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-4.5">
                 {OMSUN_CATEGORIES.map((cat, idx) => {
+                  const liveCount = effectiveProducts.filter((p) => p.category === cat.name).length;
                   const isGreen = idx % 4 === 0;
                   const isBlue = idx % 4 === 1;
                   const isGold = idx % 4 === 2;
@@ -1124,55 +1301,83 @@ function AdminDashboardPage() {
                   return (
                     <div
                       key={cat.name}
-                      className={`group relative overflow-hidden rounded-3xl bg-gradient-to-b from-white via-white to-[#F2FBF4]/40 dark:from-[#0c241c] dark:to-[#071A12] p-5 sm:p-6 border border-[#E2EDE7] dark:border-white/10 shadow-xs transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.015] hover:shadow-xl hover:shadow-[#38B46A]/12 space-y-3.5 ${borderTopColor}`}
+                      className={`group relative overflow-hidden rounded-3xl bg-gradient-to-b from-white via-white to-[#F2FBF4]/40 dark:from-[#0c241c] dark:to-[#071A12] p-5 sm:p-6 border border-[#E2EDE7] dark:border-white/10 shadow-xs transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.015] hover:shadow-xl hover:shadow-[#38B46A]/12 space-y-3.5 flex flex-col justify-between ${borderTopColor}`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-[11px] font-extrabold px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300">
-                          SKU Prefix: {cat.skuPrefix}
-                        </span>
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${badgeStyle}`}
-                        >
-                          {cat.status}
-                        </span>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[11px] font-extrabold px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300">
+                            SKU Prefix: {cat.skuPrefix}
+                          </span>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${badgeStyle}`}
+                          >
+                            {liveCount} SKUs Live
+                          </span>
+                        </div>
+
+                        <h4 className="font-display font-extrabold text-base text-[#173226] dark:text-white group-hover:text-[#38B46A] transition-colors">
+                          {cat.name}
+                        </h4>
+                        <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                          {cat.description}
+                        </p>
+
+                        {/* Subcategories list tags (clickable to filter) */}
+                        {cat.subcategories && cat.subcategories.length > 0 && (
+                          <div className="pt-1">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+                              Subcategories (Click to filter):
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {cat.subcategories.map((sub) => {
+                                const subCount = effectiveProducts.filter(
+                                  (p) => p.category === cat.name && p.subcategory === sub,
+                                ).length;
+                                return (
+                                  <button
+                                    key={sub}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedCategoryFilter(cat.name);
+                                      setSelectedSubcategoryFilter(sub);
+                                      setActiveSection("products");
+                                    }}
+                                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 hover:bg-[#38B46A] hover:text-white dark:bg-white/10 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/5 cursor-pointer transition-colors flex items-center gap-1"
+                                    title={`View ${sub} (${subCount} items)`}
+                                  >
+                                    <span>{sub}</span>
+                                    <span className="font-mono text-[9px] opacity-70">({subCount})</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      <h4 className="font-display font-extrabold text-base text-[#173226] dark:text-white group-hover:text-[#38B46A] transition-colors">
-                        {cat.name}
-                      </h4>
-                      <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                        {cat.description}
-                      </p>
-
-                      {/* Subcategories list tags */}
-                      {cat.subcategories && cat.subcategories.length > 0 && (
-                        <div className="pt-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
-                            Subcategories:
-                          </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {cat.subcategories.map((sub) => (
-                              <span
-                                key={sub}
-                                className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/5"
-                              >
-                                {sub}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
                       <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
-                        <span>{cat.itemCount} SKUs Configured</span>
                         <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedProductForEdit(null);
+                            setTargetCategoryForAdd(cat.name);
+                            setTargetSubcategoryForAdd(cat.subcategories?.[0] || "");
+                            setIsProductModalOpen(true);
+                          }}
+                          className="text-xs font-bold text-slate-500 hover:text-[#38B46A] flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus className="size-3.5" /> Add SKU
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => {
                             setSelectedCategoryFilter(cat.name);
+                            setSelectedSubcategoryFilter("All");
                             setActiveSection("products");
                           }}
                           className="text-[#38B46A] hover:underline font-extrabold flex items-center gap-1 group-hover:translate-x-1 transition-transform cursor-pointer"
                         >
-                          View Items &rarr;
+                          View All ({liveCount}) &rarr;
                         </button>
                       </div>
                     </div>
@@ -2036,6 +2241,8 @@ function AdminDashboardPage() {
         isOpen={isProductModalOpen}
         onClose={() => setIsProductModalOpen(false)}
         productToEdit={selectedProductForEdit}
+        initialCategory={targetCategoryForAdd}
+        initialSubcategory={targetSubcategoryForAdd}
         onSaveProduct={handleSaveProduct}
       />
 
