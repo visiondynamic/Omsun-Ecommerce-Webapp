@@ -45,7 +45,7 @@ interface AdminHeaderProps {
 const SECTION_TITLES: Record<AdminSection, { title: string; subtitle: string; actionLabel?: string }> = {
   overview: { title: "Dashboard Overview", subtitle: "System Telemetry & Real-Time E-Commerce Analytics", actionLabel: "Generate Report" },
   products: { title: "Product Catalog", subtitle: "Solar, Inverters, Storage & Electrical Hardware SKUs", actionLabel: "Add Product" },
-  categories: { title: "Categories Management", subtitle: "10 Core OMSUN Renewable & Power Categories", actionLabel: "Add Category" },
+  categories: { title: "Categories Management", subtitle: "5 Core Hardware Verticals: UPS, Stabilizer, Security, Solar & Battery", actionLabel: "Add Category" },
   inventory: { title: "Inventory Control", subtitle: "Real-time Stock Levels, Low Stock Alerts & Warehouse Telemetry", actionLabel: "Update Stock" },
   orders: { title: "Order Management", subtitle: "Customer Purchases, Dispatch Status & Payment Records", actionLabel: "Export Orders" },
   customers: { title: "Customer Database", subtitle: "Registered Accounts, Purchasing History & VIP Profiles", actionLabel: "Add Customer" },

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Award,
   Check,
@@ -18,7 +19,9 @@ import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatNPR, getProduct, products, type Product } from "@/lib/products";
+import { formatNPR, fallbackProducts, mapApiProductToProduct, getProduct } from "@/lib/products";
+import type { Product } from "@/lib/products";
+import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import heroProductBg from "@/assets/hero-product-bg.webp";
 
@@ -47,12 +50,33 @@ export const Route = createFileRoute("/product/$id")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData() as { product: Product };
+  const { product: fallbackProduct } = Route.useLoaderData() as { product: Product };
   const { addToCart, buyNow } = useCart();
   const [qty, setQty] = useState(1);
   const [active, setActive] = useState(0);
+
+  const { data: apiProduct } = useQuery<Product>({
+    queryKey: ["product", fallbackProduct.id],
+    queryFn: async () => {
+      const row = await api.getProduct(fallbackProduct.id);
+      return mapApiProductToProduct(row);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: apiProducts } = useQuery<Product[]>({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const rows = await api.getProducts();
+      return rows.map(mapApiProductToProduct);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const product = apiProduct ?? fallbackProduct;
+  const allProducts = apiProducts ?? fallbackProducts;
   const gallery = [product.image, product.image, product.image];
-  const related = products.filter((p) => p.id !== product.id).slice(0, 3);
+  const related = allProducts.filter((p) => p.id !== product.id).slice(0, 3);
   const out = product.stock === 0;
 
   return (
@@ -299,14 +323,39 @@ function ProductPage() {
             </div>
           </div>
 
-          <section className="mt-28">
-            <h2 className="font-display text-3xl font-extrabold">Related products</h2>
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <section className="mt-16 sm:mt-28">
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold">Related products</h2>
+            <div className="mt-6 sm:mt-10 grid gap-3 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>
           </section>
+        </div>
+
+        {/* ── MOBILE STICKY BOTTOM ACTION BAR (Daraz/Amazon Style) ── */}
+        <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden border-t border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#071f17]/95 p-3 backdrop-blur-xl shadow-2xl flex items-center gap-2.5">
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total Price</div>
+            <div className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 font-mono truncate">
+              {formatNPR(product.price * qty)}
+            </div>
+          </div>
+          <Button
+            disabled={out}
+            onClick={() => addToCart(product, qty)}
+            variant="outline"
+            className="h-11 rounded-xl px-3 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 text-xs font-bold shrink-0"
+          >
+            <ShoppingCart className="size-3.5 mr-1" /> Add
+          </Button>
+          <Button
+            disabled={out}
+            onClick={() => buyNow(product, qty)}
+            className="h-11 rounded-xl px-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-md shrink-0"
+          >
+            <Zap className="size-3.5 mr-1" /> Buy Now
+          </Button>
         </div>
       </main>
       <Footer />

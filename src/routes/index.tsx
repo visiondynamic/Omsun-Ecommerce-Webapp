@@ -24,7 +24,10 @@ import { Reveal } from "@/components/site/Reveal";
 import { ProductCard } from "@/components/site/ProductCard";
 import { HeroSlider } from "@/components/site/HeroSlider";
 import { partnerBrandLogos } from "@/components/site/PartnerLogos";
-import { products } from "@/lib/products";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { products, fallbackProducts, mapApiProductToProduct } from "@/lib/products";
+import type { Product } from "@/lib/products";
 
 import panelImg from "@/assets/p-panel.jpg";
 import inverterImg from "@/assets/p-inverter.jpg";
@@ -55,64 +58,54 @@ export const Route = createFileRoute("/")({
 
 const categories = [
   {
-    name: "Solar Panels",
+    name: "UPS Systems",
+    icon: Zap,
+    note: "Online, Offline & Line Interactive double-conversion systems",
+    tag: "Zero Switch Time",
+    specs: "DSP Controlled Pure Sine Wave Output",
+    badge: "1kVA – 200kVA Industrial",
+    color: "#10b981",
+    image: inverterImg,
+  },
+  {
+    name: "Stabilizers",
+    icon: Gauge,
+    note: "Precision servo, oil-cooled & digital automatic voltage regulators",
+    tag: "±1% Output Precision",
+    specs: "Copper Wound Motorized & Oil Immersed",
+    badge: "1kVA – 500kVA 3-Phase",
+    color: "#6366f1",
+    image: switchgearImg,
+  },
+  {
+    name: "Security & CCTV",
+    icon: Lightbulb,
+    note: "4K Solar PTZ cameras, PoE surveillance kits & AI security",
+    tag: "Solar + 4G SIM Powered",
+    specs: "Full Color Night Vision & AI Motion Detection",
+    badge: "IP66 Heavy Weatherproof",
+    color: "#f59e0b",
+    image: lightImg,
+  },
+  {
+    name: "Solar Energy",
     icon: Sun,
-    note: "Mono-PERC & Bifacial N-Type high yield modules",
-    tag: "Top Choice in Nepal",
-    specs: "25-Year Performance Guarantee",
+    note: "Tier-1 N-Type TOPCon panels & hybrid net-metering systems",
+    tag: "NEA Net-Meter Approved",
+    specs: "25-Year Linear Output Guarantee",
     badge: "580W N-Type Tier-1",
     color: "#0ea5e9",
     image: panelImg,
   },
   {
-    name: "Hybrid Inverters",
-    icon: Gauge,
-    note: "Pure sine-wave, on-grid & off-grid intelligent controllers",
-    tag: "99.2% Max Efficiency",
-    specs: "Dual MPPT Trackers & Auto-Generator Start",
-    badge: "5kW – 50kW Single/3-Phase",
-    color: "#6366f1",
-    image: inverterImg,
-  },
-  {
-    name: "Energy Storage",
+    name: "Battery Storage",
     icon: BatteryCharging,
-    note: "LiFePO4 wall-mount & high-capacity battery racks",
+    note: "LiFePO4 wall-mount & high-capacity tubular battery racks",
     tag: "6,000+ Deep Cycles",
-    specs: "Sub-Zero Thermal Insulation Enclosure",
-    badge: "Lithium Iron Phosphate",
+    specs: "Sub-Zero Thermal Insulation & Smart BMS",
+    badge: "10-Year Replacement Guarantee",
     color: "#10b981",
     image: batteryImg,
-  },
-  {
-    name: "Cables & Wiring",
-    icon: Cable,
-    note: "Pure copper solar DC cables & armored main feeder lines",
-    tag: "UV & Flame Proof",
-    specs: "IEC 62930 Double Insulated Certification",
-    badge: "TÜV Certified Copper",
-    color: "#f59e0b",
-    image: cableImg,
-  },
-  {
-    name: "Solar Lighting",
-    icon: Lightbulb,
-    note: "All-in-one smart LED luminaires & municipal streetlights",
-    tag: "IP67 Weather Sealed",
-    specs: "Microwave Motion Sensor & Dusk-to-Dawn Control",
-    badge: "50,000+ Hrs LED Lifespan",
-    color: "#ec4899",
-    image: lightImg,
-  },
-  {
-    name: "Switchgear & Panels",
-    icon: PanelsTopLeft,
-    note: "Heavy duty MCCB breakers & industrial distribution panels",
-    tag: "Industrial Grade",
-    specs: "Surge Protection Device (SPD) Included",
-    badge: "IEC 60947 Switchgear",
-    color: "#8b5cf6",
-    image: switchgearImg,
   },
 ];
 
@@ -144,8 +137,19 @@ const testimonials = [
 ];
 
 function Home() {
-  const featured = products.slice(0, 4);
-  const bestSellers = products.filter((p) => p.badges.includes("Best Seller"));
+  const { data: apiProducts } = useQuery<Product[]>({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const rows = await api.getProducts();
+      return rows.map(mapApiProductToProduct);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const allProducts = apiProducts ?? fallbackProducts;
+  const featured = allProducts.slice(0, 4);
+  const bestSellers = allProducts.filter((p) => p.badges.some((b) => b.toLowerCase().includes("best") || b.toLowerCase().includes("top") || b.toLowerCase().includes("rated"))).slice(0, 4);
+  const displayBestSellers = bestSellers.length > 0 ? bestSellers : allProducts.slice(4, 8);
 
   return (
     <div className="min-h-dvh overflow-x-clip bg-background text-foreground">
@@ -155,7 +159,7 @@ function Home() {
         <HeroSlider />
 
         {/* STATS & IMPACT STRIP (LIGHT GLASS LEAF GREEN + SKY BLUE GRADIENT BAR ⚡) */}
-        <section className="border-y border-[#43B987]/30 bg-gradient-to-r from-[#E5F7EF] via-[#F2FBF6] to-[#EFF8FF] py-8 text-[#173226] shadow-xs relative z-20 backdrop-blur-md">
+        <section className="border-y border-[#43B987]/30 bg-gradient-to-r from-[#E5F7EF] via-[#F2FBF6] to-[#EFF8FF] py-8 text-[#173226] shadow-xs relative z-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 text-center">
               {[
@@ -198,6 +202,8 @@ function Home() {
                     alt={brand.name}
                     loading="lazy"
                     decoding="async"
+                    width={120}
+                    height={36}
                     className="h-8 sm:h-9 w-auto max-w-[120px] object-contain transition-all duration-300 group-hover:scale-105"
                   />
                 </div>
@@ -208,8 +214,8 @@ function Home() {
 
         {/* SHOP BY CATEGORY — SOLID ELECTRIC MINT GREEN #03C987 BACKGROUND (SECTION 3 🌿) */}
         <section className="relative overflow-hidden bg-[#03C987] py-28 text-[#0A2E20] border-y border-[#02B377]">
-          <div className="pointer-events-none absolute -top-40 right-0 size-[600px] rounded-full bg-white/15 blur-[140px]" />
-          <div className="pointer-events-none absolute -bottom-40 left-0 size-[600px] rounded-full bg-[#0A2E20]/12 blur-[140px]" />
+          <div className="pointer-events-none absolute -top-40 right-0 size-[500px] rounded-full bg-white/15 blur-[90px] hidden md:block" />
+          <div className="pointer-events-none absolute -bottom-40 left-0 size-[500px] rounded-full bg-[#0A2E20]/12 blur-[90px] hidden md:block" />
 
           <div className="relative mx-auto max-w-7xl px-6">
             <Reveal className="flex flex-wrap items-end justify-between gap-6 mb-14">
@@ -240,10 +246,10 @@ function Home() {
             {/* 24PX FLOATING CARDS GRID — NATURAL PHOTOGRAPHY COLORS (NO WHITE OVERLAY) */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((c, i) => (
-                <Reveal key={c.name} delay={i * 70}>
+                <Reveal key={c.name} delay={Math.min(i * 30, 90)}>
                   <Link
                     to="/shop"
-                    className="group relative flex flex-col justify-between overflow-hidden rounded-[24px] border border-white/40 bg-black/40 p-6 sm:p-8 shadow-xl transition-all duration-500 hover:border-white hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:-translate-y-1.5 h-full min-h-[280px] sm:min-h-[310px]"
+                    className="group relative flex flex-col justify-between overflow-hidden rounded-[24px] border border-white/40 bg-black/40 p-6 sm:p-8 shadow-xl transition-all duration-300 hover:border-white hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] hover:-translate-y-1 h-full min-h-[280px] sm:min-h-[310px]"
                   >
                     {/* Natural Category Image in 100% Full Color */}
                     <img
@@ -251,15 +257,17 @@ function Home() {
                       alt={c.name}
                       loading="lazy"
                       decoding="async"
-                      className="absolute inset-0 size-full object-cover opacity-90 transition-transform duration-700 ease-out group-hover:scale-110 group-hover:opacity-100"
+                      width={600}
+                      height={400}
+                      className="absolute inset-0 size-full object-cover opacity-90 md:transition-transform md:duration-500 md:ease-out group-hover:scale-105 group-hover:opacity-100"
                     />
-                    {/* Subtle Dark Vignette for Text Readability (No White Overlay!) */}
+                    {/* Subtle Dark Vignette for Text Readability */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20" />
 
                     <div className="relative z-10 flex items-center justify-between">
                       {/* Circular glass icon container */}
                       <span
-                        className="grid size-14 place-items-center rounded-full border border-white/40 bg-black/40 shadow-md backdrop-blur-md transition-all duration-500 group-hover:scale-110 group-hover:border-white"
+                        className="grid size-14 place-items-center rounded-full border border-white/40 bg-black/60 shadow-md transition-all duration-300 group-hover:scale-105 group-hover:border-white"
                         style={{
                           color: "#FFFFFF",
                         }}
@@ -267,7 +275,7 @@ function Home() {
                         <c.icon className="size-7" strokeWidth={2} />
                       </span>
 
-                      <span className="rounded-full border border-white/30 bg-black/40 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-md">
+                      <span className="rounded-full border border-white/30 bg-black/60 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
                         {c.tag}
                       </span>
                     </div>
@@ -286,7 +294,7 @@ function Home() {
                           </p>
                         </div>
 
-                        <span className="grid size-10 shrink-0 place-items-center rounded-full border border-white/40 bg-black/40 text-white backdrop-blur-md transition-all duration-300 group-hover:border-white group-hover:bg-white group-hover:text-black">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-full border border-white/40 bg-black/60 text-white transition-all duration-300 group-hover:border-white group-hover:bg-white group-hover:text-black">
                           <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
                         </span>
                       </div>
@@ -330,7 +338,7 @@ function Home() {
 
             <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
               {featured.map((p, i) => (
-                <Reveal key={p.id} delay={i * 80} className="h-full">
+                <Reveal key={p.id} delay={Math.min(i * 30, 90)} className="h-full">
                   <ProductCard product={p} variant="light" />
                 </Reveal>
               ))}
@@ -344,7 +352,7 @@ function Home() {
             <div className="grid gap-12 lg:grid-cols-[0.8fr_1.4fr] lg:items-center">
               <Reveal className="h-full">
                 <div className="rounded-[24px] border border-[#03C987]/40 bg-gradient-to-br from-[#E2F6ED] via-[#F2FBF6] to-[#EBF5FF] p-8 sm:p-10 shadow-lg relative overflow-hidden h-full flex flex-col justify-between">
-                  <div className="absolute top-0 right-0 size-48 rounded-full bg-[#03C987]/20 blur-3xl pointer-events-none" />
+                  <div className="absolute top-0 right-0 size-48 rounded-full bg-[#03C987]/20 blur-3xl pointer-events-none hidden md:block" />
 
                   <div>
                     <div className="inline-flex items-center gap-2 rounded-full border border-[#03C987]/50 bg-white px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#0A2E20] mb-6 shadow-xs">
@@ -388,8 +396,8 @@ function Home() {
               </Reveal>
 
               <div className="grid gap-4 sm:gap-6 grid-cols-2">
-                {bestSellers.map((p, i) => (
-                  <Reveal key={p.id} delay={i * 80} className="h-full">
+                {displayBestSellers.map((p, i) => (
+                  <Reveal key={p.id} delay={Math.min(i * 30, 90)} className="h-full">
                     <ProductCard product={p} variant="light" />
                   </Reveal>
                 ))}
@@ -437,7 +445,7 @@ function Home() {
                   icon: Zap,
                 },
               ].map((item, i) => (
-                <Reveal key={item.title} delay={i * 70}>
+                <Reveal key={item.title} delay={Math.min(i * 30, 90)}>
                   <div className="bg-white/95 p-8 rounded-[24px] border border-white/80 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-full group hover:border-[#0A2E20]">
                     <div>
                       <div className="flex items-center justify-between mb-6">
@@ -476,8 +484,9 @@ function Home() {
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {testimonials.map((t, i) => (
-                <Reveal key={t.name} delay={i * 80}>
+                <Reveal key={t.name} delay={Math.min(i * 30, 90)}>
                   <div className="bg-white/90 p-8 rounded-[24px] border border-[#43B987]/30 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-full">
+
                     <div>
                       <div className="flex items-center justify-between mb-4">
                         <Quote className="size-8 text-[#43B987]/50" />
@@ -514,8 +523,8 @@ function Home() {
         <section className="mx-auto max-w-7xl px-6 pb-24">
           <Reveal>
             <div className="relative overflow-hidden rounded-[32px] bg-[#03C987] p-10 sm:p-16 border border-[#02B377] text-[#0A2E20] shadow-2xl text-center">
-              <div className="pointer-events-none absolute -top-24 right-1/4 size-[400px] rounded-full bg-white/20 blur-[100px]" />
-              <div className="pointer-events-none absolute bottom-0 left-10 size-[350px] rounded-full bg-[#0A2E20]/15 blur-[100px]" />
+              <div className="pointer-events-none absolute -top-24 right-1/4 size-[400px] rounded-full bg-white/20 blur-[100px] hidden md:block" />
+              <div className="pointer-events-none absolute bottom-0 left-10 size-[350px] rounded-full bg-[#0A2E20]/15 blur-[100px] hidden md:block" />
 
               <div className="relative z-10">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#0A2E20] bg-[#0A2E20] px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-white mb-6 shadow-md">

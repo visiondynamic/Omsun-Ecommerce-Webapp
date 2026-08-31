@@ -125,6 +125,15 @@ export function HeroSlider() {
     },
   ];
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const goTo = useCallback(
     (index: number, dir: "left" | "right") => {
       if (animating || index === current) return;
@@ -135,12 +144,13 @@ export function HeroSlider() {
       setTimeout(() => {
         setPrev(null);
         setAnimating(false);
-      }, 800);
+      }, isMobile ? 50 : 800);
     },
-    [animating, current],
+    [animating, current, isMobile],
   );
 
   useEffect(() => {
+    if (isMobile) return; // Do not eager-preload background images on mobile to preserve initial bandwidth
     const nextIdx = (current + 1) % slides.length;
     const prevIdx = (current - 1 + slides.length) % slides.length;
     const t = setTimeout(() => {
@@ -150,9 +160,9 @@ export function HeroSlider() {
         s.add(prevIdx);
         return s;
       });
-    }, 250);
+    }, 400);
     return () => clearTimeout(t);
-  }, [current, slides.length]);
+  }, [current, slides.length, isMobile]);
 
   const next = useCallback(() => {
     goTo((current + 1) % slides.length, "left");
@@ -171,16 +181,32 @@ export function HeroSlider() {
     prevRef.current = prev_;
   }, [prev_]);
 
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const [inView, setInView] = useState(true);
+
   useEffect(() => {
-    if (paused) return;
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        setInView(entry?.isIntersecting ?? true);
+      },
+      { threshold: 0.05 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (paused || !inView) return;
     intervalRef.current = setInterval(() => nextRef.current(), SLIDE_DURATION);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [paused]);
+  }, [paused, inView]);
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || !inView || isMobile) return; // Skip 60fps RAF tick on mobile to save CPU/GPU
     const start = performance.now();
     const tick = (now: number) => {
       const pct = Math.min(((now - start) / SLIDE_DURATION) * 100, 100);
@@ -193,7 +219,7 @@ export function HeroSlider() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [current, paused]);
+  }, [current, paused, inView, isMobile]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -204,13 +230,38 @@ export function HeroSlider() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (touch) {
+      touchStartX.current = touch.clientX;
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    const touchEndX = touch.clientX;
+    const diff = touchStartX.current - touchEndX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) next();
+      else prev_();
+    }
+    touchStartX.current = null;
+  };
+
   const slide = slides[current];
   if (!slide) return null;
   return (
     <section
-      className="hero-slider relative isolate min-h-[560px] h-[85dvh] sm:min-h-[620px] sm:h-[90svh] lg:h-svh overflow-hidden bg-black"
+      ref={sectionRef}
+      className="hero-slider relative isolate min-h-[480px] sm:min-h-[620px] h-[82dvh] sm:h-[90svh] lg:h-svh overflow-hidden bg-black"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* ── Background Slides with Vivid Natural Photography Colors ── */}
       {slides.map((s, i) => (
@@ -228,12 +279,13 @@ export function HeroSlider() {
         >
           {/* Natural Banner Photograph in 100% Full Color */}
           <img
-            src={i === current || i === prev || preloaded.has(i) ? s.image : undefined}
+            src={i === current || i === prev || (!isMobile && preloaded.has(i)) ? s.image : undefined}
             alt={s.headline.join(" ")}
-            className="absolute inset-0 size-full object-cover opacity-95 transition-transform duration-1000 ease-out"
+            className="absolute inset-0 size-full object-cover opacity-95 md:transition-transform md:duration-1000 md:ease-out"
             draggable={false}
             decoding="async"
-            fetchPriority={i === current ? "high" : "auto"}
+            loading={i === 0 ? "eager" : "lazy"}
+            fetchPriority={i === 0 ? "high" : "auto"}
           />
           {/* Subtle Dark Contrast Gradient (Preserves True Photography Colors!) */}
           <div
@@ -242,19 +294,19 @@ export function HeroSlider() {
               background: `linear-gradient(180deg, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.40) 45%, rgba(0,0,0,0.85) 100%)`,
             }}
           />
-          {/* Subtle Ambient Accent Glows */}
-          <div className="pointer-events-none absolute -top-24 right-1/4 size-[500px] rounded-full bg-[#43B987]/15 blur-[120px]" />
-          <div className="pointer-events-none absolute bottom-0 left-10 size-[450px] rounded-full bg-[#2F80ED]/15 blur-[120px]" />
+          {/* Subtle Ambient Accent Glows (hidden on mobile for instant rendering) */}
+          <div className="pointer-events-none absolute -top-24 right-1/4 size-[500px] rounded-full bg-[#43B987]/15 blur-[120px] hidden md:block" />
+          <div className="pointer-events-none absolute bottom-0 left-10 size-[450px] rounded-full bg-[#2F80ED]/15 blur-[120px] hidden md:block" />
         </div>
       ))}
 
       {/* ── Main Content Container with Guaranteed Navbar Clearance ── */}
-      <div className="relative z-10 flex h-full flex-col justify-center px-5 sm:px-12 lg:px-20 pt-36 sm:pt-40 lg:pt-44 pb-16">
+      <div className="relative z-10 flex h-full flex-col justify-center px-4 sm:px-12 lg:px-20 pt-28 sm:pt-40 lg:pt-44 pb-14 sm:pb-16">
         <div className="max-w-3xl">
           {/* Eyebrow Pill Badge */}
           <div
             key={`badge-${current}`}
-            className="hero-content-in mb-4 inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/40 px-4 py-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white shadow-lg backdrop-blur-md"
+            className="hero-content-in mb-3 sm:mb-4 inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/30 bg-black/40 px-3.5 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white shadow-lg backdrop-blur-md"
           >
             <span className="text-[#43B987]">{slide.badgeIcon}</span>
             <span>{slide.badge}</span>
@@ -263,7 +315,7 @@ export function HeroSlider() {
           {/* Responsive Headline in Crisp White with Drop Shadow */}
           <h1
             key={`h1-${current}`}
-            className="hero-content-in font-display text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[1.05] text-white tracking-tight drop-shadow-md"
+            className="hero-content-in font-display text-3xl sm:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[1.1] sm:leading-[1.05] text-white tracking-tight drop-shadow-md"
           >
             {slide.headline.map((line, i) => (
               <span key={i} className="block">
@@ -287,7 +339,7 @@ export function HeroSlider() {
           {/* Subtext in Crisp White */}
           <p
             key={`sub-${current}`}
-            className="hero-content-in mt-4 sm:mt-6 max-w-xl text-xs sm:text-base lg:text-lg font-medium text-white/90 leading-relaxed drop-shadow-sm"
+            className="hero-content-in mt-3 sm:mt-6 max-w-xl text-xs sm:text-base lg:text-lg font-medium text-white/90 leading-relaxed drop-shadow-sm line-clamp-3 sm:line-clamp-none"
           >
             {slide.sub}
           </p>

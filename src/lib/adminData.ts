@@ -1,6 +1,6 @@
 import { products as catalogProducts, Product as CatalogProduct, formatNPR } from "./products";
 
-export type OrderStatus = "Pending" | "Processing" | "Completed" | "Cancelled";
+export type OrderStatus = "Pending" | "Processing" | "Shipped" | "Completed" | "Cancelled";
 export type PaymentStatus = "Paid" | "Unpaid" | "Refunded" | "Partial";
 
 export interface OrderItem {
@@ -20,8 +20,10 @@ export interface AdminOrder {
   items: OrderItem[];
   totalAmount: number;
   discountAmount: number;
-  paymentMethod: "eSewa" | "Khalti" | "Bank Transfer" | "Cash on Delivery";
-  paymentStatus: PaymentStatus;
+  paymentMethod: "Fonepay QR" | "Cash on Delivery" | "Bank Transfer" | "eSewa" | "Khalti" | string;
+  paymentStatus: PaymentStatus | "Pending Verification" | string;
+  paymentReceipt?: string | null;
+  notes?: string | null;
   orderStatus: OrderStatus;
   createdAt: string;
   timeline: { title: string; timestamp: string; note?: string }[];
@@ -88,20 +90,61 @@ export interface CategoryInfo {
   itemCount: number;
   status: "Active" | "Disabled";
   description: string;
+  subcategories?: string[];
 }
 
-// Complete OMSUN Categories list based on specification
+// 5 Core OMSUN Product Categories with Subcategories
 export const OMSUN_CATEGORIES: CategoryInfo[] = [
-  { name: "Batteries", skuPrefix: "BAT", itemCount: 18, status: "Active", description: "Tubular, Maintenance-free & High-capacity Deep Cycle Solar Batteries" },
-  { name: "Inverters", skuPrefix: "INV", itemCount: 24, status: "Active", description: "Hybrid, Off-Grid & Grid-Tied High-Efficiency Pure Sine Wave Inverters" },
-  { name: "Solar Panel", skuPrefix: "PNL", itemCount: 32, status: "Active", description: "N-Type, Mono PERC & Bifacial Solar PV Modules" },
-  { name: "Solar Charge Controller", skuPrefix: "SCC", itemCount: 12, status: "Active", description: "MPPT & PWM Intelligent Solar Charge Controllers" },
-  { name: "Online UPS", skuPrefix: "OUPS", itemCount: 15, status: "Active", description: "True Double Conversion Commercial & Hospital Power Supplies" },
-  { name: "Lithium Batteries", skuPrefix: "LiFe", itemCount: 14, status: "Active", description: "LiFePO₄ High-Density Energy Storage Modules with Smart BMS" },
-  { name: "Servo Stabilizer", skuPrefix: "SRV", itemCount: 8, status: "Active", description: "Precision Automatic Voltage Regulators for Industrial Equipment" },
-  { name: "Relay Stabilizer", skuPrefix: "RLY", itemCount: 10, status: "Active", description: "Home & Office Microcontroller Voltage Stabilizers" },
-  { name: "Oil-Cooled Stabilizer", skuPrefix: "OIL", itemCount: 6, status: "Active", description: "Heavy Duty High-Capacity 3-Phase Industrial Voltage Regulators" },
-  { name: "Online / Offline UPS", skuPrefix: "UPS", itemCount: 16, status: "Active", description: "Domestic & Corporate Uninterruptible Power Supply Systems" },
+  {
+    name: "Stabilizer",
+    skuPrefix: "STB",
+    itemCount: 22,
+    status: "Active",
+    description: "Servo Stabilizer, Three Phase Servo, Relay Based AVR & Oil Cooled Servo Voltage Regulators.",
+    subcategories: [
+      "Servo Stabilizer",
+      "Three Phase Servo Stabilizer",
+      "Relay Based Stabilizer / AVR",
+      "Oil Cooled Servo Stabilizer",
+    ],
+  },
+  {
+    name: "UPS",
+    skuPrefix: "UPS",
+    itemCount: 10,
+    status: "Active",
+    description: "Low-Frequency Online UPS with isolation transformer and Power-One 3-phase enterprise double conversion systems.",
+    subcategories: [
+      "Online LF UPS",
+      "Industrial Online UPS",
+      "Online UPS",
+      "Modular UPS",
+    ],
+  },
+  {
+    name: "Security",
+    skuPrefix: "SEC",
+    itemCount: 15,
+    status: "Active",
+    description: "4K Solar PTZ Cameras, Commercial CCTV Surveillance Kits & Multi-Channel NVR Network Systems.",
+    subcategories: ["CCTV", "Solar Security"],
+  },
+  {
+    name: "Solar",
+    skuPrefix: "SLR",
+    itemCount: 34,
+    status: "Active",
+    description: "Tier-1 N-Type TOPCon Solar PV Modules, Hybrid Smart Inverters & Turnkey Grid-Tied Renewable Systems.",
+    subcategories: ["Hybrid Solar", "Solar Panels", "Solar Inverters"],
+  },
+  {
+    name: "Battery",
+    skuPrefix: "BAT",
+    itemCount: 20,
+    status: "Active",
+    description: "Modular LiFePO₄ Energy Storage, Tall Tubular Deep-Cycle Batteries & Backup Storage Arrays.",
+    subcategories: ["LiFePO4 Storage", "Tubular Battery"],
+  },
 ];
 
 export const INITIAL_ORDERS: AdminOrder[] = [

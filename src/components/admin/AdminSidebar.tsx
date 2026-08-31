@@ -82,7 +82,7 @@ export function AdminSidebar({
 
   return (
     <aside
-      className={`relative flex flex-col bg-[#12342B] text-white transition-all duration-300 select-none z-30 shadow-2xl border-r border-[#1e483c] ${
+      className={`relative flex flex-col h-full bg-[#12342B] text-white transition-all duration-300 select-none z-30 shadow-2xl border-r border-[#1e483c] ${
         collapsed ? "w-20" : "w-64 sm:w-72"
       }`}
     >

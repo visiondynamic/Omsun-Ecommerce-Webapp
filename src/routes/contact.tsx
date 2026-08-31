@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 import projectImg from "@/assets/project-nepal.webp";
 import bannerNepal from "@/assets/banner-nepal.webp";
 import heroContactBg from "@/assets/hero-contact-bg.webp";
@@ -166,7 +167,7 @@ function ContactPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.fullName.trim()) {
@@ -188,15 +189,27 @@ function ContactPage() {
 
     setIsSubmitting(true);
 
-    // Simulate API submission
-    setTimeout(() => {
+    try {
+      await api.submitContact({
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company,
+        inquiryType: formData.inquiryType,
+        systemSize: formData.systemSize,
+        district: formData.district,
+        message: formData.message,
+      });
       setIsSubmitting(false);
       setSubmitted(true);
       toast.success("Inquiry Submitted Successfully!", {
         description:
           "Thank you for reaching out to OMSUN Nepal. Our solar engineering team will review your inquiry and contact you within 2 business hours.",
       });
-    }, 1200);
+    } catch {
+      setIsSubmitting(false);
+      toast.error("Submission failed. Please try again or call us directly.");
+    }
   };
 
   const handleResetForm = () => {

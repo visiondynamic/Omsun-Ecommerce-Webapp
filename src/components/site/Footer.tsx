@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 import omsunLogo from "@/assets/Omsun Nepal logo-WA0006.webp";
 
 const columns = [
@@ -77,12 +78,22 @@ export function Footer() {
           </div>
 
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              toast.success("Subscribed to OMSUN Nepal updates!", {
-                description:
-                  "Market tariff updates, N-type module shipments & net-metering policy changes.",
-              });
+              const form = e.target as HTMLFormElement;
+              const emailInput = form.querySelector('input[type="email"]') as HTMLInputElement;
+              const email = emailInput?.value;
+              if (!email) return;
+              try {
+                await api.subscribeNewsletter(email);
+                toast.success("Subscribed to OMSUN Nepal updates!", {
+                  description:
+                    "Market tariff updates, N-type module shipments & net-metering policy changes.",
+                });
+                emailInput.value = "";
+              } catch {
+                toast.error("Subscription failed. Please try again.");
+              }
             }}
             className="flex flex-col sm:flex-row w-full sm:w-auto items-stretch sm:items-center gap-2.5 shrink-0 max-w-md"
           >

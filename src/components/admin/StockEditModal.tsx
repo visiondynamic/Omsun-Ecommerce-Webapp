@@ -18,7 +18,7 @@ interface StockEditModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateStock: (productId: string, newStock: number) => void;
+  onUpdateStock: (productId: string, newStock: number) => void | Promise<void>;
 }
 
 export function StockEditModal({

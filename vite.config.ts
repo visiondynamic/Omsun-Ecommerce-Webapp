@@ -1,7 +1,6 @@
 import { loadEnv, defineConfig, type PluginOption, type UserConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import tsConfigPaths from "vite-tsconfig-paths";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { devtools } from "@tanstack/devtools-vite";
 
@@ -23,7 +22,6 @@ export default defineConfig(async ({ command, mode }): Promise<UserConfig> => {
 
   plugins.push(
     tailwindcss(),
-    tsConfigPaths({ projects: ["./tsconfig.json"] }),
     tanstackStart({
       importProtection: {
         behavior: "error",
@@ -42,7 +40,7 @@ export default defineConfig(async ({ command, mode }): Promise<UserConfig> => {
     const defaultPreset =
       process.env["VERCEL"] || process.env["VERCEL_ENV"]
         ? "vercel"
-        : process.env["NITRO_PRESET"] || "cloudflare-module";
+        : process.env["NITRO_PRESET"] || "node-server";
     plugins.push(nitro({ defaultPreset }));
   }
 
@@ -58,6 +56,7 @@ export default defineConfig(async ({ command, mode }): Promise<UserConfig> => {
     define: envDefine,
     css: { transformer: "lightningcss" },
     resolve: {
+      tsconfigPaths: true,
       alias: { "@": `${process.cwd()}/src` },
       dedupe: [
         "react",

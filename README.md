@@ -58,3 +58,13 @@ npm run dev
 ## License
 
 All rights reserved. © OMSUN Nepal Pvt. Ltd.
+
+🔄 How to Push Future Updates (Without Git):
+Whenever you make local code changes in the future, you can update your live Railway services in one click with:
+
+Update Backend:
+bash
+railway up ./server-api --path-as-root --service omsun-api
+Update Frontend:
+bash
+railway up --service omsun-web

@@ -19,9 +19,13 @@ function AdminLayout() {
   useEffect(() => {
     if (isMounted) {
       if (!isAuthenticated) {
-        navigate({ to: "/auth", replace: true });
+        navigate({
+          to: "/auth",
+          search: { mode: "login", redirect: "/admin-dashboard" } as any,
+          replace: true,
+        });
       } else if (user?.role !== "admin") {
-        navigate({ to: "/", replace: true });
+        navigate({ to: "/dashboard", replace: true });
       }
     }
   }, [isMounted, isAuthenticated, user, navigate]);

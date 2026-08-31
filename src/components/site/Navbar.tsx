@@ -23,11 +23,27 @@ import {
   Home,
   ShoppingBag,
   User,
+  ShieldCheck,
+  Package,
+  LogOut,
+  LayoutDashboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/context/CartContext";
-import { products, formatNPR } from "@/lib/products";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { fallbackProducts, formatNPR } from "@/lib/products";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { mapApiProductToProduct } from "@/lib/products";
+import type { Product } from "@/lib/products";
 import omsunLogo from "@/assets/Omsun Nepal logo-WA0006.webp";
 
 import panelImg from "@/assets/p-panel.jpg";
@@ -92,6 +108,17 @@ export function Navbar() {
   const pathname = routerState.location.pathname;
   const { user, logout } = useAuth();
   const { setIsCartOpen, totalItems } = useCart();
+
+  const { data: apiProducts } = useQuery<Product[]>({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const rows = await api.getProducts();
+      return rows.map(mapApiProductToProduct);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const allProducts = apiProducts ?? fallbackProducts;
 
   const handleCartClick = () => {
     let loggedIn = false;
@@ -171,14 +198,14 @@ export function Navbar() {
 
   /* Filter products for instant search modal */
   const filteredProducts = searchQuery.trim()
-    ? products.filter(
+    ? allProducts.filter(
         (p) =>
           p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.tagline.toLowerCase().includes(searchQuery.toLowerCase()),
       )
-    : products.slice(0, 4);
+    : allProducts.slice(0, 4);
 
   return (
     <>
@@ -280,16 +307,20 @@ export function Navbar() {
             </ul>
 
             {/* ── RIGHT ACTIONS (END OF NAVBAR) ── */}
-            <div className="flex items-center justify-end gap-3">
-              {/* Mobile Search Icon (opens search modal) */}
+            <div className="flex items-center justify-end gap-2 sm:gap-2.5 shrink-0">
+              {/* Search Trigger Button */}
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
                 aria-label="Search store"
-                title="Search"
-                className="group relative flex size-9 items-center justify-center rounded-full text-white/90 transition-all duration-300 hover:bg-white/10 hover:text-[#03C987] lg:hidden cursor-pointer"
+                title="Search store (⌘K)"
+                className="group relative flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/20 bg-white/10 hover:bg-white/15 px-2.5 sm:px-3 py-1.5 text-xs text-white/80 hover:text-white hover:border-[#03C987]/50 transition-all cursor-pointer shrink-0"
               >
-                <Search className="size-4.5 transition-transform group-hover:scale-110" />
+                <Search className="size-3.5 sm:size-4 text-[#03C987] transition-transform group-hover:scale-110" />
+                <span className="hidden lg:inline text-xs font-medium text-white/80">Search...</span>
+                <kbd className="hidden xl:inline-flex items-center rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-mono font-bold text-white/80 border border-white/10">
+                  ⌘K
+                </kbd>
               </button>
 
               {/* Cart — glowing badge with live count */}
@@ -298,7 +329,7 @@ export function Navbar() {
                 onClick={handleCartClick}
                 aria-label="Open cart"
                 title="Shopping Cart"
-                className="group relative flex size-9 items-center justify-center rounded-full text-white/90 transition-all duration-300 hover:bg-white/10 hover:text-[#03C987] cursor-pointer"
+                className="group relative flex size-9 items-center justify-center rounded-full text-white/90 transition-all duration-300 hover:bg-white/10 hover:text-[#03C987] cursor-pointer shrink-0"
               >
                 <ShoppingCart className="size-4.5 transition-transform group-hover:scale-110" />
                 {totalItems > 0 ? (
@@ -313,59 +344,131 @@ export function Navbar() {
                 )}
               </button>
 
-              {/* User Auth Section */}
+              {/* User Account / Auth Section */}
               {user ? (
-                <>
-                  <Link
-                    to={user.role === "admin" ? "/admin-dashboard" : "/dashboard"}
-                    className="group relative hidden h-9 items-center rounded-full border border-white/20 bg-white/10 px-4 text-xs font-bold text-white transition-all duration-300 hover:border-[#03C987] hover:bg-[#03C987] hover:text-[#041a12] sm:inline-flex"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="group relative inline-flex h-9 items-center gap-2 rounded-full border border-[#03C987]/40 bg-[#03C987]/15 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-white transition-all duration-300 hover:border-[#03C987] hover:bg-[#03C987]/25 cursor-pointer shrink-0"
+                    >
+                      {user.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          className="size-5.5 rounded-full object-cover border border-[#03C987] shadow-xs shrink-0"
+                        />
+                      ) : (
+                        <div className="flex size-5.5 rounded-full bg-[#03C987] text-[#041a12] items-center justify-center text-[10px] font-black uppercase shadow-xs">
+                          {user.name?.[0] || (user.role === "admin" ? "A" : "U")}
+                        </div>
+                      )}
+                      <span className="max-w-[90px] sm:max-w-[110px] truncate text-white font-bold hidden sm:inline">
+                        {user.name?.split(" ")[0] || (user.role === "admin" ? "Admin" : "Account")}
+                      </span>
+                      <ChevronDown className="size-3.5 text-[#03C987] transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    sideOffset={8}
+                    className="w-64 rounded-2xl p-1.5 bg-[#06241a] backdrop-blur-xl border border-[#03C987]/30 text-white shadow-2xl z-50 animate-in fade-in-50 zoom-in-95"
                   >
-                    {user.role === "admin" ? "Admin Panel" : "My Dashboard"}
-                  </Link>
-                  <button
-                    onClick={logout}
-                    className="group relative hidden h-9 items-center rounded-full border border-white/20 bg-white/10 px-3.5 text-xs font-bold text-white transition-all duration-300 hover:border-red-400 hover:bg-red-500/20 hover:text-red-300 sm:inline-flex cursor-pointer"
-                  >
-                    Logout
-                  </button>
-                </>
+                    <DropdownMenuLabel className="p-2.5">
+                      <div className="flex items-center gap-2.5">
+                        {user.avatar ? (
+                          <img
+                            src={user.avatar}
+                            alt={user.name}
+                            className="size-8 rounded-xl object-cover border border-[#03C987]/40 shadow-xs shrink-0"
+                          />
+                        ) : (
+                          <div className="flex size-8 rounded-xl bg-[#03C987]/20 border border-[#03C987]/40 text-[#03C987] items-center justify-center font-black text-xs">
+                            {user.name?.[0]?.toUpperCase() || "U"}
+                          </div>
+                        )}
+                        <div className="truncate flex-1">
+                          <div className="font-extrabold text-xs text-white truncate">
+                            {user.name || "Customer"}
+                          </div>
+                          <div className="text-[10px] text-slate-300 truncate">{user.email}</div>
+                        </div>
+                      </div>
+                      <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-[#03C987]/10 px-2 py-0.5 text-[9px] font-bold text-[#03C987] border border-[#03C987]/20">
+                        <ShieldCheck className="size-2.5" />
+                        <span>{user.role === "admin" ? "Super Administrator" : "Verified Customer"}</span>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-white/10 my-1" />
+
+                    {user.role === "admin" ? (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/admin-dashboard"
+                          className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-bold text-[#03C987] hover:bg-[#03C987]/15 cursor-pointer transition-colors"
+                        >
+                          <LayoutDashboard className="size-4 text-[#03C987]" />
+                          <span>Admin Control Center</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/dashboard"
+                          className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-bold text-white hover:bg-white/10 cursor-pointer transition-colors"
+                        >
+                          <LayoutDashboard className="size-4 text-[#03C987]" />
+                          <span>Customer Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/dashboard"
+                        className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-200 hover:bg-white/10 cursor-pointer transition-colors"
+                      >
+                        <Package className="size-4 text-sky-400" />
+                        <span>My Orders & Tracking</span>
+                      </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/dashboard"
+                        className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-200 hover:bg-white/10 cursor-pointer transition-colors"
+                      >
+                        <ShieldCheck className="size-4 text-emerald-400" />
+                        <span>Warranty & Solar Assets</span>
+                      </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator className="bg-white/10 my-1" />
+
+                    <DropdownMenuItem
+                      onClick={logout}
+                      className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20 hover:text-red-300 cursor-pointer transition-colors"
+                    >
+                      <LogOut className="size-4" />
+                      <span>Sign Out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <Link
                   to="/auth"
-                  className="group relative hidden h-9 items-center rounded-full border border-white/20 bg-white/10 px-4 text-xs font-extrabold text-white transition-all duration-300 hover:border-[#03C987] hover:bg-[#03C987] hover:text-[#041a12] sm:inline-flex"
+                  className="group relative inline-flex h-9 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 text-xs font-extrabold text-white transition-all duration-300 hover:border-[#03C987] hover:bg-[#03C987] hover:text-[#041a12] shrink-0"
                 >
-                  Sign In
+                  <User className="size-3.5" />
+                  <span>Sign In</span>
                 </Link>
               )}
-
-              {/* ── INLINE STORE SEARCH CAPSULE (REPLACED GET SOLAR QUOTE BUTTON) ── */}
-              <div className="relative hidden lg:flex items-center rounded-full border border-white/25 bg-white/10 hover:bg-white/15 focus-within:bg-white/15 focus-within:border-[#03C987] px-3.5 py-1.5 transition-all min-w-[190px] xl:min-w-[220px]">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    if (!searchOpen) setSearchOpen(true);
-                  }}
-                  onFocus={() => setSearchOpen(true)}
-                  placeholder="Search entire store here"
-                  className="w-full bg-transparent text-xs font-medium text-white placeholder:text-white/70 focus:outline-none pr-5"
-                />
-                <button
-                  type="button"
-                  onClick={() => setSearchOpen(true)}
-                  aria-label="Search store"
-                  className="absolute right-3 text-white/80 hover:text-[#03C987] transition-colors cursor-pointer"
-                >
-                  <Search className="size-3.5" />
-                </button>
-              </div>
 
               {/* Mobile hamburger */}
               <button
                 aria-label={open ? "Close menu" : "Open menu"}
                 onClick={() => setOpen((v) => !v)}
-                className="group relative inline-flex size-9 items-center justify-center rounded-full text-white/90 transition-all duration-300 hover:bg-white/10 lg:hidden cursor-pointer"
+                className="group relative inline-flex size-9 items-center justify-center rounded-full text-white/90 transition-all duration-300 hover:bg-white/10 lg:hidden cursor-pointer shrink-0"
               >
                 {open ? <X className="size-5" /> : <Menu className="size-5" />}
               </button>
@@ -433,51 +536,58 @@ export function Navbar() {
                     <div className="col-span-8 grid grid-cols-3 gap-3.5 pl-2">
                       {[
                         {
-                          name: "Solar Panels",
-                          desc: "Mono-PERC & Bifacial N-Type",
-                          icon: Sun,
-                          color: "#0ea5e9",
-                          image: panelImg,
+                          name: "Servo Stabilizers",
+                          desc: "1kVA – 15kVA Single & 3-Phase",
+                          icon: Gauge,
+                          color: "#10b981",
+                          image: switchgearImg,
+                          searchParams: { category: "Stabilizer", subcategory: "Servo Stabilizer" },
                         },
                         {
-                          name: "Hybrid Inverters",
-                          desc: "On-Grid & Off-Grid Controllers",
+                          name: "Green Volt Relay AVR",
+                          desc: "1kVA – 5kVA (90V / 110V Range)",
+                          icon: Zap,
+                          color: "#06b6d4",
+                          image: switchgearImg,
+                          searchParams: { category: "Stabilizer", subcategory: "Relay Based Stabilizer / AVR" },
+                        },
+                        {
+                          name: "Oil Cooled Servo",
+                          desc: "30kVA – 150kVA Heavy Industrial",
                           icon: Gauge,
                           color: "#6366f1",
-                          image: inverterImg,
-                        },
-                        {
-                          name: "Energy Storage",
-                          desc: "LiFePO4 Powerwalls & Batteries",
-                          icon: BatteryCharging,
-                          color: "#10b981",
-                          image: batteryImg,
-                        },
-                        {
-                          name: "Cables & Wiring",
-                          desc: "Solar DC Cables & Copper Armor",
-                          icon: Cable,
-                          color: "#f59e0b",
-                          image: cableImg,
-                        },
-                        {
-                          name: "Solar Lighting",
-                          desc: "Smart Street & All-in-One Lights",
-                          icon: Lightbulb,
-                          color: "#ec4899",
-                          image: lightImg,
-                        },
-                        {
-                          name: "Switchgear & Panels",
-                          desc: "Industrial Distribution & Breakers",
-                          icon: PanelsTopLeft,
-                          color: "#8b5cf6",
                           image: switchgearImg,
+                          searchParams: { category: "Stabilizer", subcategory: "Oil Cooled Servo Stabilizer" },
+                        },
+                        {
+                          name: "Online LF UPS",
+                          desc: "5kVA – 20kVA Isolation Transformer",
+                          icon: Zap,
+                          color: "#10b981",
+                          image: inverterImg,
+                          searchParams: { category: "UPS", subcategory: "Online LF UPS" },
+                        },
+                        {
+                          name: "Power-One Online UPS",
+                          desc: "10kVA – 30kVA Enterprise 3-Phase",
+                          icon: Zap,
+                          color: "#3b82f6",
+                          image: inverterImg,
+                          searchParams: { category: "UPS", subcategory: "Industrial Online UPS" },
+                        },
+                        {
+                          name: "Solar & Turnkey Energy",
+                          desc: "Hybrid Inverters, Panels & Net Metering",
+                          icon: Sun,
+                          color: "#f59e0b",
+                          image: panelImg,
+                          searchParams: { category: "Solar" },
                         },
                       ].map((item) => (
                         <Link
                           key={item.name}
                           to="/shop"
+                          search={item.searchParams as any}
                           onClick={() => setActiveMenu(null)}
                           className="group/card relative overflow-hidden rounded-xl border border-white/12 bg-[#082218] transition-all duration-300 hover:border-white/30 hover:shadow-[0_12px_30px_rgba(0,0,0,0.7)] h-full min-h-[92px]"
                         >
@@ -791,17 +901,23 @@ export function Navbar() {
                   <span className="text-[11px] font-bold uppercase tracking-wider text-white/40 mr-1">
                     Quick Search:
                   </span>
-                  {["Solar Panel", "Inverter", "Battery", "Cable", "Lighting", "Switchgear"].map(
-                    (tag) => (
-                      <button
-                        key={tag}
-                        onClick={() => setSearchQuery(tag)}
-                        className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/70 hover:border-emerald-400/50 hover:bg-emerald-500/10 hover:text-emerald-300 transition-all"
-                      >
-                        {tag}
-                      </button>
-                    ),
-                  )}
+                  {[
+                    "Servo Stabilizer",
+                    "Green Volt",
+                    "Oil Cooled",
+                    "Online LF UPS",
+                    "Power-One",
+                    "3-Phase",
+                    "Solar",
+                  ].map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => setSearchQuery(tag)}
+                      className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/70 hover:border-emerald-400/50 hover:bg-emerald-500/10 hover:text-emerald-300 transition-all"
+                    >
+                      {tag}
+                    </button>
+                  ))}
                 </div>
 
                 {/* Matching Results List */}
@@ -930,13 +1046,36 @@ export function Navbar() {
                 <span>View Shopping Cart ({totalItems})</span>
               </button>
 
-              <Link
-                to="/auth"
-                onClick={() => setOpen(false)}
-                className="flex h-11 w-full items-center justify-center rounded-xl border border-white/10 text-xs font-semibold text-white/80 transition-all duration-200 hover:border-white/20 hover:bg-white/8 hover:text-white"
-              >
-                Sign In / Register Account
-              </Link>
+              {user ? (
+                <div className="space-y-2">
+                  <Link
+                    to={user.role === "admin" ? "/admin-dashboard" : "/dashboard"}
+                    onClick={() => setOpen(false)}
+                    className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#03C987]/40 bg-[#03C987]/15 text-xs font-bold text-[#03C987] transition-all duration-200"
+                  >
+                    <User className="size-4" />
+                    <span>{user.role === "admin" ? "Admin Control Panel" : "My Account Dashboard"}</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      logout();
+                    }}
+                    className="flex h-10 w-full items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 text-xs font-bold text-red-400 hover:bg-red-500/20"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/auth"
+                  onClick={() => setOpen(false)}
+                  className="flex h-11 w-full items-center justify-center rounded-xl border border-white/10 text-xs font-semibold text-white/80 transition-all duration-200 hover:border-white/20 hover:bg-white/8 hover:text-white"
+                >
+                  Sign In / Register Account
+                </Link>
+              )}
 
               <Link
                 to="/shop"
@@ -1006,13 +1145,13 @@ export function Navbar() {
         </Link>
 
         <Link
-          to="/auth"
+          to={user ? (user.role === "admin" ? "/admin-dashboard" : "/dashboard") : "/auth"}
           className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-white/70 hover:text-emerald-400"
         >
           <span className="grid size-6 place-items-center">
             <User className="size-4.5" />
           </span>
-          <span>Account</span>
+          <span>{user ? (user.role === "admin" ? "Admin" : "Dashboard") : "Account"}</span>
         </Link>
       </nav>
     </>

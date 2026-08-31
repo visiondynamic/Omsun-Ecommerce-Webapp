@@ -5,11 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
+    "dev:api": "npm --prefix server-api run dev",
+    "dev:all": "node scripts/dev-all.mjs",
+    "db:setup": "node server-api/src/setup-db.js",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "start": "node .output/server/index.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write ."
+  },
+  "engines": {
+    "node": ">=22.12.0"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -63,7 +70,6 @@
     "tailwindcss": "^4.2.1",
     "tw-animate-css": "^1.3.4",
     "vaul": "^1.1.2",
-    "vite-tsconfig-paths": "^6.0.2",
     "zod": "^3.24.2"
   },
   "devDependencies": {

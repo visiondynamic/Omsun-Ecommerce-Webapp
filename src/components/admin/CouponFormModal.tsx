@@ -17,7 +17,7 @@ import { toast } from "sonner";
 interface CouponFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSaveCoupon: (coupon: AdminCoupon) => void;
+  onSaveCoupon: (coupon: AdminCoupon) => void | Promise<void>;
 }
 
 export function CouponFormModal({ isOpen, onClose, onSaveCoupon }: CouponFormModalProps) {

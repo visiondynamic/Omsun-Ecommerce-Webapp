@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 
 export function ProductCard({
   product,
-  variant = "dark",
+  variant = "light",
 }: {
   product: Product;
   variant?: "dark" | "light";
@@ -32,7 +32,6 @@ export function ProductCard({
   const { addToCart, buyNow } = useCart();
 
   const out = product.stock === 0;
-  const isLight = variant === "light";
 
   // Calculate discount percentage if compareAt exists
   const discountPercent =
@@ -45,49 +44,29 @@ export function ProductCard({
       <article
         className={cn(
           "group relative flex h-full flex-col justify-between overflow-hidden rounded-[20px] p-3 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.02]",
-          "border border-[#D8F2DF] bg-white text-[#173226] shadow-sm hover:border-[#38B46A] hover:shadow-lg hover:shadow-[#38B46A]/15",
+          "border border-[#D8F2DF] bg-white text-[#173226] shadow-sm hover:border-[#38B46A] hover:shadow-lg hover:shadow-[#38B46A]/15 dark:border-white/10 dark:bg-[#071f17] dark:text-white",
         )}
       >
         {/* ── PHOTO CONTAINER ── */}
-        <div className="relative overflow-hidden rounded-2xl shrink-0 bg-slate-50">
-          {/* Top Badges */}
-          <div className="absolute left-2.5 top-2.5 z-10 flex flex-wrap gap-1.5">
+        <div className="relative overflow-hidden rounded-2xl shrink-0 bg-slate-50 dark:bg-black/20">
+          {/* Top Badges (Left Stock Status, Right Discount Tag with Zero Overlap) */}
+          <div className="absolute inset-x-2.5 top-2.5 z-10 flex items-start justify-between gap-1.5 pointer-events-none">
             {out ? (
-              <span className="rounded-lg bg-[#94A3B8] px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm">
+              <span className="rounded-md bg-slate-700/95 backdrop-blur-xs px-2 py-0.5 text-[8.5px] font-extrabold uppercase tracking-wider text-white shadow-xs">
                 Out of Stock
               </span>
             ) : (
-              <span className="rounded-lg bg-[#38B46A] px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm">
+              <span className="rounded-md bg-emerald-600/95 backdrop-blur-xs px-2 py-0.5 text-[8.5px] font-extrabold uppercase tracking-wider text-white shadow-xs">
                 In Stock
               </span>
             )}
-            {product.badges.slice(0, 1).map((b) => {
-              const lower = b.toLowerCase();
-              let badgeBg = "bg-[#2F80ED]"; // Default Featured (Blue)
-              if (lower.includes("new")) badgeBg = "bg-[#38B46A]"; // Green
-              if (lower.includes("sale") || lower.includes("off")) badgeBg = "bg-[#F59E0B]"; // Orange
-              if (lower.includes("top") || lower.includes("rate")) badgeBg = "bg-[#F4B400]"; // Gold
 
-              return (
-                <span
-                  key={b}
-                  className={cn(
-                    "rounded-lg px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm",
-                    badgeBg,
-                  )}
-                >
-                  {b}
-                </span>
-              );
-            })}
+            {discountPercent ? (
+              <span className="rounded-md bg-amber-500/95 backdrop-blur-xs px-2 py-0.5 text-[8.5px] font-black uppercase tracking-wider text-white shadow-xs shrink-0">
+                -{discountPercent}% OFF
+              </span>
+            ) : null}
           </div>
-
-          {/* Discount Badge */}
-          {discountPercent && (
-            <div className="absolute right-2.5 top-2.5 z-10 rounded-lg bg-[#F59E0B] px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-sm">
-              -{discountPercent}% OFF
-            </div>
-          )}
 
           {/* Product Image Link */}
           <Link to="/product/$id" params={{ id: product.id }} aria-label={product.name}>
@@ -95,21 +74,22 @@ export function ProductCard({
               src={product.image}
               alt={product.name}
               loading="lazy"
-              width={800}
-              height={800}
-              className="aspect-square w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              decoding="async"
+              width={400}
+              height={400}
+              className="aspect-square w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
             />
           </Link>
 
           {/* Quick View overlay button */}
-          <div className="pointer-events-none absolute inset-x-2 bottom-2 flex gap-2 opacity-0 transition-all duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
+          <div className="pointer-events-none absolute inset-x-2 bottom-2 flex gap-2 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
             <Button
               type="button"
               onClick={() => {
                 setQuantity(1);
                 setQuickViewOpen(true);
               }}
-              className="h-9 flex-1 rounded-xl text-[11px] font-bold shadow-lg backdrop-blur-md transition-all border border-slate-200 bg-white/95 text-[#173226] hover:bg-[#38B46A] hover:text-white hover:border-[#38B46A]"
+              className="h-9 flex-1 rounded-xl text-[11px] font-bold shadow-lg transition-all border border-slate-200 bg-white/95 text-[#173226] hover:bg-[#38B46A] hover:text-white hover:border-[#38B46A]"
             >
               <Eye className="size-3.5 mr-1" /> Quick View
             </Button>
@@ -119,55 +99,71 @@ export function ProductCard({
         {/* ── CARD CONTENT ── */}
         <div className="flex flex-1 flex-col justify-between gap-2 p-1.5 pt-2.5">
           <div>
-            {/* Category */}
-            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-500/90 mb-0.5">
-              {product.category}
+            {/* Brand & Subcategory Pills */}
+            <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+              <span
+                className={cn(
+                  "rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider font-mono shadow-2xs",
+                  product.brand === "OMSUN"
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50"
+                    : product.brand === "Green Volt"
+                    ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/80 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-700/50"
+                    : "bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300 dark:border-blue-700/50",
+                )}
+              >
+                {product.brand}
+              </span>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                {product.subcategory || product.category}
+              </span>
             </div>
 
-            {/* Title (2 lines max - Daraz style) */}
-            <h3
-              className={cn(
-                "font-display text-xs sm:text-sm font-bold leading-tight line-clamp-2 min-h-[2.3rem] transition-colors",
-                isLight
-                  ? "text-slate-900 group-hover:text-emerald-700"
-                  : "text-white group-hover:text-emerald-300",
-              )}
-            >
+            {/* Title (Crisp, High Contrast Dark Font on Light Card) */}
+            <h3 className="font-display text-xs sm:text-sm font-bold leading-snug line-clamp-2 min-h-[2.4rem] text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
               <Link to="/product/$id" params={{ id: product.id }}>
                 {product.name}
               </Link>
             </h3>
 
+            {/* Key Distinct Specs Chips */}
+            {product.specs && product.specs.length > 0 && (
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {product.specs.slice(1, 3).map((s, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center rounded-md bg-slate-100 dark:bg-white/5 px-1.5 py-0.5 text-[9.5px] font-semibold text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 truncate max-w-full"
+                  >
+                    <span className="text-slate-400 dark:text-slate-500 mr-1">{s.label}:</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{s.value}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+
             {/* Price & Discount Row (OMSUN Theme) */}
-            <div className="mt-2 flex flex-wrap items-baseline gap-1.5">
-              <span
-                className={cn(
-                  "font-display text-sm sm:text-base font-extrabold",
-                  isLight ? "text-emerald-700" : "text-emerald-400",
-                )}
-              >
-                {formatNPR(product.price)}
-              </span>
-              {product.compareAt ? (
-                <span
-                  className={cn(
-                    "text-[11px] line-through font-mono",
-                    isLight ? "text-slate-400" : "text-white/40",
-                  )}
-                >
-                  {formatNPR(product.compareAt)}
+            <div className="mt-2 flex flex-wrap items-baseline justify-between gap-1">
+              <div className="flex flex-wrap items-baseline gap-1.5">
+                <span className="font-display text-sm sm:text-base font-extrabold text-emerald-700 dark:text-emerald-400">
+                  {formatNPR(product.price)}
                 </span>
-              ) : null}
+                {product.compareAt ? (
+                  <span className="text-[11px] line-through font-mono text-slate-400 dark:text-white/40">
+                    {formatNPR(product.compareAt)}
+                  </span>
+                ) : null}
+              </div>
+              <span className="text-[9px] font-bold text-emerald-600/90 dark:text-emerald-400/90 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800/40">
+                13% VAT Incl.
+              </span>
             </div>
 
-            {/* Star Rating & Sold Count */}
-            <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+            {/* Star Rating & Warranty Note */}
+            <div className="mt-1.5 flex items-center justify-between text-[10.5px] text-muted-foreground font-medium">
               <span className="flex items-center gap-0.5 font-bold text-amber-400">
                 <Star className="size-3 fill-amber-400 text-amber-400" />
                 <span>{product.rating}</span>
               </span>
-              <span>•</span>
-              <span>388 sold</span>
+              <span className="text-[10px] text-slate-500 font-medium">1 Year Warranty</span>
             </div>
           </div>
 
@@ -179,12 +175,7 @@ export function ProductCard({
                 disabled={out}
                 onClick={() => addToCart(product, 1)}
                 variant="outline"
-                className={cn(
-                  "h-9 rounded-xl font-bold text-[10px] sm:text-xs px-1 sm:px-2 transition-all border",
-                  isLight
-                    ? "border-emerald-600 text-emerald-800 hover:bg-emerald-50 bg-emerald-50/50"
-                    : "border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/20 bg-emerald-500/10",
-                )}
+                className="h-9 rounded-xl font-bold text-[10px] sm:text-xs px-1 sm:px-2 transition-all border border-emerald-600 text-emerald-800 hover:bg-emerald-50 bg-emerald-50/50 dark:border-emerald-500/40 dark:text-emerald-300 dark:hover:bg-emerald-500/20 dark:bg-emerald-500/10"
               >
                 <ShoppingCart className="size-3 mr-1 shrink-0 hidden sm:inline-block" />
                 <span className="truncate">Cart</span>
@@ -254,7 +245,7 @@ export function ProductCard({
                   Brand: {product.brand}
                 </div>
 
-                <h2 className="mt-1 font-display text-2xl font-extrabold leading-tight">
+                <h2 className="mt-1 font-display text-2xl font-extrabold leading-tight text-slate-900 dark:text-white">
                   {product.name}
                 </h2>
 

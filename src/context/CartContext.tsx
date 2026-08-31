@@ -25,19 +25,17 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 const LOCAL_STORAGE_KEY = "omsun_daraz_shopping_cart_v2";
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (saved) return JSON.parse(saved);
-      } catch (e) {
-        console.error("Failed to parse saved cart", e);
-      }
-    }
-    return [];
-  });
-
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) setCart(JSON.parse(saved));
+    } catch (e) {
+      console.error("Failed to parse saved cart", e);
+    }
+  }, []);
 
   // Helper function to check if user is logged in
   const checkUserLoggedIn = (): boolean => {

@@ -22,7 +22,12 @@ function ProtectedLayout() {
 
   useEffect(() => {
     if (isMounted && !isAuthenticated) {
-      navigate({ to: "/auth", replace: true });
+      const redirectPath = typeof window !== "undefined" ? window.location.pathname : "/dashboard";
+      navigate({
+        to: "/auth",
+        search: { mode: "login", redirect: redirectPath } as any,
+        replace: true,
+      });
     }
   }, [isMounted, isAuthenticated, navigate]);
 
@@ -38,46 +43,10 @@ function ProtectedLayout() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col bg-background text-foreground">
+    <div className="min-h-dvh flex flex-col bg-[#eff0f5] dark:bg-[#071912] text-foreground">
       <Navbar />
 
-      <main className="flex-1 pb-20">
-        {/* ── HERO BANNER FOR PROTECTED PORTAL ── */}
-        <section className="relative overflow-hidden bg-[#041a12] pt-28 pb-12 sm:pt-36 sm:pb-16 text-white border-b border-emerald-950 mb-10">
-          <img
-            src={heroPortalBg}
-            alt="OMSUN Portal Background"
-            decoding="async"
-            className="absolute inset-0 size-full object-cover object-center pointer-events-none opacity-60"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#03150e]/90 via-[#03150e]/70 to-[#03150e]/85" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#03150e]/40 via-transparent to-[#041a12]" />
-
-          <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#03C987]/30 bg-[#03C987]/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#03C987] mb-3">
-                  <User className="size-3.5" />
-                  <span>Customer Portal & Dashboard</span>
-                </span>
-                <h1 className="font-display text-3xl font-extrabold sm:text-4xl text-white">
-                  Welcome back, {user?.name}
-                </h1>
-                <p className="mt-1 text-xs text-slate-300 font-medium">
-                  Manage your solar orders, warranty certificates, and NEA net-metering status.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-xs font-extrabold text-[#03C987] shadow-sm">
-                  <ShieldCheck className="size-4 text-[#03C987]" />
-                  <span>Verified Customer Account</span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
+      <main className="flex-1 pt-24 sm:pt-28 pb-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <Outlet />
         </div>

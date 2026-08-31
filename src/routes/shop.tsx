@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BatteryCharging,
   Cable,
@@ -31,7 +31,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BRANDS, CATEGORIES, formatNPR, products } from "@/lib/products";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import {
+  BRANDS,
+  CATEGORIES,
+  PRODUCT_TAXONOMY,
+  formatNPR,
+  fallbackProducts,
+  mapApiProductToProduct,
+} from "@/lib/products";
+import type { Product } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
 import panelImg from "@/assets/p-panel.jpg";
@@ -41,86 +51,92 @@ import cableImg from "@/assets/p-cable.jpg";
 import lightImg from "@/assets/p-light.jpg";
 import switchgearImg from "@/assets/p-panelboard.jpg";
 
+type ShopSearch = {
+  q?: string;
+  category?: string;
+  subcategory?: string;
+  brand?: string;
+};
+
 export const Route = createFileRoute("/shop")({
+  validateSearch: (search: Record<string, unknown>): ShopSearch => {
+    return {
+      q: typeof search.q === "string" ? search.q : undefined,
+      category: typeof search.category === "string" ? search.category : undefined,
+      subcategory: typeof search.subcategory === "string" ? search.subcategory : undefined,
+      brand: typeof search.brand === "string" ? search.brand : undefined,
+    };
+  },
   head: () => ({
     meta: [
-      { title: "Shop Solar & Electrical Products | OMSUN Nepal" },
+      { title: "Shop Solar, UPS, Stabilizers & Security | OMSUN Nepal" },
       {
         name: "description",
         content:
-          "Browse OMSUN Nepal's catalogue of solar panels, hybrid inverters, storage batteries, copper cables, LED lighting and industrial switchgear with live stock levels.",
+          "Browse OMSUN Nepal's certified product catalog: Online & Offline UPS, Servo & Oil Cooled Stabilizers, CCTV Security, Hybrid Solar systems and LiFePO4 Battery Storage.",
       },
-      { property: "og:title", content: "Shop Solar & Electrical Products | OMSUN Nepal" },
+      { property: "og:title", content: "Shop Solar, UPS, Stabilizers & Security | OMSUN Nepal" },
       {
         property: "og:description",
-        content: "Filter by category, brand, price and availability. Nationwide delivery in Nepal.",
+        content: "Filter by category, subcategory, brand, price and availability. Nationwide delivery in Nepal.",
       },
     ],
   }),
   component: Shop,
 });
 
-const categoryCards = [
-  {
-    name: "All Products",
-    categoryKey: "All",
-    icon: LayoutGrid,
-    count: products.length,
-    image: null,
-  },
-  {
-    name: "Solar Panels",
-    categoryKey: "Solar Panels",
-    icon: Sun,
-    count: products.filter((p) => p.category === "Solar Panels").length,
-    image: panelImg,
-  },
-  {
-    name: "Inverters",
-    categoryKey: "Inverters",
-    icon: Gauge,
-    count: products.filter((p) => p.category === "Inverters").length,
-    image: inverterImg,
-  },
-  {
-    name: "Energy Storage",
-    categoryKey: "Energy Storage",
-    icon: BatteryCharging,
-    count: products.filter((p) => p.category === "Energy Storage").length,
-    image: batteryImg,
-  },
-  {
-    name: "Cables & Wiring",
-    categoryKey: "Cables & Wiring",
-    icon: Cable,
-    count: products.filter((p) => p.category === "Cables & Wiring").length,
-    image: cableImg,
-  },
-  {
-    name: "Lighting",
-    categoryKey: "Lighting",
-    icon: Lightbulb,
-    count: products.filter((p) => p.category === "Lighting").length,
-    image: lightImg,
-  },
-  {
-    name: "Switchgear & Panels",
-    categoryKey: "Switchgear & Panels",
-    icon: PanelsTopLeft,
-    count: products.filter((p) => p.category === "Switchgear & Panels").length,
-    image: switchgearImg,
-  },
-];
-
 function Shop() {
-  const [query, setQuery] = useState("");
-  const [cats, setCats] = useState<string[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState(500000);
+  const search = Route.useSearch();
+
+  const [query, setQuery] = useState(search.q || "");
+  const [cats, setCats] = useState<string[]>(search.category ? [search.category] : []);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
+    search.subcategory || null,
+  );
+  const [brands, setBrands] = useState<string[]>(search.brand ? [search.brand] : []);
+  const [maxPrice, setMaxPrice] = useState(1500000);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sort, setSort] = useState("featured");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Sync state whenever URL query params change (e.g. mega-menu navigation)
+  useEffect(() => {
+    if (search.q !== undefined) {
+      setQuery(search.q);
+    } else if (search.category === undefined && search.subcategory === undefined && search.brand === undefined) {
+      setQuery("");
+    }
+
+    if (search.category !== undefined) {
+      setCats([search.category]);
+    } else if (search.q === undefined && search.subcategory === undefined) {
+      setCats([]);
+    }
+
+    if (search.subcategory !== undefined) {
+      setSelectedSubcategory(search.subcategory);
+    } else if (search.category === undefined && search.q === undefined) {
+      setSelectedSubcategory(null);
+    }
+
+    if (search.brand !== undefined) {
+      setBrands([search.brand]);
+    } else if (search.category === undefined && search.q === undefined) {
+      setBrands([]);
+    }
+  }, [search.q, search.category, search.subcategory, search.brand]);
+
+  const { data: apiProducts } = useQuery<Product[]>({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const rows = await api.getProducts();
+      return rows.map(mapApiProductToProduct);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const allProducts = apiProducts ?? fallbackProducts;
 
   const categoryScrollRef = useRef<HTMLDivElement>(null);
 
@@ -130,31 +146,119 @@ function Shop() {
     categoryScrollRef.current.scrollBy({ left: distance, behavior: "smooth" });
   };
 
-  const toggle = (list: string[], set: (v: string[]) => void, value: string) =>
+  const toggle = (list: string[], set: (v: string[]) => void, value: string) => {
     set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
+    setSelectedSubcategory(null);
+  };
 
-  const selectSingleCategory = (catKey: string) => {
-    if (catKey === "All") {
+  const selectCategoryCard = (categoryKey: string, subcategoryKey: string | null = null) => {
+    if (categoryKey === "All") {
       setCats([]);
+      setSelectedSubcategory(null);
     } else {
-      setCats([catKey]);
+      setCats([categoryKey]);
+      setSelectedSubcategory(subcategoryKey);
     }
   };
 
   const clearAllFilters = () => {
     setQuery("");
     setCats([]);
+    setSelectedSubcategory(null);
     setBrands([]);
-    setMaxPrice(500000);
+    setMaxPrice(1500000);
     setInStockOnly(false);
   };
 
+  const categoryCards = [
+    {
+      name: "All Products",
+      categoryKey: "All",
+      subcategoryKey: null,
+      icon: LayoutGrid,
+      count: allProducts.length,
+      image: null,
+      badge: "Full Catalog",
+      tag: "All 32 Items",
+    },
+    {
+      name: "Single Phase Servo",
+      categoryKey: "Stabilizer",
+      subcategoryKey: "Servo Stabilizer",
+      icon: Gauge,
+      count: allProducts.filter((p) => p.subcategory === "Servo Stabilizer").length,
+      image: switchgearImg,
+      badge: "OMSUN MTER/MSER",
+      tag: "1kVA – 15kVA (1:1)",
+    },
+    {
+      name: "Three Phase Servo",
+      categoryKey: "Stabilizer",
+      subcategoryKey: "Three Phase Servo Stabilizer",
+      icon: Gauge,
+      count: allProducts.filter((p) => p.subcategory === "Three Phase Servo Stabilizer").length,
+      image: switchgearImg,
+      badge: "OMSUN 3-Phase",
+      tag: "10kVA & 15kVA (3:3)",
+    },
+    {
+      name: "Green Volt Relay AVR",
+      categoryKey: "Stabilizer",
+      subcategoryKey: "Relay Based Stabilizer / AVR",
+      icon: Zap,
+      count: allProducts.filter((p) => p.subcategory === "Relay Based Stabilizer / AVR").length,
+      image: switchgearImg,
+      badge: "Green Volt",
+      tag: "1kVA – 5kVA (90V/110V)",
+    },
+    {
+      name: "Oil Cooled Servo",
+      categoryKey: "Stabilizer",
+      subcategoryKey: "Oil Cooled Servo Stabilizer",
+      icon: Gauge,
+      count: allProducts.filter((p) => p.subcategory === "Oil Cooled Servo Stabilizer").length,
+      image: switchgearImg,
+      badge: "OMSUN Industrial",
+      tag: "30kVA – 150kVA (300V–470V)",
+    },
+    {
+      name: "Online LF UPS",
+      categoryKey: "UPS",
+      subcategoryKey: "Online LF UPS",
+      icon: Zap,
+      count: allProducts.filter((p) => p.subcategory === "Online LF UPS").length,
+      image: inverterImg,
+      badge: "OMSUN LF Isolation",
+      tag: "5kVA – 20kVA (1:1 / 3:1)",
+    },
+    {
+      name: "Power-One Online UPS",
+      categoryKey: "UPS",
+      subcategoryKey: "Industrial Online UPS",
+      icon: Zap,
+      count: allProducts.filter((p) => p.subcategory === "Industrial Online UPS").length,
+      image: inverterImg,
+      badge: "Power-One Enterprise",
+      tag: "10kVA – 30kVA (3:1 / 3:3)",
+    },
+  ];
+
+  // Derive relevant subcategories based on selected category
+  const activeSubcategories = useMemo(() => {
+    if (cats.length === 1) {
+      const match = PRODUCT_TAXONOMY.find((t) => t.name === cats[0]);
+      return match ? match.subcategories : [];
+    }
+    return PRODUCT_TAXONOMY.flatMap((t) => t.subcategories);
+  }, [cats]);
+
   const results = useMemo(() => {
-    const filtered = products.filter(
+    const filtered = allProducts.filter(
       (p) =>
         (!query ||
-          `${p.name} ${p.category} ${p.brand}`.toLowerCase().includes(query.toLowerCase())) &&
+          `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand}`.toLowerCase().includes(query.toLowerCase())) &&
         (cats.length === 0 || cats.includes(p.category)) &&
+        (!selectedSubcategory || p.subcategory === selectedSubcategory) &&
         (brands.length === 0 || brands.includes(p.brand)) &&
         p.price <= maxPrice &&
         (!inStockOnly || p.stock > 0),
@@ -163,7 +267,7 @@ function Shop() {
     if (sort === "price-desc") return [...filtered].sort((a, b) => b.price - a.price);
     if (sort === "rating") return [...filtered].sort((a, b) => b.rating - a.rating);
     return filtered;
-  }, [query, cats, brands, maxPrice, inStockOnly, sort]);
+  }, [query, cats, selectedSubcategory, brands, maxPrice, inStockOnly, sort, allProducts]);
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -195,8 +299,8 @@ function Shop() {
               Solar & Electrical Hardware Catalog
             </h1>
             <p className="mt-2 text-sm text-muted-foreground font-medium max-w-2xl">
-              Showing {results.length} of {products.length} certified products · Direct import with
-              serialised 25-year performance warranties across Nepal.
+              Showing {results.length} of {allProducts.length} certified products · Direct import
+              with serialised 25-year performance warranties across Nepal.
             </p>
           </div>
 
@@ -282,14 +386,18 @@ function Shop() {
           >
             {categoryCards.map((card) => {
               const isSelected =
-                card.categoryKey === "All" ? cats.length === 0 : cats.includes(card.categoryKey);
+                card.categoryKey === "All"
+                  ? cats.length === 0 && selectedSubcategory === null
+                  : card.subcategoryKey
+                  ? cats.includes(card.categoryKey) && selectedSubcategory === card.subcategoryKey
+                  : cats.includes(card.categoryKey) && selectedSubcategory === null;
 
               return (
                 <button
                   key={card.name}
-                  onClick={() => selectSingleCategory(card.categoryKey)}
+                  onClick={() => selectCategoryCard(card.categoryKey, card.subcategoryKey)}
                   className={cn(
-                    "group relative shrink-0 snap-start flex items-center gap-3.5 rounded-2xl border p-3.5 min-w-[220px] transition-all duration-300 overflow-hidden text-left shadow-lg",
+                    "group relative shrink-0 snap-start flex items-center gap-3.5 rounded-2xl border p-3.5 min-w-[240px] transition-all duration-300 overflow-hidden text-left shadow-lg cursor-pointer",
                     isSelected
                       ? "border-emerald-500 bg-[#072b1e] text-white shadow-emerald-500/20 ring-2 ring-emerald-500/60"
                       : "border-slate-200 dark:border-white/12 bg-card hover:border-emerald-400/60 hover:bg-emerald-500/5",
@@ -319,9 +427,17 @@ function Shop() {
                   </span>
 
                   <div className="min-w-0 flex-1 relative z-10">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400">
+                        {card.badge}
+                      </span>
+                      <span className="text-[10px] font-bold text-muted-foreground bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 rounded">
+                        {card.count}
+                      </span>
+                    </div>
                     <h4
                       className={cn(
-                        "font-display text-xs font-bold truncate transition-colors",
+                        "font-display text-xs font-extrabold truncate transition-colors mt-0.5",
                         isSelected
                           ? "text-emerald-300 font-extrabold"
                           : "text-foreground group-hover:text-emerald-400",
@@ -329,14 +445,51 @@ function Shop() {
                     >
                       {card.name}
                     </h4>
-                    <span className="text-[11px] font-semibold text-muted-foreground">
-                      {card.count} {card.count === 1 ? "Product" : "Products"}
-                    </span>
+                    <p className="text-[10px] font-medium text-muted-foreground truncate">
+                      {card.tag}
+                    </p>
                   </div>
                 </button>
               );
             })}
           </div>
+
+          {/* ── Subcategory Quick Chips ── */}
+          {activeSubcategories.length > 0 && (
+            <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+              <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap mr-1">
+                Subcategories:
+              </span>
+              <button
+                onClick={() => setSelectedSubcategory(null)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-bold transition-all shrink-0 cursor-pointer border",
+                  selectedSubcategory === null
+                    ? "bg-emerald-500 text-black border-emerald-500 shadow-xs"
+                    : "bg-card text-muted-foreground border-white/10 hover:border-emerald-500/40 hover:text-white",
+                )}
+              >
+                All Subcategories
+              </button>
+              {activeSubcategories.map((sub) => {
+                const isSubSelected = selectedSubcategory === sub;
+                return (
+                  <button
+                    key={sub}
+                    onClick={() => setSelectedSubcategory(isSubSelected ? null : sub)}
+                    className={cn(
+                      "rounded-full px-3 py-1 text-xs font-bold transition-all shrink-0 cursor-pointer border",
+                      isSubSelected
+                        ? "bg-emerald-500 text-black border-emerald-500 shadow-xs"
+                        : "bg-card text-muted-foreground border-white/10 hover:border-emerald-500/40 hover:text-white",
+                    )}
+                  >
+                    {sub}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* ═══════════════ MAIN CONTENT: STICKY SIDEBAR + PRODUCT GRID ═══════════════ */}
@@ -412,6 +565,23 @@ function Shop() {
               ))}
             </FilterGroup>
 
+            {/* Subcategories Filter List */}
+            {activeSubcategories.length > 0 && (
+              <FilterGroup title="Subcategories">
+                {activeSubcategories.map((sub) => (
+                  <CheckRow
+                    key={sub}
+                    id={`subcat-${sub}`}
+                    label={sub}
+                    checked={selectedSubcategory === sub}
+                    onChange={() =>
+                      setSelectedSubcategory(selectedSubcategory === sub ? null : sub)
+                    }
+                  />
+                ))}
+              </FilterGroup>
+            )}
+
             {/* Brand Checkbox List */}
             <FilterGroup title="Certified Manufacturers">
               {BRANDS.map((b) => (
@@ -429,15 +599,15 @@ function Shop() {
             <FilterGroup title="Price Range Limit">
               <Slider
                 value={[maxPrice]}
-                min={3000}
-                max={500000}
-                step={1000}
-                onValueChange={([v]) => setMaxPrice(v ?? 500000)}
+                min={5000}
+                max={1500000}
+                step={5000}
+                onValueChange={([v]) => setMaxPrice(v ?? 1500000)}
                 aria-label="Maximum price"
                 className="accent-emerald-500"
               />
               <div className="mt-2.5 flex items-center justify-between text-xs font-bold text-emerald-500 font-mono">
-                <span>NPR 3,000</span>
+                <span>NPR 5,000</span>
                 <span>{formatNPR(maxPrice)}</span>
               </div>
             </FilterGroup>
@@ -455,6 +625,77 @@ function Shop() {
 
           {/* ── PRODUCT RESULTS GRID ── */}
           <section>
+            {/* Active Filter Title & Context Bar */}
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-card border border-slate-200/80 dark:border-white/10">
+              <div className="flex items-center gap-2">
+                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-display text-sm font-bold text-slate-800 dark:text-white">
+                  {selectedSubcategory
+                    ? selectedSubcategory
+                    : cats.length === 1
+                    ? `${cats[0]} Systems`
+                    : "All Certified Electrical & Power Systems"}
+                </span>
+                <span className="rounded-md bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 font-mono font-bold text-xs px-2 py-0.5 border border-emerald-300 dark:border-emerald-700/50">
+                  {results.length} {results.length === 1 ? "Product" : "Products"}
+                </span>
+              </div>
+
+              {/* Active Filter Chips */}
+              {(selectedSubcategory || cats.length > 0 || brands.length > 0 || query) && (
+                <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                  {cats.map((c) => (
+                    <span
+                      key={c}
+                      className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2.5 py-1 border border-emerald-500/20"
+                    >
+                      {c}
+                      <button
+                        onClick={() => {
+                          setCats((prev) => prev.filter((item) => item !== c));
+                          setSelectedSubcategory(null);
+                        }}
+                        className="hover:text-emerald-800 dark:hover:text-emerald-200"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                  {selectedSubcategory && (
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 text-white font-bold px-2.5 py-1 shadow-xs">
+                      {selectedSubcategory}
+                      <button
+                        onClick={() => setSelectedSubcategory(null)}
+                        className="hover:opacity-80 font-black ml-1"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  {brands.map((b) => (
+                    <span
+                      key={b}
+                      className="inline-flex items-center gap-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold px-2.5 py-1 border border-blue-500/20"
+                    >
+                      {b}
+                      <button
+                        onClick={() => setBrands((prev) => prev.filter((item) => item !== b))}
+                        className="hover:text-blue-800 dark:hover:text-blue-200"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-xs font-bold text-rose-500 hover:underline px-2 py-1"
+                  >
+                    Clear All
+                  </button>
+                </div>
+              )}
+            </div>
+
             {results.length === 0 ? (
               <div className="rounded-3xl border border-slate-200 dark:border-white/12 bg-card grid place-items-center gap-3 p-16 text-center shadow-lg">
                 <Search className="size-10 text-muted-foreground" />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,15 +12,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Image as ImageIcon, Check, Sparkles, Eye } from "lucide-react";
+import { Image as ImageIcon, Check, Sparkles, Eye, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/lib/api";
 import panel from "@/assets/p-panel.jpg";
 
 interface BannerEditModalProps {
   bannerToEdit: AdminBanner | null;
   isOpen: boolean;
   onClose: () => void;
-  onSaveBanner: (banner: AdminBanner) => void;
+  onSaveBanner: (banner: AdminBanner) => void | Promise<void>;
 }
 
 export function BannerEditModal({
@@ -39,6 +40,33 @@ export function BannerEditModal({
     status: "Active",
     image: panel,
   });
+
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file (PNG, JPG, WEBP, SVG)");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const res = await api.uploadImage(file);
+      if (res?.url) {
+        setFormData((prev) => ({ ...prev, image: res.url }));
+        toast.success(`Banner image "${file.name}" uploaded successfully!`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload banner image");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   useEffect(() => {
     if (bannerToEdit) {
@@ -98,25 +126,61 @@ export function BannerEditModal({
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Live Mock Banner Card Preview */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-bold text-[#173226] dark:text-slate-200 flex items-center gap-1.5">
-              <Eye className="size-3.5 text-[#38B46A]" /> Live Storefront Banner Preview
-            </Label>
-            <div className="relative rounded-2xl overflow-hidden bg-[#041a12] p-5 text-white shadow-lg border border-[#38B46A]/30">
-              <img
-                src={formData.image}
-                alt=""
-                className="absolute inset-0 size-full object-cover opacity-40 pointer-events-none"
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-[#173226] dark:text-slate-200 flex items-center gap-1.5">
+                <Eye className="size-3.5 text-[#38B46A]" /> Live Banner Preview & Image
+              </Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
               />
-              <div className="relative z-10 space-y-2">
-                <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40">
-                  {formData.tagBadge || "Storefront Hero"}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isUploading}
+                onClick={() => fileInputRef.current?.click()}
+                className="h-7 rounded-lg border-emerald-500/40 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-[11px] font-bold px-2.5"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="size-3 mr-1.5 animate-spin" /> Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="size-3 mr-1.5 text-emerald-600" /> Direct Upload Image
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <div className="relative overflow-hidden rounded-2xl h-44 bg-[#061E15] p-5 flex flex-col justify-between border border-[#12342B] text-white">
+              {formData.image && (
+                <img
+                  src={formData.image}
+                  alt="Banner preview"
+                  className="absolute inset-0 size-full object-cover opacity-35"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = panel;
+                  }}
+                />
+              )}
+              <div className="relative z-10 space-y-1">
+                <span className="inline-block px-2.5 py-0.5 rounded-md bg-[#38B46A] text-[10px] font-black uppercase tracking-wider text-white">
+                  {formData.tagBadge || "Certified"}
                 </span>
-                <h3 className="font-display text-lg font-extrabold leading-tight text-white">
-                  {formData.title || "Banner Headline Goes Here"}
-                </h3>
-                <p className="text-xs text-slate-200/80 line-clamp-2">
-                  {formData.subtitle || "Banner description paragraph summary..."}
+                <h4 className="font-display font-black text-lg text-white leading-tight line-clamp-1">
+                  {formData.title || "Banner Title"}
+                </h4>
+                <p className="text-xs text-white/80 line-clamp-2">
+                  {formData.subtitle || "Banner subtitle description"}
                 </p>
+              </div>
+
+              <div className="relative z-10 flex items-center justify-between">
                 <div className="pt-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#38B46A] text-white text-xs font-bold shadow-sm">
                     {formData.ctaText || "CTA Button"}
@@ -124,6 +188,13 @@ export function BannerEditModal({
                 </div>
               </div>
             </div>
+
+            <Input
+              value={formData.image || ""}
+              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+              placeholder="Paste banner image URL or click 'Direct Upload Image'..."
+              className="rounded-xl text-xs mt-2"
+            />
           </div>
 
           <div className="space-y-1.5">

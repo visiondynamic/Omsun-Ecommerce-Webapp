@@ -109,11 +109,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>
@@ -123,6 +123,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 import { CartProvider } from "../context/CartContext";
 import { CartDrawer } from "../components/site/CartDrawer";
+import { BrandSplashLoader } from "../components/site/BrandSplashLoader";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -131,6 +132,7 @@ function RootComponent() {
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <CartProvider>
+          <BrandSplashLoader />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
           <CartDrawer />

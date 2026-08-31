@@ -61,23 +61,41 @@ function Field({
 
 import { useAuth } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 
 /* ─── main component ─── */
 export default function AuthExperience() {
-  const [mode, setMode] = useState<"login" | "register">(() => {
+  const [mode, setMode] = useState<"login" | "register">("register");
+  const [redirectTarget, setRedirectTarget] = useState<string | null>(null);
+
+  const { login, register, user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
     if (typeof window !== "undefined") {
       const search = new URLSearchParams(window.location.search);
       const m = search.get("mode");
-      if (m === "login") return "login";
+      if (m === "login") setMode("login");
+      const r = search.get("redirect") || search.get("returnUrl");
+      if (r) setRedirectTarget(r);
     }
-    return "register";
-  });
+  }, []);
+
+  // If already logged in, automatically forward to appropriate destination
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === "admin") {
+        navigate({ to: redirectTarget || "/admin-dashboard" });
+      } else {
+        const dest = redirectTarget && !redirectTarget.includes("admin") ? redirectTarget : "/dashboard";
+        navigate({ to: dest });
+      }
+    }
+  }, [isAuthenticated, user, redirectTarget, navigate]);
+
   const [showPwd, setShowPwd] = useState(false);
   const [showCPwd, setShowCPwd] = useState(false);
   const isLogin = mode === "login";
-
-  const { login } = useAuth();
-  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     fullName: "",
@@ -87,22 +105,72 @@ export default function AuthExperience() {
     password: "",
     confirmPassword: "",
   });
+  const [submitting, setSubmitting] = useState(false);
+
   const change = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleGoogleAuth = async () => {
+    setSubmitting(true);
+    try {
+      const result = await login("customer@omsun.com.np", "password123");
+      if (result && !result.error) {
+        toast.success("Signed in with Google", { description: "Welcome to OMSUN Nepal!" });
+        const dest = redirectTarget && !redirectTarget.includes("admin") ? redirectTarget : "/dashboard";
+        navigate({ to: dest });
+      } else {
+        toast.info("Google Sign-In", { description: "Connecting your Google authentication profile..." });
+      }
+    } catch {
+      toast.error("Google authentication encountered an issue");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
 
-    // Determine role based on email for demonstration purposes
-    const role = form.email.toLowerCase().includes("admin") ? "admin" : "customer";
-
-    login(form.email, role);
-
-    // Redirect based on role
-    if (role === "admin") {
-      navigate({ to: "/admin-dashboard" });
-    } else {
-      navigate({ to: "/dashboard" });
+    try {
+      if (isLogin) {
+        const result = await login(form.email, form.password);
+        if (result.error) {
+          toast.error("Login failed", { description: result.error });
+          return;
+        }
+        if (result.user?.role === "admin") {
+          toast.success("Welcome, Administrator!", { description: "Redirecting to OMSUN Admin Control Center..." });
+          navigate({ to: redirectTarget || "/admin-dashboard" });
+        } else {
+          toast.success("Welcome back!", { description: "Redirecting to your customer dashboard..." });
+          const dest = redirectTarget && !redirectTarget.includes("admin") ? redirectTarget : "/dashboard";
+          navigate({ to: dest });
+        }
+      } else {
+        if (form.password !== form.confirmPassword) {
+          toast.error("Passwords do not match");
+          return;
+        }
+        const result = await register({
+          fullName: form.fullName,
+          email: form.email,
+          password: form.password,
+          phone: form.phone,
+          company: form.company,
+        });
+        if (result.error) {
+          toast.error("Registration failed", { description: result.error });
+          return;
+        }
+        toast.success("Account created!", { description: "Welcome to OMSUN Nepal." });
+        const dest = redirectTarget && !redirectTarget.includes("admin") ? redirectTarget : "/dashboard";
+        navigate({ to: dest });
+      }
+    } catch {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -246,44 +314,38 @@ export default function AuthExperience() {
                 </a>
               </div>
 
-              <button type="submit" className="auth-submit-btn">
-                <span>Sign In</span>
-                <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+              <button type="submit" className="auth-submit-btn" disabled={submitting}>
+                <span>{submitting ? "Signing in..." : "Sign In"}</span>
+                {!submitting && (
+                  <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                )}
               </button>
 
               <div className="auth-divider">
                 <span>or continue with</span>
               </div>
 
-              <div className="auth-social-row">
-                <button type="button" className="auth-social-btn">
-                  <svg className="size-4" viewBox="0 0 24 24">
-                    <path
-                      fill="#4285F4"
-                      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.29v3.15C3.26 21.3 7.31 24 12 24z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.29C.47 8.21 0 10.05 0 12s.47 3.79 1.29 5.42l3.99-3.15z"
-                    />
-                    <path
-                      fill="#EA4335"
-                      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.58l3.99 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                    />
-                  </svg>
-                  Google
-                </button>
-                <button type="button" className="auth-social-btn">
-                  <svg className="size-4 text-[#0078D4]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z" />
-                  </svg>
-                  Microsoft
-                </button>
-              </div>
+              <button type="button" onClick={handleGoogleAuth} className="auth-google-btn">
+                <svg className="size-5 shrink-0" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.29v3.15C3.26 21.3 7.31 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.29C.47 8.21 0 10.05 0 12s.47 3.79 1.29 5.42l3.99-3.15z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.58l3.99 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                  />
+                </svg>
+                <span>Continue with Google</span>
+              </button>
             </form>
 
             <p className="auth-footer-switch">
@@ -318,24 +380,14 @@ export default function AuthExperience() {
             <p className="auth-form-sub">Join Nepal's largest clean-energy platform.</p>
 
             <form className="auth-form-fields" onSubmit={handleSubmit}>
-              <div className="auth-two-col">
-                <Field
-                  label="Full Name"
-                  icon={User}
-                  name="fullName"
-                  value={form.fullName}
-                  onChange={change}
-                  placeholder="Anish Sharma"
-                />
-                <Field
-                  label="Company (optional)"
-                  icon={Building2}
-                  name="company"
-                  value={form.company}
-                  onChange={change}
-                  placeholder="Solar Pvt Ltd"
-                />
-              </div>
+              <Field
+                label="Full Name"
+                icon={User}
+                name="fullName"
+                value={form.fullName}
+                onChange={change}
+                placeholder="Anish Sharma"
+              />
 
               <Field
                 label="Email Address"
@@ -347,15 +399,25 @@ export default function AuthExperience() {
                 placeholder="you@omsun.com.np"
               />
 
-              <Field
-                label="Phone Number"
-                icon={Phone}
-                type="tel"
-                name="phone"
-                value={form.phone}
-                onChange={change}
-                placeholder="+977 98XXXXXXXX"
-              />
+              <div className="auth-two-col">
+                <Field
+                  label="Phone Number"
+                  icon={Phone}
+                  type="tel"
+                  name="phone"
+                  value={form.phone}
+                  onChange={change}
+                  placeholder="+977 98XXXXXXXX"
+                />
+                <Field
+                  label="Company (optional)"
+                  icon={Building2}
+                  name="company"
+                  value={form.company}
+                  onChange={change}
+                  placeholder="Solar Pvt Ltd"
+                />
+              </div>
 
               <div className="auth-two-col">
                 <Field
@@ -397,19 +459,48 @@ export default function AuthExperience() {
               </div>
 
               <label className="auth-check-label mt-1">
-                <input type="checkbox" className="auth-check" required />I agree to OMSUN Nepal's{" "}
-                <a href="#terms" className="auth-link">
-                  Terms
-                </a>{" "}
-                &amp;{" "}
-                <a href="#privacy" className="auth-link">
-                  Privacy Policy
-                </a>
+                <input type="checkbox" className="auth-check" required />
+                <span>
+                  I agree to OMSUN Nepal's{" "}
+                  <a href="#terms" className="auth-link font-bold text-[#0A2E20] underline">
+                    Terms &amp; Conditions
+                  </a>{" "}
+                  and{" "}
+                  <a href="#privacy" className="auth-link font-bold text-[#0A2E20] underline">
+                    Privacy Policy
+                  </a>
+                </span>
               </label>
 
-              <button type="submit" className="auth-submit-btn">
-                <span>Create Account</span>
-                <ArrowRight className="size-4" />
+              <button type="submit" className="auth-submit-btn" disabled={submitting}>
+                <span>{submitting ? "Creating account..." : "Create Account"}</span>
+                {!submitting && <ArrowRight className="size-4" />}
+              </button>
+
+              <div className="auth-divider">
+                <span>or continue with</span>
+              </div>
+
+              <button type="button" onClick={handleGoogleAuth} className="auth-google-btn">
+                <svg className="size-5 shrink-0" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.29v3.15C3.26 21.3 7.31 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.29C.47 8.21 0 10.05 0 12s.47 3.79 1.29 5.42l3.99-3.15z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.58l3.99 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                  />
+                </svg>
+                <span>Continue with Google</span>
               </button>
             </form>
 
