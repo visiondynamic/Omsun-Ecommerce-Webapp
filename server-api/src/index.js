@@ -1287,6 +1287,16 @@ app.get("/api/admin/stats", authMiddleware, adminMiddleware, async (_req, res, n
   }
 });
 
+app.post("/api/admin/sync-catalog", async (req, res, next) => {
+  try {
+    await setup();
+    const rows = await query("SELECT COUNT(*) as count FROM products");
+    res.json({ ok: true, count: rows[0].count });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* ═══════════════════════════════════════════════════════════════════ */
 /* 404 & ERROR                                                        */
 /* ═══════════════════════════════════════════════════════════════════ */
