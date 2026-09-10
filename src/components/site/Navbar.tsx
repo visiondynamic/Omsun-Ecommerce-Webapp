@@ -52,6 +52,7 @@ import batteryImg from "@/assets/p-battery.jpg";
 import cableImg from "@/assets/p-cable.jpg";
 import lightImg from "@/assets/p-light.jpg";
 import switchgearImg from "@/assets/p-panelboard.jpg";
+import stabilizerImg from "@/assets/products/omsun-mter-10kva.webp";
 import projectImg from "@/assets/project-nepal.webp";
 import heroImg from "@/assets/banner-solar-farm.webp";
 
@@ -540,7 +541,7 @@ export function Navbar() {
                           desc: "Servo, AVR & Industrial",
                           icon: Gauge,
                           color: "#10b981",
-                          image: switchgearImg,
+                          image: stabilizerImg,
                           searchParams: { category: "Stabilizer" },
                         },
                         {

@@ -78,7 +78,7 @@ export async function setup() {
       description: "OMSUN MTER-1000 provides high-precision ±1% output voltage stabilization for sensitive home electronics, medical appliances, and office equipment with rapid servo motor correction and pure copper toroidal transformer.",
       price: 15800,
       mrp: 17500,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mter-1kva.webp",
       features: JSON.stringify(["Precision Servo Motor", "13% VAT Included", "Pure Copper Coil", "Overload & Surge Protection"]),
       specs: JSON.stringify([
         { label: "Model", value: "MTER-1KVA (MTER 1000)" },
@@ -105,7 +105,7 @@ export async function setup() {
       description: "Engineered for smooth stepless voltage regulation with zero waveform distortion, heavy duty digital telemetry display, and automatic high/low cutoff protection.",
       price: 20500,
       mrp: 23000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mter-2kva.webp",
       features: JSON.stringify(["Servo Motor Control", "Digital Voltmeter", "Zero Waveform Distortion", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "MTER-2KVA (MTER 2000)" },
@@ -132,7 +132,7 @@ export async function setup() {
       description: "Delivers stable 220V power to residential air conditioners, laser printers, deep freezers, and diagnostic instrumentation across Nepal's power fluctuations.",
       price: 33600,
       mrp: 37000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mter-3kva.webp",
       features: JSON.stringify(["High Accuracy ±1%", "Copper Wound Toroid", "Digital Dual Readout", "13% VAT Included"]),
       specs: JSON.stringify([
         { label: "Model", value: "MTER-3KVA (MTER 3000)" },
@@ -159,7 +159,7 @@ export async function setup() {
       description: "Continuous duty single phase servo stabilizer designed to safeguard entire apartments, clinics, and commercial workstations from severe low and fluctuating voltage.",
       price: 39500,
       mrp: 44000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mter-5kva.webp",
       features: JSON.stringify(["Whole House Mains", "Toroidal Copper Core", "Time Delay Safety", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "MTER-5KVA (MTER 5000)" },
@@ -186,7 +186,7 @@ export async function setup() {
       description: "High-capacity 10 kVA stabilizer with motorized carbon brush assembly, instant voltage correction, thermal protection, and digital monitoring for commercial premises.",
       price: 81000,
       mrp: 90000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mter-10kva.webp",
       features: JSON.stringify(["10 kVA Heavy Power", "Microprocessor Control", "Industrial Carbon Brushes", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "MTER-10KVA (MTER 10000)" },
@@ -213,7 +213,7 @@ export async function setup() {
       description: "Heavy duty MSER series stabilizer with advanced electronic sensing and pure copper winding for commercial and industrial single phase loads.",
       price: 60000,
       mrp: 66000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mser-8kva.webp",
       features: JSON.stringify(["MSER Series", "Rapid Response Time", "High Efficiency >98%", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "MSER-8KVA (MSER 8000)" },
@@ -240,7 +240,7 @@ export async function setup() {
       description: "Heavy duty 10kVA single phase MSER series stabilizer featuring advanced microprocessor control and precision servo motor response for commercial facilities.",
       price: 73500,
       mrp: 82000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mser-10kva.webp",
       features: JSON.stringify(["MSER Commercial Series", "Precision ±1% Output", "Heavy Enclosure", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "MSER-10KVA (MSER 10000)" },
@@ -267,7 +267,7 @@ export async function setup() {
       description: "Engineered for large bungalows, elevators, and heavy industrial single-phase machinery requiring uninterrupted ±1% voltage stabilization.",
       price: 112500,
       mrp: 125000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mser-15kva.webp",
       features: JSON.stringify(["15 kVA Single Phase", "Industrial Heavy Copper", "LCD Display", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "MSER-15KVA (MSER 15000)" },
@@ -296,7 +296,7 @@ export async function setup() {
       description: "Features 3 independent servo control channels for R, Y, B phases with individual voltage sensing, LCD telemetry, and heavy duty cabinet with castor wheels.",
       price: 114000,
       mrp: 128000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mser-10kva-3phase.webp",
       features: JSON.stringify(["3-Phase Independent Control", "Castor Wheels Enclosure", "3x LED Voltmeters", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "MSER-10000/3Phase" },
@@ -324,7 +324,7 @@ export async function setup() {
       description: "Industrial 15 kVA 3-phase stabilizer engineered to eliminate phase imbalances, voltage sags, and surges across CNC, elevators, and hospital equipment.",
       price: 132000,
       mrp: 148000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mser-15kva-3phase.webp",
       features: JSON.stringify(["15 kVA 3-Phase", "Phase Imbalance Correction", "Industrial Heavy Duty", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "MSER-15000/3Phase" },
@@ -356,7 +356,7 @@ export async function setup() {
       description: "Ideal for TVs, music systems, computers, and home electronics. Fast micro-relay switching with high/low voltage cutoff and surge suppression.",
       price: 9900,
       mrp: 11200,
-      image: "/p-panelboard.jpg",
+      image: "/products/green-volt-1kva.webp",
       features: JSON.stringify(["Green Volt AVR", "High Speed Relay", "Digital Display", "13% VAT Included"]),
       specs: JSON.stringify([
         { label: "Brand", value: "Green Volt" },
@@ -380,7 +380,7 @@ export async function setup() {
       description: "Provides dependable power regulation for inverter refrigerators, home entertainment setups, deep freezers, and office electronics.",
       price: 12200,
       mrp: 13800,
-      image: "/p-panelboard.jpg",
+      image: "/products/green-volt-2kva.webp",
       features: JSON.stringify(["Fast Step Switching", "Dual Voltmeter Readout", "Surge Protection", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Brand", value: "Green Volt" },
@@ -403,7 +403,7 @@ export async function setup() {
       description: "Specially built for low voltage grid areas down to 110V with robust copper transformer, intelligent digital display, and smart delay timers.",
       price: 15000,
       mrp: 17000,
-      image: "/p-panelboard.jpg",
+      image: "/products/green-volt-4kva-110v.webp",
       features: JSON.stringify(["Wide Input 110V-280V", "Up to 1.5 Ton AC", "Safety Delay Timer", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Brand", value: "Green Volt" },
@@ -427,7 +427,7 @@ export async function setup() {
       description: "Engineered for rural and industrial zones with severe voltage drop, stabilizing from as low as 90VAC with heavy duty multi-tap transformer.",
       price: 19800,
       mrp: 22000,
-      image: "/p-panelboard.jpg",
+      image: "/products/green-volt-4kva-90v.webp",
       features: JSON.stringify(["Ultra Low 90V Operating", "Multi-Tap Heavy Transformer", "Digital Telemetry", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Brand", value: "Green Volt" },
@@ -450,7 +450,7 @@ export async function setup() {
       description: "Enhanced 4.2 kVA model handling heavy inductive compressor loads even when utility grid voltage drops down to 90V.",
       price: 20000,
       mrp: 22500,
-      image: "/p-panelboard.jpg",
+      image: "/products/green-volt-4-2kva-90v.webp",
       features: JSON.stringify(["4.2 kVA High Output", "90V-280V Voltage Range", "Heavy Inductive Load", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Brand", value: "Green Volt" },
@@ -473,7 +473,7 @@ export async function setup() {
       description: "Delivers robust whole-home mains stabilization with 110V–280V wide operating window, dual LED readout, and safety time delay mechanism.",
       price: 16500,
       mrp: 18500,
-      image: "/p-panelboard.jpg",
+      image: "/products/green-volt-5kva-110v.webp",
       features: JSON.stringify(["5 kVA Mains Power", "110V-280V Wide Range", "2.0 Ton AC Compatible", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Brand", value: "Green Volt" },
@@ -497,7 +497,7 @@ export async function setup() {
       description: "Ultimate 5 kVA protection for whole houses and commercial spaces in severe low-voltage areas, starting from 90V with pure copper winding.",
       price: 21000,
       mrp: 23500,
-      image: "/p-panelboard.jpg",
+      image: "/products/green-volt-5kva-90v.webp",
       features: JSON.stringify(["Top Seller 5kVA", "90V Extreme Low Input", "Copper Wound Core", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Brand", value: "Green Volt" },
@@ -524,7 +524,7 @@ export async function setup() {
       description: "Heavy industrial transformer oil-immersed servo stabilizer engineered for continuous 24/7 manufacturing plants, CNC machinery, and packaging lines.",
       price: 325000,
       mrp: 360000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mser-15kva-3phase.webp",
       features: JSON.stringify(["Oil Cooled ONAN", "Input 300V-470V AC", "98.5% Efficiency", "1 Year Full Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "OMSUN Oil Cooled 30 KVA" },
@@ -549,7 +549,7 @@ export async function setup() {
       description: "Designed for hospitals, stone crushers, flour mills, and textile printing with superior heat dissipation and high overload withstand capability.",
       price: 525000,
       mrp: 575000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mser-15kva-3phase.webp",
       features: JSON.stringify(["50 kVA 3-Phase", "Electrolytic Copper", "Heavy Oil Tank", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "OMSUN Oil Cooled 50 KVA" },
@@ -574,7 +574,7 @@ export async function setup() {
       description: "High-performance industrial stabilizer with motorized carbon roller drive, low temperature rise, and digital telemetry control panel.",
       price: 570000,
       mrp: 625000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mser-15kva-3phase.webp",
       features: JSON.stringify(["60 kVA Industrial", "Motorized Roller Drive", "Low Temp Rise", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "OMSUN Oil Cooled 60 KVA" },
@@ -598,7 +598,7 @@ export async function setup() {
       description: "Heavy duty industrial plant power stabilizer with massive copper coils, radiator fins, oil level gauge, and temperature telemetry.",
       price: 910000,
       mrp: 995000,
-      image: "/p-panelboard.jpg",
+      image: "/products/omsun-mser-15kva-3phase.webp",
       features: JSON.stringify(["100 kVA Plant Grade", "Radiator Fin Tank", "Digital Telemetry", "1 Year Warranty"]),
       specs: JSON.stringify([
         { label: "Model", value: "OMSUN Oil Cooled 100 KVA" },
@@ -887,9 +887,13 @@ export async function setup() {
   ];
 
   for (const p of products) {
+    const galleryImages = p.images 
+      ? (typeof p.images === 'string' ? p.images : JSON.stringify(p.images))
+      : JSON.stringify(p.image ? [p.image] : []);
+
     await conn.query(
-      `INSERT INTO products (id, name, category, subcategory, brand, tagline, description, price, mrp, image, features, specs, stock, rating, badges)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO products (id, name, category, subcategory, brand, tagline, description, price, mrp, image, images, features, specs, stock, rating, badges)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE 
          name = VALUES(name), 
          category = VALUES(category), 
@@ -900,6 +904,7 @@ export async function setup() {
          price = VALUES(price), 
          mrp = VALUES(mrp), 
          image = VALUES(image), 
+         images = VALUES(images),
          features = VALUES(features), 
          specs = VALUES(specs), 
          stock = VALUES(stock), 
@@ -916,6 +921,7 @@ export async function setup() {
         p.price,
         p.mrp,
         p.image,
+        galleryImages,
         p.features,
         p.specs,
         p.stock,

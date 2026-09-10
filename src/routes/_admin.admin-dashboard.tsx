@@ -280,6 +280,7 @@ function AdminDashboardPage() {
           price: prod.price,
           mrp: prod.compareAt ?? null,
           image: prod.image,
+          images: prod.images || (prod.image ? [prod.image] : []),
           stock: prod.stock,
           rating: prod.rating,
           badges: prod.badges,
@@ -297,6 +298,7 @@ function AdminDashboardPage() {
           price: prod.price,
           mrp: prod.compareAt ?? null,
           image: prod.image,
+          images: prod.images || (prod.image ? [prod.image] : []),
           stock: prod.stock,
           rating: prod.rating,
           badges: prod.badges,
@@ -307,6 +309,7 @@ function AdminDashboardPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product"] });
       toast.success(`Product "${prod.name}" saved to database`);
     } catch {
       setProductsList((prev) => {

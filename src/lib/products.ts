@@ -5,6 +5,45 @@ import cable from "@/assets/p-cable.jpg";
 import light from "@/assets/p-light.jpg";
 import panelboard from "@/assets/p-panelboard.jpg";
 
+// Enhanced Stabilizer Product Showcase Images
+import omsunMter1kvaImg from "@/assets/products/omsun-mter-1kva.webp";
+import omsunMter2kvaImg from "@/assets/products/omsun-mter-2kva.webp";
+import omsunMter3kvaImg from "@/assets/products/omsun-mter-3kva.webp";
+import omsunMter5kvaImg from "@/assets/products/omsun-mter-5kva.webp";
+import omsunMter10kvaImg from "@/assets/products/omsun-mter-10kva.webp";
+import omsunMser8kvaImg from "@/assets/products/omsun-mser-8kva.webp";
+import omsunMser10kvaImg from "@/assets/products/omsun-mser-10kva.webp";
+import omsunMser15kvaImg from "@/assets/products/omsun-mser-15kva.webp";
+import omsunMser10kva3PhaseImg from "@/assets/products/omsun-mser-10kva-3phase.webp";
+import omsunMser15kva3PhaseImg from "@/assets/products/omsun-mser-15kva-3phase.webp";
+import greenVolt1kvaImg from "@/assets/products/green-volt-1kva.webp";
+import greenVolt2kvaImg from "@/assets/products/green-volt-2kva.webp";
+import greenVolt4kva110vImg from "@/assets/products/green-volt-4kva-110v.webp";
+import greenVolt4kva90vImg from "@/assets/products/green-volt-4kva-90v.webp";
+import greenVolt42kva90vImg from "@/assets/products/green-volt-4-2kva-90v.webp";
+import greenVolt5kva110vImg from "@/assets/products/green-volt-5kva-110v.webp";
+import greenVolt5kva90vImg from "@/assets/products/green-volt-5kva-90v.webp";
+
+export {
+  omsunMter1kvaImg,
+  omsunMter2kvaImg,
+  omsunMter3kvaImg,
+  omsunMter5kvaImg,
+  omsunMter10kvaImg,
+  omsunMser8kvaImg,
+  omsunMser10kvaImg,
+  omsunMser15kvaImg,
+  omsunMser10kva3PhaseImg,
+  omsunMser15kva3PhaseImg,
+  greenVolt1kvaImg,
+  greenVolt2kvaImg,
+  greenVolt4kva110vImg,
+  greenVolt4kva90vImg,
+  greenVolt42kva90vImg,
+  greenVolt5kva110vImg,
+  greenVolt5kva90vImg,
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -15,6 +54,7 @@ export type Product = {
   price: number;
   compareAt?: number | undefined;
   image: string;
+  images?: string[] | undefined;
   badges: string[];
   stock: number;
   rating: number;
@@ -84,7 +124,7 @@ export const BRANDS = ["OMSUN", "Green Volt", "Power-One", "SineWave", "Voltura"
 
 // Fallback mock data used when API is unavailable (SSR, offline, etc.)
 const fallbackImageMap: Record<string, string> = {
-  Stabilizer: panelboard,
+  Stabilizer: omsunMter3kvaImg,
   UPS: inverter,
   Solar: panel,
   Battery: battery,
@@ -107,7 +147,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 15800,
     compareAt: 17500,
-    image: panelboard,
+    image: omsunMter1kvaImg,
     badges: ["Servo Motor", "13% VAT Incl.", "1 Year Warranty"],
     stock: 25,
     rating: 4.8,
@@ -133,7 +173,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 20500,
     compareAt: 23000,
-    image: panelboard,
+    image: omsunMter2kvaImg,
     badges: ["Servo Motor", "Best Seller", "1 Year Warranty"],
     stock: 20,
     rating: 4.9,
@@ -159,7 +199,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 33600,
     compareAt: 37000,
-    image: panelboard,
+    image: omsunMter3kvaImg,
     badges: ["Servo Motor", "13% VAT Incl.", "1 Year Warranty"],
     stock: 18,
     rating: 4.8,
@@ -185,7 +225,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 39500,
     compareAt: 44000,
-    image: panelboard,
+    image: omsunMter5kvaImg,
     badges: ["Mains Stabilizer", "Top Rated", "1 Year Warranty"],
     stock: 16,
     rating: 5.0,
@@ -211,7 +251,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 81000,
     compareAt: 90000,
-    image: panelboard,
+    image: omsunMter10kvaImg,
     badges: ["10 kVA High Power", "13% VAT Incl.", "1 Year Warranty"],
     stock: 12,
     rating: 4.9,
@@ -237,7 +277,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 60000,
     compareAt: 66000,
-    image: panelboard,
+    image: omsunMser8kvaImg,
     badges: ["MSER Series", "13% VAT Incl.", "1 Year Warranty"],
     stock: 14,
     rating: 4.8,
@@ -263,7 +303,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 73500,
     compareAt: 82000,
-    image: panelboard,
+    image: omsunMser10kvaImg,
     badges: ["MSER Series", "Commercial Grade", "1 Year Warranty"],
     stock: 10,
     rating: 4.9,
@@ -289,7 +329,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 112500,
     compareAt: 125000,
-    image: panelboard,
+    image: omsunMser15kvaImg,
     badges: ["15 kVA Single Phase", "Industrial", "1 Year Warranty"],
     stock: 8,
     rating: 5.0,
@@ -317,7 +357,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 114000,
     compareAt: 128000,
-    image: panelboard,
+    image: omsunMser10kva3PhaseImg,
     badges: ["3-Phase", "Individual Phase Control", "1 Year Warranty"],
     stock: 8,
     rating: 4.9,
@@ -344,7 +384,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 132000,
     compareAt: 148000,
-    image: panelboard,
+    image: omsunMser15kva3PhaseImg,
     badges: ["3-Phase 15kVA", "Industrial Grade", "1 Year Warranty"],
     stock: 6,
     rating: 5.0,
@@ -375,7 +415,7 @@ export const fallbackProducts: Product[] = [
     brand: "Green Volt",
     price: 9900,
     compareAt: 11200,
-    image: panelboard,
+    image: greenVolt1kvaImg,
     badges: ["Green Volt", "Budget AVR", "1 Year Warranty"],
     stock: 30,
     rating: 4.7,
@@ -398,7 +438,7 @@ export const fallbackProducts: Product[] = [
     brand: "Green Volt",
     price: 12200,
     compareAt: 13800,
-    image: panelboard,
+    image: greenVolt2kvaImg,
     badges: ["Green Volt", "Fast Switching", "1 Year Warranty"],
     stock: 25,
     rating: 4.8,
@@ -420,7 +460,7 @@ export const fallbackProducts: Product[] = [
     brand: "Green Volt",
     price: 15000,
     compareAt: 17000,
-    image: panelboard,
+    image: greenVolt4kva110vImg,
     badges: ["Wide Range 110V-280V", "Green Volt", "1 Year Warranty"],
     stock: 20,
     rating: 4.9,
@@ -443,7 +483,7 @@ export const fallbackProducts: Product[] = [
     brand: "Green Volt",
     price: 19800,
     compareAt: 22000,
-    image: panelboard,
+    image: greenVolt4kva90vImg,
     badges: ["Ultra Wide 90V-280V", "Extreme Low Voltage", "1 Year Warranty"],
     stock: 18,
     rating: 4.9,
@@ -465,7 +505,7 @@ export const fallbackProducts: Product[] = [
     brand: "Green Volt",
     price: 20000,
     compareAt: 22500,
-    image: panelboard,
+    image: greenVolt42kva90vImg,
     badges: ["4.2 kVA 90V-280V", "Heavy Inductive Load", "1 Year Warranty"],
     stock: 15,
     rating: 4.9,
@@ -487,7 +527,7 @@ export const fallbackProducts: Product[] = [
     brand: "Green Volt",
     price: 16500,
     compareAt: 18500,
-    image: panelboard,
+    image: greenVolt5kva110vImg,
     badges: ["5 kVA Whole Home", "110V-280V", "1 Year Warranty"],
     stock: 22,
     rating: 4.8,
@@ -510,7 +550,7 @@ export const fallbackProducts: Product[] = [
     brand: "Green Volt",
     price: 21000,
     compareAt: 23500,
-    image: panelboard,
+    image: greenVolt5kva90vImg,
     badges: ["5 kVA 90V-280V", "Top Seller", "1 Year Warranty"],
     stock: 18,
     rating: 5.0,
@@ -536,7 +576,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 325000,
     compareAt: 360000,
-    image: panelboard,
+    image: omsunMser15kva3PhaseImg,
     badges: ["Oil Cooled", "Input 300V-470V", "1 Year Warranty"],
     stock: 5,
     rating: 5.0,
@@ -560,7 +600,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 525000,
     compareAt: 575000,
-    image: panelboard,
+    image: omsunMser15kva3PhaseImg,
     badges: ["50 kVA Oil Cooled", "Heavy Industry", "1 Year Warranty"],
     stock: 4,
     rating: 5.0,
@@ -584,7 +624,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 570000,
     compareAt: 625000,
-    image: panelboard,
+    image: omsunMser15kva3PhaseImg,
     badges: ["60 kVA 3-Phase", "Oil Immersed", "1 Year Warranty"],
     stock: 3,
     rating: 4.9,
@@ -607,7 +647,7 @@ export const fallbackProducts: Product[] = [
     brand: "OMSUN",
     price: 910000,
     compareAt: 995000,
-    image: panelboard,
+    image: omsunMser15kva3PhaseImg,
     badges: ["100 kVA Industrial", "Heavy Plant Grade", "1 Year Warranty"],
     stock: 3,
     rating: 5.0,
@@ -882,23 +922,44 @@ export const fallbackProducts: Product[] = [
   },
 ];
 
-const dbImageMap: Record<string, string> = {
-  "/p-panel.jpg": panel,
-  "/p-inverter.jpg": inverter,
-  "/p-battery.jpg": battery,
-  "/p-cable.jpg": cable,
-  "/p-light.jpg": light,
-  "/p-panelboard.jpg": panelboard,
-};
+const API_BASE =
+  (typeof import.meta !== "undefined" && import.meta.env?.["VITE_API_URL"]) ||
+  "http://localhost:4000";
 
-function resolveDbImage(
-  image: string | null,
-  category: string,
+export function resolveDbImage(
+  image: string | null | undefined,
+  _category?: string,
+  _id?: string,
 ): string {
-  if (image && dbImageMap[image]) return dbImageMap[image];
-  if (image && image.startsWith("http")) return image;
-  if (image && image.startsWith("/")) return image;
-  return fallbackImageMap[category] || panelboard;
+  if (!image || typeof image !== "string" || image.trim().length === 0) {
+    return "";
+  }
+
+  const trimmed = image.trim();
+
+  // 1. Base64 data URI or blob URL (e.g. instant preview in admin)
+  if (trimmed.startsWith("data:") || trimmed.startsWith("blob:")) {
+    return trimmed;
+  }
+
+  // 2. Direct upload from Admin Panel (e.g. /uploads/filename.jpg)
+  if (trimmed.startsWith("/uploads/")) {
+    return `${API_BASE}${trimmed}`;
+  }
+  if (trimmed.startsWith("uploads/")) {
+    return `${API_BASE}/${trimmed}`;
+  }
+
+  // 3. Absolute URL or relative asset path
+  if (
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("/")
+  ) {
+    return trimmed;
+  }
+
+  return trimmed;
 }
 
 export function mapApiProductToProduct(apiProduct: {
@@ -911,12 +972,25 @@ export function mapApiProductToProduct(apiProduct: {
   price: number;
   mrp: number | null;
   image: string | null;
+  images?: string[] | null;
   stock: number;
   rating: number;
   badges: string[];
   specs: { label: string; value: string }[];
 }): Product {
-  const resolvedImage = resolveDbImage(apiProduct.image, apiProduct.category);
+  const resolvedImage = resolveDbImage(apiProduct.image, apiProduct.category, apiProduct.id);
+  
+  let resolvedImages: string[] = resolvedImage ? [resolvedImage] : [];
+  if (apiProduct.images && Array.isArray(apiProduct.images) && apiProduct.images.length > 0) {
+    const mapped = apiProduct.images
+      .filter((img) => typeof img === "string" && img.trim().length > 0)
+      .map((img) => resolveDbImage(img, apiProduct.category, apiProduct.id))
+      .filter((img) => img.length > 0);
+    if (mapped.length > 0) {
+      resolvedImages = mapped;
+    }
+  }
+
   const base: Product = {
     id: apiProduct.id,
     name: apiProduct.name,
@@ -927,6 +1001,7 @@ export function mapApiProductToProduct(apiProduct: {
     price: apiProduct.price,
     compareAt: undefined,
     image: resolvedImage,
+    images: resolvedImages,
     badges: apiProduct.badges || [],
     stock: apiProduct.stock,
     rating: apiProduct.rating,
@@ -945,3 +1020,4 @@ export const getProduct = (id: string) => fallbackProducts.find((p) => p.id === 
 
 // Alias used by components that import `products` directly (SSR-safe fallback)
 export const products = fallbackProducts;
+

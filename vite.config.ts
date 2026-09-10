@@ -81,6 +81,12 @@ export default defineConfig(async ({ command, mode }): Promise<UserConfig> => {
     server: {
       host: "::",
       port: 8080,
+      proxy: {
+        "/uploads": {
+          target: "http://localhost:4000",
+          changeOrigin: true,
+        },
+      },
       watch: {
         awaitWriteFinish: {
           stabilityThreshold: 1000,

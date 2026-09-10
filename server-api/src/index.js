@@ -17,6 +17,17 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+// Auto-ensure images column in products table
+async function ensureProductImagesColumn() {
+  try {
+    await query("ALTER TABLE products ADD COLUMN IF NOT EXISTS images JSON NULL AFTER image");
+  } catch {
+    try {
+      await query("ALTER TABLE products ADD COLUMN images JSON NULL");
+    } catch {}
+  }
+}
+
 // Auto-bootstrap MySQL schema & catalog seed on fresh databases (e.g. Railway)
 async function autoInitDatabase() {
   try {
@@ -33,6 +44,7 @@ async function autoInitDatabase() {
         console.log("[omsun-api] Official 32 products synchronized!");
       }
     }
+    await ensureProductImagesColumn();
   } catch (err) {
     console.log("[omsun-api] Auto database init check note:", err.message);
   }
@@ -48,8 +60,20 @@ app.use(cors({ origin: process.env.FRONTEND_URL || "*", credentials: true }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// Serve static uploaded media
-app.use("/uploads", express.static(uploadsDir));
+// Serve static uploaded media and public assets with unrestricted CORS headers
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    next();
+  },
+  express.static(uploadsDir)
+);
+const publicDir = path.resolve(__dirname, "../../public");
+app.use("/products", express.static(path.join(publicDir, "products")));
+app.use(express.static(publicDir));
 
 /* ─── Simple JWT-like token helpers (no jsonwebtoken dependency) ─── */
 function createToken(user) {
@@ -95,6 +119,115 @@ app.get("/api/health", async (_req, res) => {
   } catch (err) {
     console.error("[db] health check failed:", err.message);
     res.status(500).json({ ok: false, error: "Database unreachable" });
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* MEDIA & FILE UPLOADS                                               */
+/* ═══════════════════════════════════════════════════════════════════ */
+app.post("/api/upload", async (req, res, next) => {
+  try {
+    const { imageBase64, fileName } = req.body ?? {};
+    if (!imageBase64) {
+      return res.status(400).json({ error: "imageBase64 is required" });
+    }
+
+    // Extract mime type and clean base64 data
+    const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    let buffer;
+    let ext = "png";
+
+    if (matches && matches.length === 3) {
+      const mime = matches[1].toLowerCase();
+      if (mime.includes("jpeg") || mime.includes("jpg")) ext = "jpg";
+      else if (mime.includes("webp")) ext = "webp";
+      else if (mime.includes("svg")) ext = "svg";
+      else if (mime.includes("gif")) ext = "gif";
+      else if (mime.includes("png")) ext = "png";
+      buffer = Buffer.from(matches[2], "base64");
+    } else {
+      buffer = Buffer.from(imageBase64, "base64");
+    }
+
+    // Sanitize filename
+    const origBase = (fileName || "product-image")
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "-")
+      .toLowerCase()
+      .slice(0, 40);
+    const uniqueName = `${origBase || "upload"}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}.${ext}`;
+    const filePath = path.join(uploadsDir, uniqueName);
+
+    await fs.promises.writeFile(filePath, buffer);
+
+    const publicUrl = `/uploads/${uniqueName}`;
+    console.log(`[omsun-api] File uploaded successfully: ${publicUrl} (${buffer.length} bytes)`);
+    res.status(201).json({ ok: true, url: publicUrl, fileName: uniqueName });
+  } catch (err) {
+    console.error("[omsun-api] Upload error:", err);
+    next(err);
+  }
+});
+
+app.post("/api/auth/avatar", authMiddleware, async (req, res, next) => {
+  try {
+    const { imageBase64 } = req.body ?? {};
+    if (!imageBase64) {
+      return res.status(400).json({ error: "imageBase64 is required" });
+    }
+
+    const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    let buffer;
+    let ext = "png";
+    if (matches && matches.length === 3) {
+      const mime = matches[1].toLowerCase();
+      if (mime.includes("jpeg") || mime.includes("jpg")) ext = "jpg";
+      else if (mime.includes("webp")) ext = "webp";
+      else if (mime.includes("png")) ext = "png";
+      buffer = Buffer.from(matches[2], "base64");
+    } else {
+      buffer = Buffer.from(imageBase64, "base64");
+    }
+
+    const uniqueName = `avatar-${req.user.id}-${Date.now()}.${ext}`;
+    const filePath = path.join(uploadsDir, uniqueName);
+    await fs.promises.writeFile(filePath, buffer);
+
+    const avatarUrl = `/uploads/${uniqueName}`;
+    await query("UPDATE users SET avatar = ? WHERE id = ?", [avatarUrl, req.user.id]);
+
+    res.json({ ok: true, avatarUrl, message: "Avatar updated successfully" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post("/api/orders/:ref/receipt", authMiddleware, async (req, res, next) => {
+  try {
+    const { receiptBase64 } = req.body ?? {};
+    if (!receiptBase64) {
+      return res.status(400).json({ error: "receiptBase64 is required" });
+    }
+
+    const matches = receiptBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    let buffer;
+    let ext = "jpg";
+    if (matches && matches.length === 3) {
+      buffer = Buffer.from(matches[2], "base64");
+    } else {
+      buffer = Buffer.from(receiptBase64, "base64");
+    }
+
+    const uniqueName = `receipt-${req.params.ref}-${Date.now()}.${ext}`;
+    const filePath = path.join(uploadsDir, uniqueName);
+    await fs.promises.writeFile(filePath, buffer);
+
+    const receiptUrl = `/uploads/${uniqueName}`;
+    await query("UPDATE orders SET payment_receipt = ? WHERE order_ref = ?", [receiptUrl, req.params.ref]);
+
+    res.json({ ok: true, receiptUrl, message: "Payment receipt uploaded" });
+  } catch (err) {
+    next(err);
   }
 });
 
@@ -354,13 +487,14 @@ app.delete("/api/user/addresses/:id", authMiddleware, async (req, res, next) => 
 app.get("/api/products", async (_req, res, next) => {
   try {
     const rows = await query(
-      "SELECT id, name, category, subcategory, brand, tagline, price, mrp, image, stock, rating, badges FROM products ORDER BY name",
+      "SELECT id, name, category, subcategory, brand, tagline, price, mrp, image, images, stock, rating, badges FROM products ORDER BY name",
     );
     const products = rows.map((r) => ({
       ...r,
       price: Number(r.price),
       mrp: r.mrp ? Number(r.mrp) : null,
       rating: Number(r.rating) || 0,
+      images: typeof r.images === "string" ? JSON.parse(r.images) : r.images || [],
       badges: typeof r.badges === "string" ? JSON.parse(r.badges) : r.badges || [],
     }));
     res.json(products);
@@ -381,6 +515,7 @@ app.get("/api/products/:id", async (req, res, next) => {
       price: Number(p.price),
       mrp: p.mrp ? Number(p.mrp) : null,
       rating: Number(p.rating) || 0,
+      images: typeof p.images === "string" ? JSON.parse(p.images) : p.images || [],
       badges: typeof p.badges === "string" ? JSON.parse(p.badges) : p.badges || [],
       features: typeof p.features === "string" ? JSON.parse(p.features) : p.features || [],
       specs: typeof p.specs === "string" ? JSON.parse(p.specs) : p.specs || [],
@@ -864,6 +999,7 @@ app.get("/api/admin/products", authMiddleware, adminMiddleware, async (_req, res
       mrp: r.mrp ? Number(r.mrp) : null,
       rating: Number(r.rating) || 0,
       stock: Number(r.stock) || 0,
+      images: typeof r.images === "string" ? JSON.parse(r.images) : r.images || [],
       badges: typeof r.badges === "string" ? JSON.parse(r.badges) : r.badges || [],
       features: typeof r.features === "string" ? JSON.parse(r.features) : r.features || [],
       specs: typeof r.specs === "string" ? JSON.parse(r.specs) : r.specs || [],
@@ -886,6 +1022,7 @@ app.post("/api/admin/products", authMiddleware, adminMiddleware, async (req, res
     price,
     mrp,
     image,
+    images,
     features,
     specs,
     stock,
@@ -900,8 +1037,8 @@ app.post("/api/admin/products", authMiddleware, adminMiddleware, async (req, res
   try {
     const prodId = id || `sku-${Date.now().toString(36)}`;
     await query(
-      `INSERT INTO products (id, name, category, subcategory, brand, tagline, description, price, mrp, image, features, specs, stock, rating, badges)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO products (id, name, category, subcategory, brand, tagline, description, price, mrp, image, images, features, specs, stock, rating, badges)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         prodId,
         name,
@@ -913,6 +1050,7 @@ app.post("/api/admin/products", authMiddleware, adminMiddleware, async (req, res
         Number(price) || 0,
         mrp != null ? Number(mrp) : null,
         image || null,
+        JSON.stringify(images || (image ? [image] : [])),
         JSON.stringify(features || []),
         JSON.stringify(specs || []),
         Number(stock) || 0,
@@ -940,6 +1078,7 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
     price,
     mrp,
     image,
+    images,
     features,
     specs,
     stock,
@@ -964,6 +1103,7 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
          price = COALESCE(?, price),
          mrp = ?,
          image = COALESCE(?, image),
+         images = ?,
          features = COALESCE(?, features),
          specs = COALESCE(?, specs),
          stock = COALESCE(?, stock),
@@ -980,6 +1120,7 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
         price != null ? Number(price) : null,
         mrp != null ? Number(mrp) : null,
         image,
+        images ? JSON.stringify(images) : (image ? JSON.stringify([image]) : null),
         features ? JSON.stringify(features) : null,
         specs ? JSON.stringify(specs) : null,
         stock != null ? Number(stock) : null,

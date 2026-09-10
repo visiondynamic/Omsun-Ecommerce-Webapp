@@ -16,7 +16,7 @@ async function searchAllChunks() {
           console.log(`\nUrls in ${src.slice(-25)}:`, Array.from(new Set(matches)));
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 

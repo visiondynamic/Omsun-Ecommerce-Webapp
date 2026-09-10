@@ -26,10 +26,16 @@ import { cn } from "@/lib/utils";
 import heroProductBg from "@/assets/hero-product-bg.webp";
 
 export const Route = createFileRoute("/product/$id")({
-  loader: ({ params }) => {
+  loader: async ({ params }) => {
+    try {
+      const row = await api.getProduct(params.id);
+      if (row) return { product: mapApiProductToProduct(row) };
+    } catch {
+      // ignore and use fallback
+    }
     const product = getProduct(params.id);
-    if (!product) throw notFound();
-    return { product };
+    if (product) return { product };
+    throw notFound();
   },
   head: ({ loaderData }) => {
     const p = loaderData?.product;
@@ -61,7 +67,8 @@ function ProductPage() {
       const row = await api.getProduct(fallbackProduct.id);
       return mapApiProductToProduct(row);
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   const { data: apiProducts } = useQuery<Product[]>({
@@ -70,14 +77,19 @@ function ProductPage() {
       const rows = await api.getProducts();
       return rows.map(mapApiProductToProduct);
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
   });
 
   const product = apiProduct ?? fallbackProduct;
   const allProducts = apiProducts ?? fallbackProducts;
-  const gallery = [product.image, product.image, product.image];
+  const gallery =
+    product.images && product.images.length > 0
+      ? product.images
+      : [product.image];
   const related = allProducts.filter((p) => p.id !== product.id).slice(0, 3);
   const out = product.stock === 0;
+
+  const currentImage = gallery[active] || gallery[0] || product.image;
 
   return (
     <div className="min-h-dvh">
@@ -136,30 +148,35 @@ function ProductPage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-14 lg:grid-cols-[1.25fr_1fr]">
             <div>
-              <div className="overflow-hidden rounded-[2rem] border bg-mist shadow-[var(--shadow-float)]">
+              <div className="overflow-hidden rounded-[2rem] border border-[#D8F2DF] dark:border-white/10 bg-white dark:bg-[#071f17] shadow-xl p-4 sm:p-6 flex items-center justify-center">
                 <img
-                  src={gallery[active]}
+                  src={currentImage}
                   alt={product.name}
                   width={800}
                   height={800}
-                  className="aspect-square w-full object-cover"
+                  className="aspect-square w-full max-h-[500px] object-contain transition-transform duration-300 ease-out hover:scale-105"
                 />
               </div>
-              <div className="mt-4 flex gap-3">
-                {gallery.map((g, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActive(i)}
-                    aria-label={`View image ${i + 1}`}
-                    className={cn(
-                      "size-20 overflow-hidden rounded-2xl border-2 transition-colors",
-                      active === i ? "border-primary" : "border-border hover:border-primary/40",
-                    )}
-                  >
-                    <img src={g} alt="" loading="lazy" className="size-full object-cover" />
-                  </button>
-                ))}
-              </div>
+
+              {gallery.length > 1 && (
+                <div className="mt-4 flex flex-wrap gap-3">
+                  {gallery.map((g, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActive(i)}
+                      aria-label={`View showcase image ${i + 1}`}
+                      className={cn(
+                        "size-20 sm:size-24 overflow-hidden rounded-2xl border-2 transition-all p-1 bg-white dark:bg-black/30 cursor-pointer shadow-xs",
+                        active === i
+                          ? "border-[#38B46A] ring-3 ring-[#38B46A]/25 scale-105"
+                          : "border-slate-200 dark:border-white/10 hover:border-[#38B46A]/50 opacity-70 hover:opacity-100",
+                      )}
+                    >
+                      <img src={g} alt="" loading="lazy" className="size-full object-contain" />
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <Tabs defaultValue="specs" className="mt-12">
                 <TabsList className="h-12 rounded-2xl">

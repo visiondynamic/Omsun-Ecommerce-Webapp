@@ -35,6 +35,7 @@ import batteryImg from "@/assets/p-battery.jpg";
 import cableImg from "@/assets/p-cable.jpg";
 import lightImg from "@/assets/p-light.jpg";
 import switchgearImg from "@/assets/p-panelboard.jpg";
+import stabilizerImg from "@/assets/products/omsun-mter-10kva.webp";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -66,7 +67,7 @@ const categories = [
     specs: "Copper Wound Motorized & Oil Immersed",
     badge: "1kVA – 500kVA 3-Phase",
     color: "#10b981",
-    image: switchgearImg,
+    image: stabilizerImg,
   },
   {
     name: "UPS Systems",

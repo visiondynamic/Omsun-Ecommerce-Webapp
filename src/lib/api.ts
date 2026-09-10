@@ -447,6 +447,7 @@ export interface ProductRow {
   price: number;
   mrp: number | null;
   image: string | null;
+  images?: string[] | null;
   features: string[] | { label: string; value: string }[];
   specs: { label: string; value: string }[];
   stock: number;
