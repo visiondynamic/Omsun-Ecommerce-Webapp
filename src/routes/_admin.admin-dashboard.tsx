@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3,
@@ -38,6 +38,9 @@ import {
   Radio,
   Check,
   Sparkles,
+  Truck,
+  ArrowUpDown,
+  SlidersHorizontal,
 } from "lucide-react";
 import {
   AreaChart,
@@ -218,6 +221,8 @@ function AdminDashboardPage() {
   const [targetSubcategoryForAdd, setTargetSubcategoryForAdd] = useState<string>("Servo Stabilizer");
   const [orderQuery, setOrderQuery] = useState("");
   const [selectedOrderStatusFilter, setSelectedOrderStatusFilter] = useState("All");
+  const [orderPaymentFilter, setOrderPaymentFilter] = useState<"ALL" | "PENDING_VERIFICATION" | "VERIFIED" | "REJECTED" | "UNPAID">("ALL");
+  const [orderSortBy, setOrderSortBy] = useState<"NEWEST" | "OLDEST" | "HIGHEST" | "LOWEST">("NEWEST");
 
   // Modals & Drawers State
   const [selectedOrderForDrawer, setSelectedOrderForDrawer] = useState<AdminOrder | null>(null);
@@ -237,6 +242,56 @@ function AdminDashboardPage() {
   const totalProductsCount = apiStats?.productCount ?? effectiveProducts.length;
   const lowStockCount = apiStats?.lowStockItems ?? effectiveProducts.filter((p) => p.stock <= 10).length;
   const pendingOrdersCount = apiStats?.pendingOrders ?? effectiveOrders.filter((o) => o.orderStatus === "Pending").length;
+
+  // Orders Action Required Metrics
+  const pendingVerificationCount = effectiveOrders.filter(
+    (o) => o.paymentStatus === "Under Review" || (!!o.paymentReceipt && o.paymentStatus !== "Paid" && o.paymentStatus !== "Failed")
+  ).length;
+  const warehousePrepCount = effectiveOrders.filter((o) => o.orderStatus === "Processing").length;
+  const outForDeliveryCount = effectiveOrders.filter(
+    (o) => o.orderStatus === "Shipped" || o.deliveryStatus === "OUT_FOR_DELIVERY"
+  ).length;
+  const rejectedSlipsCount = effectiveOrders.filter(
+    (o) => o.paymentStatus === "Failed" || !!o.rejectionReason
+  ).length;
+
+  const filteredAndSortedOrders = useMemo(() => {
+    return effectiveOrders
+      .filter((o) => {
+        if (selectedOrderStatusFilter !== "All" && o.orderStatus !== selectedOrderStatusFilter) {
+          return false;
+        }
+        if (orderPaymentFilter === "PENDING_VERIFICATION") {
+          const isPending =
+            o.paymentStatus === "Under Review" ||
+            (!!o.paymentReceipt && o.paymentStatus !== "Paid" && o.paymentStatus !== "Failed");
+          if (!isPending) return false;
+        } else if (orderPaymentFilter === "VERIFIED") {
+          if (o.paymentStatus !== "Paid") return false;
+        } else if (orderPaymentFilter === "REJECTED") {
+          if (o.paymentStatus !== "Failed" && !o.rejectionReason) return false;
+        } else if (orderPaymentFilter === "UNPAID") {
+          if (o.paymentStatus !== "Unpaid") return false;
+        }
+
+        if (orderQuery.trim()) {
+          const q = orderQuery.toLowerCase();
+          const matchesId = o.id.toLowerCase().includes(q);
+          const matchesName = o.customerName.toLowerCase().includes(q);
+          const matchesPhone = o.customerPhone.toLowerCase().includes(q);
+          const matchesRef = o.transactionRef ? o.transactionRef.toLowerCase().includes(q) : false;
+          if (!matchesId && !matchesName && !matchesPhone && !matchesRef) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        if (orderSortBy === "NEWEST") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        if (orderSortBy === "OLDEST") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        if (orderSortBy === "HIGHEST") return b.totalAmount - a.totalAmount;
+        if (orderSortBy === "LOWEST") return a.totalAmount - b.totalAmount;
+        return 0;
+      });
+  }, [effectiveOrders, selectedOrderStatusFilter, orderPaymentFilter, orderQuery, orderSortBy]);
 
   // Sales trend from API or fallback
   const salesTrendData = apiStats?.monthlyTrend?.length
@@ -374,6 +429,64 @@ function AdminDashboardPage() {
     );
     if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) {
       setSelectedOrderForDrawer((prev) => (prev ? { ...prev, orderStatus: newStatus } : null));
+    }
+  };
+
+  const handleVerifyPayment = async (
+    orderId: string,
+    approve: boolean,
+    rejectionReason?: string,
+    notes?: string
+  ) => {
+    const ref = orderId.replace("OMS-", "");
+    try {
+      await api.adminVerifyPayment(ref, { approve, rejectionReason, notes });
+      await queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      toast.success(
+        approve
+          ? `Order #${orderId} payment verified & order confirmed!`
+          : `Order #${orderId} payment rejected. Customer notified.`
+      );
+      if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) {
+        setSelectedOrderForDrawer((prev) =>
+          prev
+            ? {
+                ...prev,
+                paymentStatus: approve ? "Paid" : "Failed",
+                orderStatus: approve ? "Processing" : prev.orderStatus,
+                rejectionReason: approve ? null : (rejectionReason ?? null),
+                adminNotes: notes ?? prev.adminNotes,
+                paymentVerifiedAt: approve ? new Date().toISOString() : null,
+              }
+            : null
+        );
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to verify payment");
+      throw err;
+    }
+  };
+
+  const handleUpdateDelivery = async (orderId: string, deliveryData: any) => {
+    const ref = orderId.replace("OMS-", "");
+    try {
+      await api.adminUpdateDelivery(ref, deliveryData);
+      await queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      toast.success(`Delivery details saved for #${orderId}`);
+      if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) {
+        setSelectedOrderForDrawer((prev) =>
+          prev
+            ? {
+                ...prev,
+                ...deliveryData,
+              }
+            : null
+        );
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update delivery information");
+      throw err;
     }
   };
 
@@ -1550,7 +1663,7 @@ function AdminDashboardPage() {
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Manage real-time hardware orders, confirmation, carrier dispatch, cancellation & deletion.
+                    Manage real-time hardware orders, manual Fonepay verification, carrier dispatch & delivery.
                   </p>
                 </div>
 
@@ -1565,8 +1678,132 @@ function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Filter Tabs & Search */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#0c241c] p-4 sm:p-4.5 rounded-3xl border border-[#E2EDE7] dark:border-white/10 shadow-sm">
+              {/* Action Required Command Center */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOrderPaymentFilter((prev) =>
+                      prev === "PENDING_VERIFICATION" ? "ALL" : "PENDING_VERIFICATION"
+                    );
+                    setSelectedOrderStatusFilter("All");
+                  }}
+                  className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    orderPaymentFilter === "PENDING_VERIFICATION"
+                      ? "bg-amber-500/10 border-amber-500/50 ring-2 ring-amber-500/30 shadow-xs"
+                      : "bg-white dark:bg-[#0c241c] border-[#E2EDE7] dark:border-white/10 hover:border-amber-500/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Pending Slips
+                    </span>
+                    <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600">
+                      <Clock className="size-4" />
+                    </span>
+                  </div>
+                  <div className="mt-2 text-2xl font-black text-amber-600">
+                    {pendingVerificationCount}
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                    Awaiting payment approval
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedOrderStatusFilter((prev) =>
+                      prev === "Processing" ? "All" : "Processing"
+                    );
+                    setOrderPaymentFilter("ALL");
+                  }}
+                  className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    selectedOrderStatusFilter === "Processing"
+                      ? "bg-blue-500/10 border-blue-500/50 ring-2 ring-blue-500/30 shadow-xs"
+                      : "bg-white dark:bg-[#0c241c] border-[#E2EDE7] dark:border-white/10 hover:border-blue-500/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Warehouse Prep
+                    </span>
+                    <span className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600">
+                      <Package className="size-4" />
+                    </span>
+                  </div>
+                  <div className="mt-2 text-2xl font-black text-blue-600">
+                    {warehousePrepCount}
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                    Verified, ready to pack
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedOrderStatusFilter((prev) =>
+                      prev === "Shipped" ? "All" : "Shipped"
+                    );
+                    setOrderPaymentFilter("ALL");
+                  }}
+                  className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    selectedOrderStatusFilter === "Shipped"
+                      ? "bg-purple-500/10 border-purple-500/50 ring-2 ring-purple-500/30 shadow-xs"
+                      : "bg-white dark:bg-[#0c241c] border-[#E2EDE7] dark:border-white/10 hover:border-purple-500/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      In Transit
+                    </span>
+                    <span className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600">
+                      <Truck className="size-4" />
+                    </span>
+                  </div>
+                  <div className="mt-2 text-2xl font-black text-purple-600">
+                    {outForDeliveryCount}
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                    Dispatched with carrier
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOrderPaymentFilter((prev) =>
+                      prev === "REJECTED" ? "ALL" : "REJECTED"
+                    );
+                    setSelectedOrderStatusFilter("All");
+                  }}
+                  className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    orderPaymentFilter === "REJECTED"
+                      ? "bg-rose-500/10 border-rose-500/50 ring-2 ring-rose-500/30 shadow-xs"
+                      : "bg-white dark:bg-[#0c241c] border-[#E2EDE7] dark:border-white/10 hover:border-rose-500/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Slips Rejected
+                    </span>
+                    <span className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600">
+                      <AlertTriangle className="size-4" />
+                    </span>
+                  </div>
+                  <div className="mt-2 text-2xl font-black text-rose-600">
+                    {rejectedSlipsCount}
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                    Waiting for customer re-upload
+                  </div>
+                </button>
+              </div>
+
+              {/* Filter Tabs, Payment Filters & Search */}
+              <div className="bg-white dark:bg-[#0c241c] p-4 sm:p-5 rounded-3xl border border-[#E2EDE7] dark:border-white/10 shadow-sm space-y-3.5">
+                {/* Order Status Tabs */}
                 <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
                   {(["All", "Pending", "Processing", "Shipped", "Completed", "Cancelled"] as const).map((st) => {
                     const count =
@@ -1598,150 +1835,277 @@ function AdminDashboardPage() {
                   })}
                 </div>
 
-                <div className="relative w-full sm:w-72">
-                  <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
-                  <Input
-                    placeholder="Search Order Ref, customer, or phone..."
-                    value={orderQuery}
-                    onChange={(e) => setOrderQuery(e.target.value)}
-                    className="pl-9 rounded-xl text-xs"
-                  />
+                {/* Sub-bar: Payment Filter Pills, Sort Dropdown & Search Input */}
+                <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-white/10">
+                  {/* Payment Filters */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none text-xs">
+                    <span className="text-slate-400 text-[11px] font-bold shrink-0 flex items-center gap-1 mr-1">
+                      <SlidersHorizontal className="size-3" /> Payment:
+                    </span>
+                    {(
+                      [
+                        { id: "ALL", label: "All" },
+                        { id: "PENDING_VERIFICATION", label: `Needs Review (${pendingVerificationCount})` },
+                        { id: "VERIFIED", label: "Verified" },
+                        { id: "REJECTED", label: `Rejected (${rejectedSlipsCount})` },
+                        { id: "UNPAID", label: "Unpaid" },
+                      ] as const
+                    ).map((filter) => (
+                      <button
+                        key={filter.id}
+                        type="button"
+                        onClick={() => setOrderPaymentFilter(filter.id)}
+                        className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer shrink-0 ${
+                          orderPaymentFilter === filter.id
+                            ? filter.id === "PENDING_VERIFICATION"
+                              ? "bg-amber-500 text-white shadow-xs"
+                              : filter.id === "REJECTED"
+                                ? "bg-rose-500 text-white shadow-xs"
+                                : filter.id === "VERIFIED"
+                                  ? "bg-emerald-600 text-white shadow-xs"
+                                  : "bg-[#173226] text-white shadow-xs"
+                            : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+                        }`}
+                      >
+                        {filter.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Sort & Search */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <ArrowUpDown className="size-3.5 text-slate-400" />
+                      <select
+                        value={orderSortBy}
+                        onChange={(e) => setOrderSortBy(e.target.value as any)}
+                        className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#38B46A]"
+                      >
+                        <option value="NEWEST">Newest First</option>
+                        <option value="OLDEST">Oldest First</option>
+                        <option value="HIGHEST">Amount: High to Low</option>
+                        <option value="LOWEST">Amount: Low to High</option>
+                      </select>
+                    </div>
+
+                    <div className="relative flex-1 sm:w-64">
+                      <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+                      <Input
+                        placeholder="Search Ref, customer, or phone..."
+                        value={orderQuery}
+                        onChange={(e) => setOrderQuery(e.target.value)}
+                        className="pl-9 rounded-xl text-xs h-9"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
+              {/* Filter Active Notice if filtering */}
+              {(selectedOrderStatusFilter !== "All" || orderPaymentFilter !== "ALL" || orderQuery.trim()) && (
+                <div className="flex items-center justify-between px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 font-medium">
+                  <div className="flex items-center gap-2">
+                    <Filter className="size-3.5 text-emerald-600" />
+                    <span>
+                      Showing {filteredAndSortedOrders.length} of {effectiveOrders.length} orders
+                      {selectedOrderStatusFilter !== "All" && ` • Status: ${selectedOrderStatusFilter}`}
+                      {orderPaymentFilter !== "ALL" && ` • Payment: ${orderPaymentFilter}`}
+                      {orderQuery.trim() && ` • Search: "${orderQuery}"`}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedOrderStatusFilter("All");
+                      setOrderPaymentFilter("ALL");
+                      setOrderQuery("");
+                    }}
+                    className="font-bold underline text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 cursor-pointer"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {filteredAndSortedOrders.length === 0 && (
+                <div className="text-center py-12 px-4 rounded-3xl bg-white dark:bg-[#0c241c] border border-[#E2EDE7] dark:border-white/10 space-y-3">
+                  <div className="size-12 rounded-full bg-slate-100 dark:bg-white/5 mx-auto flex items-center justify-center text-slate-400">
+                    <ShoppingBag className="size-6" />
+                  </div>
+                  <h4 className="font-bold text-sm text-[#173226] dark:text-white">
+                    No orders match your criteria
+                  </h4>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    Try clearing search queries or switching payment/lifecycle status filters above.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setSelectedOrderStatusFilter("All");
+                      setOrderPaymentFilter("ALL");
+                      setOrderQuery("");
+                    }}
+                    variant="outline"
+                    className="rounded-xl text-xs font-bold"
+                  >
+                    Reset Filters
+                  </Button>
+                </div>
+              )}
+
               {/* Mobile Orders Card Stack (< sm) */}
               <div className="block sm:hidden space-y-3">
-                {effectiveOrders
-                  .filter(
-                    (o) =>
-                      (selectedOrderStatusFilter === "All" ||
-                        o.orderStatus === selectedOrderStatusFilter) &&
-                      (o.id.toLowerCase().includes(orderQuery.toLowerCase()) ||
-                        o.customerName.toLowerCase().includes(orderQuery.toLowerCase()) ||
-                        o.customerPhone.toLowerCase().includes(orderQuery.toLowerCase())),
-                  )
-                  .map((ord) => (
-                    <div
-                      key={ord.id}
-                      className="p-4 rounded-2xl bg-white dark:bg-[#0c241c] border border-[#E2EDE7] dark:border-white/10 shadow-xs space-y-3 text-xs"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono font-extrabold text-[#173226] dark:text-white text-sm">
-                          {ord.id}
-                        </span>
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                            ord.orderStatus === "Completed"
-                              ? "bg-[#ECFDF3] text-[#38B46A] border-[#38B46A]/30"
-                              : ord.orderStatus === "Shipped"
-                                ? "bg-[#EEF2FF] text-[#6366F1] border-[#6366F1]/30"
-                                : ord.orderStatus === "Processing"
-                                  ? "bg-[#EFF8FF] text-[#2F80ED] border-[#2F80ED]/30"
-                                  : ord.orderStatus === "Cancelled"
-                                    ? "bg-red-500/10 text-red-600 border-red-500/30"
-                                    : "bg-[#FFFBEB] text-[#D97706] border-[#F4B400]/30"
-                          }`}
-                        >
-                          {ord.orderStatus}
-                        </span>
+                {filteredAndSortedOrders.map((ord) => (
+                  <div
+                    key={ord.id}
+                    className="p-4 rounded-2xl bg-white dark:bg-[#0c241c] border border-[#E2EDE7] dark:border-white/10 shadow-xs space-y-3 text-xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono font-extrabold text-[#173226] dark:text-white text-sm">
+                        {ord.id}
+                      </span>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                          ord.orderStatus === "Completed"
+                            ? "bg-[#ECFDF3] text-[#38B46A] border-[#38B46A]/30"
+                            : ord.orderStatus === "Shipped"
+                              ? "bg-[#EEF2FF] text-[#6366F1] border-[#6366F1]/30"
+                              : ord.orderStatus === "Processing"
+                                ? "bg-[#EFF8FF] text-[#2F80ED] border-[#2F80ED]/30"
+                                : ord.orderStatus === "Cancelled"
+                                  ? "bg-red-500/10 text-red-600 border-red-500/30"
+                                  : "bg-[#FFFBEB] text-[#D97706] border-[#F4B400]/30"
+                        }`}
+                      >
+                        {ord.orderStatus}
+                      </span>
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <div className="font-bold text-[#173226] dark:text-white">
+                        {ord.customerName}
                       </div>
-
-                      <div className="space-y-0.5">
-                        <div className="font-bold text-[#173226] dark:text-white">
-                          {ord.customerName}
-                        </div>
-                        <div className="text-[11px] text-slate-500 font-mono">
-                          {ord.customerPhone} • {ord.shippingAddress}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/10">
-                        <span className="font-mono font-extrabold text-[#38B46A] text-sm">
-                          {formatNPR(ord.totalAmount)}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-medium">
-                          {ord.items.length} item(s) • {ord.paymentMethod}
-                        </span>
-                      </div>
-
-                      {/* Quick Lifecycle Action Buttons */}
-                      <div className="flex items-center gap-1.5 pt-1">
-                        <Button
-                          onClick={() => setSelectedOrderForDrawer(ord)}
-                          className="flex-1 h-8 rounded-xl bg-[#12342B] text-white text-xs font-bold"
-                        >
-                          View Details &rarr;
-                        </Button>
-
-                        {ord.orderStatus === "Pending" && (
-                          <Button
-                            onClick={() => handleUpdateOrderStatus(ord.id, "Processing")}
-                            className="h-8 px-2.5 rounded-xl bg-[#38B46A] text-white text-xs font-bold"
-                            title="Confirm & Start Processing"
-                          >
-                            Confirm
-                          </Button>
-                        )}
-
-                        {ord.orderStatus === "Processing" && (
-                          <Button
-                            onClick={() => handleUpdateOrderStatus(ord.id, "Shipped")}
-                            className="h-8 px-2.5 rounded-xl bg-[#2F80ED] text-white text-xs font-bold"
-                            title="Mark as Shipped"
-                          >
-                            Ship
-                          </Button>
-                        )}
-
-                        {ord.orderStatus === "Shipped" && (
-                          <Button
-                            onClick={() => handleUpdateOrderStatus(ord.id, "Completed")}
-                            className="h-8 px-2.5 rounded-xl bg-[#059669] text-white text-xs font-bold"
-                            title="Mark as Delivered"
-                          >
-                            Deliver
-                          </Button>
-                        )}
-
-                        <Button
-                          onClick={() => handleDeleteOrder(ord.id)}
-                          variant="outline"
-                          className="h-8 px-2.5 rounded-xl border-red-500/30 text-red-500 hover:bg-red-500/10 text-xs"
-                          title="Delete Order"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
+                      <div className="text-[11px] text-slate-500 font-mono">
+                        {ord.customerPhone} • {ord.shippingAddress}
                       </div>
                     </div>
-                  ))}
+
+                    {/* Payment Status Pill */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/10">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-medium mr-1.5">
+                          {ord.paymentMethod}
+                        </span>
+                        {ord.paymentStatus === "Paid" ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 border border-emerald-300">
+                            ✓ Verified
+                          </span>
+                        ) : ord.paymentStatus === "Failed" || !!ord.rejectionReason ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-50 dark:bg-rose-950/60 text-rose-600 border border-rose-300">
+                            ✕ Rejected
+                          </span>
+                        ) : ord.paymentReceipt ? (
+                          <button
+                            onClick={() => setSelectedOrderForDrawer(ord)}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-50 dark:bg-amber-950/60 text-amber-600 border border-amber-300 animate-pulse"
+                          >
+                            <ShieldCheck className="size-3 text-amber-600" /> Review Slip
+                          </button>
+                        ) : ord.paymentMethod === "Fonepay QR" ? (
+                          <span className="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200">
+                            Awaiting Slip
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            {ord.paymentStatus}
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="font-mono font-extrabold text-[#38B46A] text-sm">
+                        {formatNPR(ord.totalAmount)}
+                      </span>
+                    </div>
+
+                    {/* Quick Lifecycle Action Buttons */}
+                    <div className="flex items-center gap-1.5 pt-1">
+                      {ord.paymentReceipt && ord.paymentStatus !== "Paid" && (
+                        <Button
+                          onClick={() => setSelectedOrderForDrawer(ord)}
+                          className="h-8 px-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold gap-1"
+                        >
+                          <ShieldCheck className="size-3.5" /> Verify Slip
+                        </Button>
+                      )}
+
+                      <Button
+                        onClick={() => setSelectedOrderForDrawer(ord)}
+                        className="flex-1 h-8 rounded-xl bg-[#12342B] text-white text-xs font-bold"
+                      >
+                        View Details &rarr;
+                      </Button>
+
+                      {ord.orderStatus === "Pending" && (
+                        <Button
+                          onClick={() => handleUpdateOrderStatus(ord.id, "Processing")}
+                          className="h-8 px-2.5 rounded-xl bg-[#38B46A] text-white text-xs font-bold"
+                          title="Confirm & Start Processing"
+                        >
+                          Confirm
+                        </Button>
+                      )}
+
+                      {ord.orderStatus === "Processing" && (
+                        <Button
+                          onClick={() => handleUpdateOrderStatus(ord.id, "Shipped")}
+                          className="h-8 px-2.5 rounded-xl bg-[#2F80ED] text-white text-xs font-bold"
+                          title="Mark as Shipped"
+                        >
+                          Ship
+                        </Button>
+                      )}
+
+                      {ord.orderStatus === "Shipped" && (
+                        <Button
+                          onClick={() => handleUpdateOrderStatus(ord.id, "Completed")}
+                          className="h-8 px-2.5 rounded-xl bg-[#059669] text-white text-xs font-bold"
+                          title="Mark as Delivered"
+                        >
+                          Deliver
+                        </Button>
+                      )}
+
+                      <Button
+                        onClick={() => handleDeleteOrder(ord.id)}
+                        variant="outline"
+                        className="h-8 px-2.5 rounded-xl border-red-500/30 text-red-500 hover:bg-red-500/10 text-xs"
+                        title="Delete Order"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Desktop Orders Master Table (≥ sm) */}
-              <div className="hidden sm:block rounded-3xl bg-white dark:bg-[#0c241c] border border-[#E2EDE7] dark:border-white/10 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="border-b border-[#E2EDE7] dark:border-white/10 bg-[#F2FBF4] dark:bg-white/5 font-extrabold uppercase text-slate-500">
-                        <th className="p-4">Order Ref</th>
-                        <th className="p-4">Customer Contact</th>
-                        <th className="p-4">Destination</th>
-                        <th className="p-4">Total Amount</th>
-                        <th className="p-4">Payment</th>
-                        <th className="p-4">Order Status</th>
-                        <th className="p-4 text-right">Quick Lifecycle Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-white/5 font-medium">
-                      {effectiveOrders
-                        .filter(
-                          (o) =>
-                            (selectedOrderStatusFilter === "All" ||
-                              o.orderStatus === selectedOrderStatusFilter) &&
-                            (o.id.toLowerCase().includes(orderQuery.toLowerCase()) ||
-                              o.customerName.toLowerCase().includes(orderQuery.toLowerCase()) ||
-                              o.customerPhone.toLowerCase().includes(orderQuery.toLowerCase())),
-                        )
-                        .map((ord) => (
+              {filteredAndSortedOrders.length > 0 && (
+                <div className="hidden sm:block rounded-3xl bg-white dark:bg-[#0c241c] border border-[#E2EDE7] dark:border-white/10 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-[#E2EDE7] dark:border-white/10 bg-[#F2FBF4] dark:bg-white/5 font-extrabold uppercase text-slate-500">
+                          <th className="p-4">Order Ref</th>
+                          <th className="p-4">Customer Contact</th>
+                          <th className="p-4">Destination</th>
+                          <th className="p-4">Total Amount</th>
+                          <th className="p-4">Payment & Receipt</th>
+                          <th className="p-4">Order Status</th>
+                          <th className="p-4 text-right">Quick Lifecycle Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-white/5 font-medium">
+                        {filteredAndSortedOrders.map((ord) => (
                           <tr
                             key={ord.id}
                             className="hover:bg-[#F2FBF4]/80 dark:hover:bg-white/5 transition-colors"
@@ -1761,6 +2125,11 @@ function AdminDashboardPage() {
                               <div className="text-[11px] text-slate-500 font-mono">
                                 {ord.customerPhone}
                               </div>
+                              {ord.customerEmail && (
+                                <div className="text-[10px] text-slate-400 truncate max-w-[150px]">
+                                  {ord.customerEmail}
+                                </div>
+                              )}
                             </td>
                             <td className="p-4">
                               <div className="text-slate-700 dark:text-slate-300 max-w-[160px] truncate font-medium">
@@ -1778,13 +2147,21 @@ function AdminDashboardPage() {
                                 <div className="font-bold text-slate-800 dark:text-slate-200">
                                   {ord.paymentMethod}
                                 </div>
-                                {ord.paymentReceipt ? (
+                                {ord.paymentStatus === "Paid" ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 border border-emerald-300">
+                                    ✓ Verified
+                                  </span>
+                                ) : ord.paymentStatus === "Failed" || !!ord.rejectionReason ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-50 dark:bg-rose-950/60 text-rose-600 border border-rose-300">
+                                    ✕ Slip Rejected
+                                  </span>
+                                ) : ord.paymentReceipt ? (
                                   <button
                                     onClick={() => setSelectedOrderForDrawer(ord)}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 border border-emerald-300 dark:border-emerald-800 hover:scale-105 transition-transform cursor-pointer"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-50 dark:bg-amber-950/60 text-amber-600 border border-amber-300 dark:border-amber-800 hover:scale-105 transition-transform cursor-pointer animate-pulse"
                                     title="View customer payment receipt screenshot"
                                   >
-                                    <ShieldCheck className="size-3 text-emerald-600" /> Slip Attached
+                                    <ShieldCheck className="size-3 text-amber-600" /> Review Slip
                                   </button>
                                 ) : ord.paymentMethod === "Fonepay QR" ? (
                                   <span className="inline-block text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200">
@@ -1794,6 +2171,11 @@ function AdminDashboardPage() {
                                   <span className="text-[10px] text-slate-400 font-medium">
                                     {ord.paymentStatus}
                                   </span>
+                                )}
+                                {ord.transactionRef && (
+                                  <div className="text-[10px] font-mono text-slate-400 truncate max-w-[120px]">
+                                    Ref: {ord.transactionRef}
+                                  </div>
                                 )}
                               </div>
                             </td>
@@ -1816,7 +2198,18 @@ function AdminDashboardPage() {
                             </td>
                             <td className="p-4 text-right">
                               <div className="flex items-center justify-end gap-1.5">
-                                {/* Direct State Shift Button */}
+                                {/* Verify Slip Quick Button if slip attached and pending */}
+                                {ord.paymentReceipt && ord.paymentStatus !== "Paid" && (
+                                  <Button
+                                    onClick={() => setSelectedOrderForDrawer(ord)}
+                                    className="h-8 px-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs cursor-pointer shadow-xs transition-all hover:scale-105 gap-1"
+                                    title="Open drawer to verify payment slip"
+                                  >
+                                    <ShieldCheck className="size-3.5" /> Verify
+                                  </Button>
+                                )}
+
+                                {/* Direct State Shift Buttons */}
                                 {ord.orderStatus === "Pending" && (
                                   <>
                                     <Button
@@ -1876,10 +2269,11 @@ function AdminDashboardPage() {
                             </td>
                           </tr>
                         ))}
-                    </tbody>
-                  </table>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -2236,6 +2630,8 @@ function AdminDashboardPage() {
         isOpen={!!selectedOrderForDrawer}
         onClose={() => setSelectedOrderForDrawer(null)}
         onUpdateStatus={handleUpdateOrderStatus}
+        onVerifyPayment={handleVerifyPayment}
+        onUpdateDelivery={handleUpdateDelivery}
         onDeleteOrder={handleDeleteOrder}
       />
 

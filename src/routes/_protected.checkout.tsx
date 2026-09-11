@@ -43,6 +43,7 @@ function CheckoutPage() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    email: "",
     phone: "",
     address: "",
     city: "Kathmandu",
@@ -70,6 +71,13 @@ function CheckoutPage() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    if (!formData.firstName || !formData.phone || !formData.address) {
+      toast.error("Please fill in all required shipping fields");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const result = await api.createOrder({
@@ -77,6 +85,7 @@ function CheckoutPage() {
         shipping: {
           name: `${formData.firstName} ${formData.lastName}`.trim(),
           phone: formData.phone,
+          email: formData.email,
           address: formData.address,
           city: formData.city,
           notes: formData.notes,
@@ -84,13 +93,17 @@ function CheckoutPage() {
         paymentMethod,
         paymentReceipt: paymentReceipt || null,
       });
+
       setOrderRef(result.orderRef);
       setIsSubmitting(false);
-      setOrderComplete(true);
       clearCart();
-    } catch {
+      toast.success(`Order #${result.orderRef} placed successfully!`);
+
+      // Redirect immediately to the dedicated Fonepay QR & Tracking Page
+      navigate({ to: "/order/$ref", params: { ref: result.orderRef } });
+    } catch (err: any) {
       setIsSubmitting(false);
-      toast.error("Order failed. Please try again.");
+      toast.error(err.message || "Order placement failed. Please try again.");
     }
   };
 
@@ -198,7 +211,7 @@ function CheckoutPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold mb-1.5">Phone Number</label>
               <Input
@@ -210,12 +223,34 @@ function CheckoutPage() {
               />
             </div>
             <div>
+              <label className="block text-xs font-bold mb-1.5">Email Address (for Order Updates)</label>
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="rounded-xl"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
               <label className="block text-xs font-bold mb-1.5">City / Location</label>
               <Input
                 required
                 placeholder="e.g. Kathmandu / Pokhara"
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                className="rounded-xl"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold mb-1.5">District / Valley</label>
+              <Input
+                placeholder="e.g. Kathmandu Valley / Kaski"
+                value={formData.district}
+                onChange={(e) => setFormData({ ...formData, district: e.target.value })}
                 className="rounded-xl"
               />
             </div>
@@ -228,6 +263,16 @@ function CheckoutPage() {
               placeholder="Street name, Ward number, Tole / Landmark"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              className="rounded-xl"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold mb-1.5">Delivery Notes / Instructions (Optional)</label>
+            <Input
+              placeholder="Specific delivery gate, site access hours, or recipient notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="rounded-xl"
             />
           </div>
@@ -444,7 +489,7 @@ function CheckoutPage() {
             ) : (
               <>
                 <Lock className="size-4" />
-                <span>Confirm Order — {formatNPR(grandTotal)}</span>
+                <span>Place Order & Pay — {formatNPR(grandTotal)}</span>
               </>
             )}
           </Button>

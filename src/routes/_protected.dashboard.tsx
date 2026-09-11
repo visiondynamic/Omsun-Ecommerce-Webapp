@@ -1548,16 +1548,24 @@ function DashboardPage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 capitalize">
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200 uppercase">
                                   {order.status}
                                 </span>
-                                {order.payment_receipt ? (
+                                {order.payment_status === "PAYMENT_VERIFIED" ? (
                                   <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1">
-                                    <ShieldCheck className="size-3" /> Slip Verified
+                                    <ShieldCheck className="size-3" /> Payment Verified
+                                  </span>
+                                ) : order.payment_status === "PAYMENT_REJECTED" ? (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 border border-rose-500/20 flex items-center gap-1">
+                                    <AlertCircle className="size-3" /> Slip Rejected
+                                  </span>
+                                ) : order.payment_status === "PAYMENT_SUBMITTED" || order.payment_receipt ? (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center gap-1">
+                                    <Clock className="size-3" /> Under Review
                                   </span>
                                 ) : order.payment_method === "fonepay" ? (
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center gap-1">
-                                    <Clock className="size-3" /> Awaiting Slip
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 border border-rose-500/20 flex items-center gap-1">
+                                    <AlertCircle className="size-3" /> Awaiting Fonepay
                                   </span>
                                 ) : null}
                               </div>
@@ -1597,29 +1605,23 @@ function DashboardPage() {
                               </div>
 
                               <div className="flex items-center gap-2 flex-wrap">
-                                {!order.payment_receipt && order.payment_method === "fonepay" && (
-                                  <Button
-                                    type="button"
-                                    onClick={() => {
-                                      setTargetOrderForReceipt(order);
-                                      orderReceiptFileInputRef.current?.click();
-                                    }}
-                                    disabled={isUploadingOrderReceipt}
-                                    size="sm"
-                                    variant="outline"
-                                    className="rounded-xl text-xs font-bold h-8 border-rose-300 text-rose-700 dark:text-rose-300 hover:bg-rose-50 cursor-pointer"
-                                  >
-                                    <Upload className="size-3 mr-1" />
-                                    <span>Upload Slip</span>
-                                  </Button>
-                                )}
+                                <Button
+                                  asChild
+                                  size="sm"
+                                  className="h-8 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs"
+                                >
+                                  <Link to="/order/$ref" params={{ ref: order.order_ref }}>
+                                    Track Order & Pay &rarr;
+                                  </Link>
+                                </Button>
 
                                 <Button
                                   onClick={() => setSelectedOrderForModal(order)}
                                   size="sm"
-                                  className="h-8 px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs"
+                                  variant="outline"
+                                  className="h-8 px-3 rounded-xl text-xs font-bold"
                                 >
-                                  Manage Order &rarr;
+                                  Details
                                 </Button>
                               </div>
                             </div>

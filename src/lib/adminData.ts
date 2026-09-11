@@ -13,20 +13,37 @@ export interface OrderItem {
 
 export interface AdminOrder {
   id: string;
+  orderRef?: string | undefined;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
   shippingAddress: string;
+  shippingCity?: string | undefined;
   items: OrderItem[];
+  subtotal?: number | undefined;
+  shippingFee?: number | undefined;
   totalAmount: number;
   discountAmount: number;
   paymentMethod: "Fonepay QR" | "Cash on Delivery" | "Bank Transfer" | "eSewa" | "Khalti" | string;
-  paymentStatus: PaymentStatus | "Pending Verification" | string;
-  paymentReceipt?: string | null;
-  notes?: string | null;
-  orderStatus: OrderStatus;
+  paymentStatus: PaymentStatus | "Pending Verification" | "PAYMENT_SUBMITTED" | "PAYMENT_VERIFIED" | "PAYMENT_REJECTED" | string;
+  paymentReceipt?: string | null | undefined;
+  transactionRef?: string | null | undefined;
+  rejectionReason?: string | null | undefined;
+  verifiedBy?: string | null | undefined;
+  adminNotes?: string | null | undefined;
+  notes?: string | null | undefined;
+  orderStatus: OrderStatus | string;
+  deliveryStatus?: string | undefined;
+  deliveryCarrier?: string | null | undefined;
+  deliveryPerson?: string | null | undefined;
+  deliveryPhone?: string | null | undefined;
+  trackingNumber?: string | null | undefined;
+  deliveryNotes?: string | null | undefined;
+  estimatedDelivery?: string | null | undefined;
   createdAt: string;
-  timeline: { title: string; timestamp: string; note?: string }[];
+  paymentSubmittedAt?: string | null | undefined;
+  paymentVerifiedAt?: string | null | undefined;
+  timeline: { title: string; timestamp: string; note?: string | undefined }[];
 }
 
 export interface AdminCustomer {

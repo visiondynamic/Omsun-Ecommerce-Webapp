@@ -21,6 +21,7 @@ import { Route as WhyOmsunRouteImport } from './routes/why-omsun'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin.admin-dashboard'
 import { Route as ProtectedCheckoutRouteImport } from './routes/_protected.checkout'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected.dashboard'
+import { Route as OrderRefRouteImport } from './routes/order.$ref'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -81,6 +82,11 @@ const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const OrderRefRoute = OrderRefRouteImport.update({
+  id: '/order/$ref',
+  path: '/order/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductIdRoute = ProductIdRouteImport.update({
   id: '/product/$id',
   path: '/product/$id',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/admin-dashboard': typeof AdminAdminDashboardRoute
   '/checkout': typeof ProtectedCheckoutRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/order/$ref': typeof OrderRefRoute
   '/product/$id': typeof ProductIdRoute
 }
 export interface FileRoutesByTo {
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/admin-dashboard': typeof AdminAdminDashboardRoute
   '/checkout': typeof ProtectedCheckoutRoute
   '/dashboard': typeof ProtectedDashboardRoute
+  '/order/$ref': typeof OrderRefRoute
   '/product/$id': typeof ProductIdRoute
 }
 export interface FileRoutesById {
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/_admin/admin-dashboard': typeof AdminAdminDashboardRoute
   '/_protected/checkout': typeof ProtectedCheckoutRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/order/$ref': typeof OrderRefRoute
   '/product/$id': typeof ProductIdRoute
 }
 export interface FileRouteTypes {
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/admin-dashboard'
     | '/checkout'
     | '/dashboard'
+    | '/order/$ref'
     | '/product/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/admin-dashboard'
     | '/checkout'
     | '/dashboard'
+    | '/order/$ref'
     | '/product/$id'
   id:
     | '__root__'
@@ -170,6 +181,7 @@ export interface FileRouteTypes {
     | '/_admin/admin-dashboard'
     | '/_protected/checkout'
     | '/_protected/dashboard'
+    | '/order/$ref'
     | '/product/$id'
   fileRoutesById: FileRoutesById
 }
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   ShopRoute: typeof ShopRoute
   SolarSolutionsRoute: typeof SolarSolutionsRoute
   WhyOmsunRoute: typeof WhyOmsunRoute
+  OrderRefRoute: typeof OrderRefRoute
   ProductIdRoute: typeof ProductIdRoute
 }
 
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedDashboardRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/order/$ref': {
+      id: '/order/$ref'
+      path: '/order/$ref'
+      fullPath: '/order/$ref'
+      preLoaderRoute: typeof OrderRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/product/$id': {
       id: '/product/$id'
       path: '/product/$id'
@@ -316,6 +336,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRoute: ShopRoute,
   SolarSolutionsRoute: SolarSolutionsRoute,
   WhyOmsunRoute: WhyOmsunRoute,
+  OrderRefRoute: OrderRefRoute,
   ProductIdRoute: ProductIdRoute,
 }
 export const routeTree = rootRouteImport

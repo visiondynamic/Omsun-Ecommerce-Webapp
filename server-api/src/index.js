@@ -138,6 +138,15 @@ function adminMiddleware(req, res, next) {
   next();
 }
 
+function optionalAuthMiddleware(req, res, next) {
+  const header = req.headers.authorization;
+  if (header?.startsWith("Bearer ")) {
+    const user = verifyToken(header.slice(7));
+    if (user) req.user = user;
+  }
+  next();
+}
+
 /* ═══════════════════════════════════════════════════════════════════ */
 /* HEALTH                                                             */
 /* ═══════════════════════════════════════════════════════════════════ */
@@ -226,35 +235,6 @@ app.post("/api/auth/avatar", authMiddleware, async (req, res, next) => {
     await query("UPDATE users SET avatar = ? WHERE id = ?", [avatarUrl, req.user.id]);
 
     res.json({ ok: true, avatarUrl, message: "Avatar updated successfully" });
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.post("/api/orders/:ref/receipt", authMiddleware, async (req, res, next) => {
-  try {
-    const { receiptBase64 } = req.body ?? {};
-    if (!receiptBase64) {
-      return res.status(400).json({ error: "receiptBase64 is required" });
-    }
-
-    const matches = receiptBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    let buffer;
-    let ext = "jpg";
-    if (matches && matches.length === 3) {
-      buffer = Buffer.from(matches[2], "base64");
-    } else {
-      buffer = Buffer.from(receiptBase64, "base64");
-    }
-
-    const uniqueName = `receipt-${req.params.ref}-${Date.now()}.${ext}`;
-    const filePath = path.join(uploadsDir, uniqueName);
-    await fs.promises.writeFile(filePath, buffer);
-
-    const receiptUrl = `/uploads/${uniqueName}`;
-    await query("UPDATE orders SET payment_receipt = ? WHERE order_ref = ?", [receiptUrl, req.params.ref]);
-
-    res.json({ ok: true, receiptUrl, message: "Payment receipt uploaded" });
   } catch (err) {
     next(err);
   }
@@ -555,41 +535,188 @@ app.get("/api/products/:id", async (req, res, next) => {
 });
 
 /* ═══════════════════════════════════════════════════════════════════ */
-/* ORDERS                                                             */
+/* ORDERS & MANUAL PAYMENT WORKFLOW                                    */
 /* ═══════════════════════════════════════════════════════════════════ */
-async function ensureOrdersPaymentReceiptColumn() {
+
+const ADMIN_NOTIFICATION_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || "sales@omsunnepal.com";
+
+// FormSubmit notification helper with timeout & non-blocking safety
+async function sendNotificationEmail({ to, subject, data }) {
+  if (!to) return { ok: false, error: "No recipient provided" };
   try {
-    await query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_receipt MEDIUMTEXT NULL");
-  } catch {
-    try {
-      await query("ALTER TABLE orders ADD COLUMN payment_receipt MEDIUMTEXT NULL");
-    } catch {}
+    const payload = {
+      _subject: subject,
+      _template: "table",
+      _captcha: "false",
+      ...data,
+    };
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
+    const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(to)}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    const json = await res.json().catch(() => ({}));
+    return { ok: res.ok, json };
+  } catch (err) {
+    console.warn(`[FormSubmit Notice] Notification to ${to} deferred: ${err.message}`);
+    return { ok: false, error: err.message };
   }
 }
-ensureOrdersPaymentReceiptColumn();
 
-app.post("/api/orders", authMiddleware, async (req, res, next) => {
-  const { items, shipping, paymentMethod, paymentReceipt } = req.body ?? {};
-  if (!items?.length || !shipping) {
-    return res.status(400).json({ error: "items and shipping details are required" });
+// Ensure database schema supports full order and payment lifecycle
+async function ensureFullOrderSchema() {
+  const alterStatements = [
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_email VARCHAR(190) NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_amount DECIMAL(12, 2) NOT NULL DEFAULT 0",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status VARCHAR(60) NOT NULL DEFAULT 'UNPAID'",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_receipt MEDIUMTEXT NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS transaction_ref VARCHAR(100) NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS rejection_reason TEXT NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_submitted_at TIMESTAMP NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_verified_at TIMESTAMP NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS verified_by VARCHAR(120) NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS admin_notes TEXT NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_status VARCHAR(60) NOT NULL DEFAULT 'PENDING'",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_carrier VARCHAR(120) NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_person VARCHAR(120) NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_phone VARCHAR(30) NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(100) NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_notes TEXT NULL",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS estimated_delivery DATE NULL",
+    "ALTER TABLE orders MODIFY COLUMN status VARCHAR(60) NOT NULL DEFAULT 'ORDER_PLACED'",
+    "ALTER TABLE orders MODIFY COLUMN payment_method VARCHAR(60) NOT NULL DEFAULT 'fonepay'",
+    "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS product_image VARCHAR(500) NULL"
+  ];
+
+  for (const stmt of alterStatements) {
+    try {
+      await query(stmt);
+    } catch {
+      if (stmt.includes("IF NOT EXISTS")) {
+        try {
+          await query(stmt.replace("IF NOT EXISTS ", ""));
+        } catch {}
+      }
+    }
   }
+
   try {
-    await ensureOrdersPaymentReceiptColumn();
+    await query(`
+      CREATE TABLE IF NOT EXISTS order_status_history (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        order_id INT UNSIGNED NOT NULL,
+        order_ref VARCHAR(32) NOT NULL,
+        status_type VARCHAR(40) NOT NULL,
+        old_value VARCHAR(80) NULL,
+        new_value VARCHAR(80) NOT NULL,
+        changed_by VARCHAR(120) NULL,
+        notes TEXT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_history_order (order_id),
+        INDEX idx_history_ref (order_ref)
+      ) ENGINE=InnoDB
+    `);
+  } catch {}
+
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS payment_logs (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        order_ref VARCHAR(32) NOT NULL,
+        action VARCHAR(60) NOT NULL,
+        payload JSON NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'success',
+        notes TEXT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_payment_logs_ref (order_ref)
+      ) ENGINE=InnoDB
+    `);
+  } catch {}
+}
+ensureFullOrderSchema();
+
+// Generate sequential order reference: OMS-2026-000001
+async function generateOrderRef() {
+  const currentYear = new Date().getFullYear();
+  const prefix = `OMS-${currentYear}-`;
+  try {
+    const rows = await query("SELECT order_ref FROM orders WHERE order_ref LIKE ? ORDER BY id DESC LIMIT 1", [`${prefix}%`]);
+    let nextNum = 1;
+    if (rows.length > 0 && rows[0].order_ref) {
+      const match = rows[0].order_ref.match(/-(\d+)$/);
+      if (match) {
+        nextNum = parseInt(match[1], 10) + 1;
+      }
+    } else {
+      const countRows = await query("SELECT COUNT(*) as cnt FROM orders");
+      nextNum = (countRows[0]?.cnt || 0) + 1;
+    }
+    const orderRef = `${prefix}${String(nextNum).padStart(6, "0")}`;
+    const exists = await query("SELECT id FROM orders WHERE order_ref = ?", [orderRef]);
+    if (exists.length > 0) {
+      return `${prefix}${String(nextNum + Math.floor(Math.random() * 1000) + 1).padStart(6, "0")}`;
+    }
+    return orderRef;
+  } catch {
+    return `${prefix}${Date.now().toString(36).toUpperCase()}`;
+  }
+}
+
+async function logOrderStatusChange({ orderId, orderRef, statusType, oldValue, newValue, changedBy, notes }) {
+  try {
+    await query(
+      "INSERT INTO order_status_history (order_id, order_ref, status_type, old_value, new_value, changed_by, notes) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [orderId, orderRef, statusType, oldValue || null, newValue, changedBy || "System", notes || null]
+    );
+  } catch (err) {
+    console.error("Order status log error:", err.message);
+  }
+}
+
+/* 1. CREATE ORDER IMMEDIATELY (Before Payment) */
+app.post("/api/orders", optionalAuthMiddleware, async (req, res, next) => {
+  const body = req.body ?? {};
+  const { items, paymentMethod, paymentReceipt, couponCode } = body;
+  const shipping = body.shipping || {
+    name: body.customerName || body.name,
+    phone: body.customerPhone || body.phone,
+    address: body.shippingAddress || body.address,
+    city: body.shippingCity || body.city || "Kathmandu",
+    email: body.shippingEmail || body.customerEmail || body.email,
+    notes: body.deliveryNotes || body.notes,
+  };
+  if (!items?.length || !shipping?.name || !shipping?.phone || !shipping?.address) {
+    return res.status(400).json({ error: "Items, recipient name, phone, and delivery address are required" });
+  }
+
+  try {
+    await ensureFullOrderSchema();
     let subtotal = 0;
     const orderItems = [];
+
+    // Calculate subtotal directly from database products — NEVER trust client prices
     for (const item of items) {
-      const prodId = item.productId || `prod-${Date.now()}`;
-      const rows = await query("SELECT id, name, price, stock FROM products WHERE id = ?", [prodId]);
-      let prodName = item.name || "Solar & Electrical Equipment";
+      const prodId = item.productId;
+      const rows = await query("SELECT id, name, price, stock, image FROM products WHERE id = ?", [prodId]);
+      let prodName = item.name || "OMSUN Equipment";
       let unitPrice = Number(item.price) || 0;
+      let prodImage = item.image || "/p-panelboard.jpg";
 
       if (rows.length > 0) {
         const prod = rows[0];
         prodName = prod.name;
         unitPrice = Number(prod.price);
-        await query("UPDATE products SET stock = GREATEST(0, stock - ?) WHERE id = ?", [item.quantity || 1, prod.id]);
+        prodImage = prod.image || prodImage;
+        // Reserve inventory atomically
+        await query("UPDATE products SET stock = GREATEST(0, stock - ?) WHERE id = ?", [Number(item.quantity) || 1, prod.id]);
       } else {
-        // Auto-create product record if not existing in DB to satisfy foreign key
         await query(
           "INSERT INTO products (id, name, category, brand, price, stock, rating) VALUES (?, ?, ?, ?, ?, ?, ?)",
           [prodId, prodName, "Solar Panels", "OMSUN", unitPrice, 50, 4.8],
@@ -597,9 +724,10 @@ app.post("/api/orders", authMiddleware, async (req, res, next) => {
       }
       const qty = Number(item.quantity) || 1;
       subtotal += unitPrice * qty;
-      orderItems.push({ productId: prodId, name: prodName, qty, unitPrice });
+      orderItems.push({ productId: prodId, name: prodName, qty, unitPrice, image: prodImage });
     }
 
+    // Standardized payment method
     let method = (paymentMethod || "fonepay").toLowerCase();
     if (method.includes("fonepay")) method = "fonepay";
     else if (method.includes("bank")) method = "bank";
@@ -607,104 +735,352 @@ app.post("/api/orders", authMiddleware, async (req, res, next) => {
     else if (method.includes("khalti")) method = "khalti";
     else method = "cod";
 
-    // Handle receipt saving if provided
-    let savedReceiptUrl = null;
-    if (paymentReceipt) {
-      if (paymentReceipt.startsWith("data:image/")) {
-        const match = paymentReceipt.match(/^data:image\/(\w+);base64,(.+)$/);
-        if (match) {
-          const ext = match[1] === "jpeg" ? "jpg" : match[1];
-          const data = Buffer.from(match[2], "base64");
-          const filename = `receipt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
-          const filePath = path.join(uploadsDir, filename);
-          fs.writeFileSync(filePath, data);
-          savedReceiptUrl = `/uploads/${filename}`;
-        } else {
-          savedReceiptUrl = paymentReceipt;
+    // Standard shipping rule: Free delivery above 50,000 NPR, else 1,500 NPR
+    const shippingFee = subtotal > 50000 ? 0 : 1500;
+    let discountAmount = 0;
+
+    // Check optional coupon
+    if (couponCode) {
+      const cpnRows = await query("SELECT * FROM coupons WHERE code = ? AND status = 'active'", [couponCode.toUpperCase()]);
+      if (cpnRows.length > 0) {
+        const cpn = cpnRows[0];
+        if (subtotal >= Number(cpn.min_spend)) {
+          if (cpn.discount_type === "percentage") {
+            discountAmount = Math.round((subtotal * Number(cpn.discount_value)) / 100);
+          } else {
+            discountAmount = Number(cpn.discount_value);
+          }
+          await query("UPDATE coupons SET usage_count = usage_count + 1 WHERE id = ?", [cpn.id]);
         }
-      } else {
-        savedReceiptUrl = paymentReceipt;
       }
     }
 
-    const shippingFee = subtotal > 50000 ? 0 : 1500;
-    const grandTotal = subtotal + shippingFee;
-    const orderRef = `OMS-${Date.now().toString(36).toUpperCase()}`;
+    const grandTotal = Math.max(0, subtotal + shippingFee - discountAmount);
+    const orderRef = await generateOrderRef();
+    const userId = req.user?.id || null;
+    const shippingEmail = shipping.email || req.user?.email || null;
 
-    const result = await query(
-      "INSERT INTO orders (order_ref, user_id, shipping_name, shipping_phone, shipping_address, shipping_city, subtotal, shipping_fee, grand_total, payment_method, status, notes, payment_receipt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)",
-      [orderRef, req.user.id, shipping.name, shipping.phone, shipping.address, shipping.city || "Kathmandu", subtotal, shippingFee, grandTotal, method, shipping.notes || null, savedReceiptUrl],
-    );
-
-    for (const item of orderItems) {
-      await query(
-        "INSERT INTO order_items (order_id, product_id, product_name, qty, unit_price) VALUES (?, ?, ?, ?, ?)",
-        [result.insertId, item.productId, item.name, item.qty, item.unitPrice],
-      );
-    }
-
-    res.status(201).json({ ok: true, orderRef, grandTotal, receiptUrl: savedReceiptUrl });
-  } catch (err) {
-    next(err);
-  }
-});
-
-/* Upload or Update Payment Receipt for Order */
-app.post("/api/orders/:ref/receipt", authMiddleware, async (req, res, next) => {
-  const { receiptBase64 } = req.body ?? {};
-  if (!receiptBase64) {
-    return res.status(400).json({ error: "Receipt image is required" });
-  }
-  try {
-    await ensureOrdersPaymentReceiptColumn();
-    let savedReceiptUrl = receiptBase64;
-    if (receiptBase64.startsWith("data:image/")) {
-      const match = receiptBase64.match(/^data:image\/(\w+);base64,(.+)$/);
+    // Optional receipt if uploaded during checkout
+    let savedReceiptUrl = null;
+    if (paymentReceipt && paymentReceipt.startsWith("data:image/")) {
+      const match = paymentReceipt.match(/^data:image\/(\w+);base64,(.+)$/);
       if (match) {
         const ext = match[1] === "jpeg" ? "jpg" : match[1];
         const data = Buffer.from(match[2], "base64");
-        const filename = `receipt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+        const filename = `receipt-${orderRef}-${Date.now()}.${ext}`;
         const filePath = path.join(uploadsDir, filename);
         fs.writeFileSync(filePath, data);
         savedReceiptUrl = `/uploads/${filename}`;
       }
     }
-    const rawRef = req.params.ref;
-    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
-    await query(
-      "UPDATE orders SET payment_receipt = ? WHERE (order_ref = ? OR order_ref = ?) AND (user_id = ? OR ? = 'admin')",
-      [savedReceiptUrl, rawRef, refWithPrefix, req.user.id, req.user.role]
+
+    const initialPaymentStatus = savedReceiptUrl ? "PAYMENT_SUBMITTED" : "UNPAID";
+    const initialOrderStatus = savedReceiptUrl ? "PAYMENT_SUBMITTED" : "ORDER_PLACED";
+
+    const result = await query(
+      `INSERT INTO orders (
+        order_ref, user_id, shipping_name, shipping_phone, shipping_email,
+        shipping_address, shipping_city, subtotal, shipping_fee, discount_amount,
+        grand_total, payment_method, payment_status, payment_receipt, status, notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        orderRef,
+        userId,
+        shipping.name,
+        shipping.phone,
+        shippingEmail,
+        shipping.address,
+        shipping.city || "Kathmandu",
+        subtotal,
+        shippingFee,
+        discountAmount,
+        grandTotal,
+        method,
+        initialPaymentStatus,
+        savedReceiptUrl,
+        initialOrderStatus,
+        shipping.notes || null,
+      ]
     );
-    res.json({ ok: true, receiptUrl: savedReceiptUrl, message: "Payment receipt attached successfully" });
+
+    const orderId = result.insertId;
+
+    for (const item of orderItems) {
+      await query(
+        "INSERT INTO order_items (order_id, product_id, product_name, product_image, qty, unit_price) VALUES (?, ?, ?, ?, ?, ?)",
+        [orderId, item.productId, item.name, item.image, item.qty, item.unitPrice]
+      );
+    }
+
+    // Log creation in audit history
+    await logOrderStatusChange({
+      orderId,
+      orderRef,
+      statusType: "order_lifecycle",
+      oldValue: null,
+      newValue: initialOrderStatus,
+      changedBy: shipping.name,
+      notes: `Order created via ${method.toUpperCase()} checkout`
+    });
+
+    // Send Admin Email via FormSubmit (Non-blocking)
+    sendNotificationEmail({
+      to: ADMIN_NOTIFICATION_EMAIL,
+      subject: `New Omsun Order Received — ${orderRef}`,
+      data: {
+        "Order Reference": orderRef,
+        "Customer Name": shipping.name,
+        "Phone Number": shipping.phone,
+        "Email": shippingEmail || "N/A",
+        "Delivery Address": `${shipping.address}, ${shipping.city}`,
+        "Ordered Hardware": orderItems.map((i) => `${i.name} (Qty: ${i.qty})`).join(" | "),
+        "Subtotal": `NPR ${subtotal.toLocaleString()}`,
+        "Delivery Logistics": `NPR ${shippingFee.toLocaleString()}`,
+        "Discount": `NPR ${discountAmount.toLocaleString()}`,
+        "Final Amount Payable": `NPR ${grandTotal.toLocaleString()}`,
+        "Payment Method": method.toUpperCase(),
+        "Payment Status": initialPaymentStatus,
+        "Order Date": new Date().toLocaleString(),
+      },
+    }).catch(() => {});
+
+    res.status(201).json({
+      ok: true,
+      orderId,
+      orderRef,
+      grandTotal,
+      subtotal,
+      shippingFee,
+      discountAmount,
+      paymentMethod: method,
+      paymentStatus: initialPaymentStatus,
+      orderStatus: initialOrderStatus,
+      receiptUrl: savedReceiptUrl,
+    });
   } catch (err) {
     next(err);
   }
 });
 
+/* 2. GET ORDER DETAILS (For Tracking & Fonepay Payment Page) */
+app.get("/api/orders/:ref", optionalAuthMiddleware, async (req, res, next) => {
+  try {
+    await ensureFullOrderSchema();
+    const rawRef = req.params.ref;
+    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
+
+    const rows = await query(
+      "SELECT * FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
+      [rawRef, refWithPrefix]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const o = rows[0];
+    const items = await query("SELECT * FROM order_items WHERE order_id = ?", [o.id]);
+    const history = await query(
+      "SELECT * FROM order_status_history WHERE order_id = ? ORDER BY created_at ASC",
+      [o.id]
+    );
+
+    res.json({
+      id: o.id,
+      orderRef: o.order_ref,
+      userId: o.user_id,
+      customerName: o.shipping_name,
+      customerPhone: o.shipping_phone,
+      customerEmail: o.shipping_email || "",
+      shippingAddress: o.shipping_address,
+      shippingCity: o.shipping_city,
+      subtotal: Number(o.subtotal),
+      shippingFee: Number(o.shipping_fee),
+      discountAmount: Number(o.discount_amount || 0),
+      grandTotal: Number(o.grand_total),
+      paymentMethod: o.payment_method,
+      paymentStatus: o.payment_status || "UNPAID",
+      paymentReceipt: o.payment_receipt || null,
+      transactionRef: o.transaction_ref || null,
+      rejectionReason: o.rejection_reason || null,
+      paymentSubmittedAt: o.payment_submitted_at,
+      paymentVerifiedAt: o.payment_verified_at,
+      status: o.status || "ORDER_PLACED",
+      deliveryStatus: o.delivery_status || "PENDING",
+      deliveryCarrier: o.delivery_carrier || null,
+      deliveryPerson: o.delivery_person || null,
+      deliveryPhone: o.delivery_phone || null,
+      trackingNumber: o.tracking_number || null,
+      deliveryNotes: o.delivery_notes || null,
+      estimatedDelivery: o.estimated_delivery || null,
+      notes: o.notes,
+      createdAt: o.created_at,
+      items: items.map((i) => ({
+        id: i.id,
+        productId: i.product_id,
+        name: i.product_name,
+        image: i.product_image || "/p-panelboard.jpg",
+        qty: i.qty,
+        unitPrice: Number(i.unit_price),
+      })),
+      history: history.map((h) => ({
+        id: h.id,
+        statusType: h.status_type,
+        oldValue: h.old_value,
+        newValue: h.new_value,
+        changedBy: h.changed_by,
+        notes: h.notes,
+        createdAt: h.created_at,
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* 3. UPLOAD PAYMENT RECEIPT & SUBMIT PROOF */
+app.post("/api/orders/:ref/receipt", optionalAuthMiddleware, async (req, res, next) => {
+  const { receiptBase64, transactionRef } = req.body ?? {};
+  if (!receiptBase64) {
+    return res.status(400).json({ error: "Payment receipt image is required" });
+  }
+
+  try {
+    await ensureFullOrderSchema();
+    const rawRef = req.params.ref;
+    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
+
+    const orderRows = await query(
+      "SELECT id, order_ref, shipping_name, shipping_phone, shipping_email, grand_total, payment_status FROM orders WHERE order_ref = ? OR order_ref = ?",
+      [rawRef, refWithPrefix]
+    );
+
+    if (orderRows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const order = orderRows[0];
+    let savedReceiptUrl = receiptBase64;
+
+    // Secure base64 file processing
+    if (receiptBase64.startsWith("data:image/")) {
+      const match = receiptBase64.match(/^data:image\/(\w+);base64,(.+)$/);
+      if (!match) {
+        return res.status(400).json({ error: "Invalid image format. Supported formats: JPG, PNG, WebP" });
+      }
+
+      const rawExt = match[1].toLowerCase();
+      let ext = "jpg";
+      if (rawExt === "png") ext = "png";
+      else if (rawExt === "webp") ext = "webp";
+      else if (rawExt === "jpeg" || rawExt === "jpg") ext = "jpg";
+      else {
+        return res.status(400).json({ error: "Only PNG, JPG, and WebP images are allowed" });
+      }
+
+      const buffer = Buffer.from(match[2], "base64");
+      if (buffer.length > 6 * 1024 * 1024) {
+        return res.status(400).json({ error: "Receipt image size exceeds the 5MB limit" });
+      }
+
+      const cleanRef = order.order_ref.replace(/[^A-Za-z0-9_-]/g, "");
+      const filename = `receipt-${cleanRef}-${Date.now()}.${ext}`;
+      const filePath = path.join(uploadsDir, filename);
+      await fs.promises.writeFile(filePath, buffer);
+      savedReceiptUrl = `/uploads/${filename}`;
+    }
+
+    const cleanTxRef = transactionRef ? String(transactionRef).trim() : null;
+
+    // Update order state: reset rejection reason, set payment to submitted
+    await query(
+      `UPDATE orders SET
+        payment_receipt = ?,
+        transaction_ref = COALESCE(?, transaction_ref),
+        payment_status = 'PAYMENT_SUBMITTED',
+        status = 'PAYMENT_SUBMITTED',
+        payment_submitted_at = CURRENT_TIMESTAMP,
+        rejection_reason = NULL
+      WHERE id = ?`,
+      [savedReceiptUrl, cleanTxRef, order.id]
+    );
+
+    // Audit log
+    await logOrderStatusChange({
+      orderId: order.id,
+      orderRef: order.order_ref,
+      statusType: "payment_proof",
+      oldValue: order.payment_status,
+      newValue: "PAYMENT_SUBMITTED",
+      changedBy: order.shipping_name,
+      notes: cleanTxRef ? `Proof submitted with Ref #${cleanTxRef}` : "Payment screenshot proof submitted"
+    });
+
+    // Send Admin Email Alert via FormSubmit (Non-blocking)
+    sendNotificationEmail({
+      to: ADMIN_NOTIFICATION_EMAIL,
+      subject: `Omsun — Payment Proof Submitted — ${order.order_ref}`,
+      data: {
+        "Order Reference": order.order_ref,
+        "Customer Name": order.shipping_name,
+        "Customer Phone": order.shipping_phone,
+        "Customer Email": order.shipping_email || "N/A",
+        "Total Order Amount": `NPR ${Number(order.grand_total).toLocaleString()}`,
+        "Transaction / Reference ID": cleanTxRef || "Not provided on receipt",
+        "Payment Proof Status": "Awaiting Admin Verification",
+        "Uploaded Receipt Slip": savedReceiptUrl,
+        "Submission Timestamp": new Date().toLocaleString(),
+      },
+    }).catch(() => {});
+
+    res.json({
+      ok: true,
+      receiptUrl: savedReceiptUrl,
+      transactionRef: cleanTxRef,
+      paymentStatus: "PAYMENT_SUBMITTED",
+      message: "Payment proof has been submitted successfully. Our team will verify your receipt shortly.",
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* 4. CUSTOMER ORDERS LIST */
 app.get("/api/orders", authMiddleware, async (req, res, next) => {
   try {
-    await ensureOrdersPaymentReceiptColumn();
+    await ensureFullOrderSchema();
     const rows = await query(
       "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC",
-      [req.user.id],
+      [req.user.id]
     );
+
     const orders = await Promise.all(
       rows.map(async (o) => {
         const items = await query("SELECT * FROM order_items WHERE order_id = ?", [o.id]);
         return {
           id: o.id,
           order_ref: o.order_ref,
+          orderRef: o.order_ref,
           user_id: o.user_id,
           shipping_name: o.shipping_name,
           shipping_phone: o.shipping_phone,
+          shipping_email: o.shipping_email,
           shipping_address: o.shipping_address,
           shipping_city: o.shipping_city,
           subtotal: Number(o.subtotal),
           shipping_fee: Number(o.shipping_fee),
+          discount_amount: Number(o.discount_amount || 0),
           grand_total: Number(o.grand_total),
           payment_method: o.payment_method,
+          payment_status: o.payment_status || "UNPAID",
           payment_receipt: o.payment_receipt || null,
+          transaction_ref: o.transaction_ref || null,
+          rejection_reason: o.rejection_reason || null,
           status: o.status,
+          delivery_status: o.delivery_status || "PENDING",
+          tracking_number: o.tracking_number || null,
+          delivery_person: o.delivery_person || null,
+          delivery_phone: o.delivery_phone || null,
           notes: o.notes,
           created_at: o.created_at,
           items: items.map((i) => ({
@@ -712,11 +1088,12 @@ app.get("/api/orders", authMiddleware, async (req, res, next) => {
             order_id: i.order_id,
             product_id: i.product_id,
             product_name: i.product_name,
+            product_image: i.product_image || "/p-panelboard.jpg",
             qty: i.qty,
             unit_price: Number(i.unit_price),
           })),
         };
-      }),
+      })
     );
     res.json(orders);
   } catch (err) {
@@ -724,61 +1101,16 @@ app.get("/api/orders", authMiddleware, async (req, res, next) => {
   }
 });
 
-/* ═══════════════════════════════════════════════════════════════════ */
-/* CONTACT & NEWSLETTER                                               */
-/* ═══════════════════════════════════════════════════════════════════ */
-app.post("/api/contact", async (req, res, next) => {
-  const { name, email, phone, company, inquiryType, systemSize, district, message } = req.body ?? {};
-  if (!name || !email || !message) {
-    return res.status(400).json({ error: "name, email and message are required" });
-  }
-  try {
-    await query(
-      "INSERT INTO contact_messages (name, email, phone, company, inquiry_type, system_size, district, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [name, email, phone || null, company || null, inquiryType || null, systemSize || null, district || null, message],
-    );
-    res.status(201).json({ ok: true });
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.post("/api/newsletter", async (req, res, next) => {
-  const { email } = req.body ?? {};
-  if (!email) {
-    return res.status(400).json({ error: "email is required" });
-  }
-  try {
-    await query("INSERT INTO newsletter_subscribers (email) VALUES (?)", [email]);
-    res.status(201).json({ ok: true });
-  } catch (err) {
-    if (err.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({ error: "Email already subscribed" });
-    }
-    next(err);
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════ */
-/* ADMIN — Orders Management                                          */
-/* ═══════════════════════════════════════════════════════════════════ */
+/* 5. ADMIN — ALL ORDERS WITH FULL TELEMETRY */
 app.get("/api/admin/orders", authMiddleware, adminMiddleware, async (_req, res, next) => {
   try {
+    await ensureFullOrderSchema();
     const rows = await query(`
-      SELECT o.*, u.full_name AS customer_name, u.email AS customer_email, u.phone AS customer_phone
+      SELECT o.*, u.full_name AS user_name, u.email AS user_email, u.phone AS user_phone
       FROM orders o
       LEFT JOIN users u ON o.user_id = u.id
       ORDER BY o.created_at DESC
     `);
-
-    const statusDisplayMap = {
-      pending: "Pending",
-      processing: "Processing",
-      shipped: "Shipped",
-      delivered: "Completed",
-      completed: "Completed",
-      cancelled: "Cancelled",
-    };
 
     const paymentMethodDisplay = {
       fonepay: "Fonepay QR",
@@ -791,54 +1123,59 @@ app.get("/api/admin/orders", authMiddleware, adminMiddleware, async (_req, res, 
     const orders = await Promise.all(
       rows.map(async (o) => {
         const items = await query("SELECT * FROM order_items WHERE order_id = ?", [o.id]);
-        const orderStatus = statusDisplayMap[o.status] || "Pending";
         const method = paymentMethodDisplay[o.payment_method] || o.payment_method || "Fonepay QR";
-        
-        let payStatus = "Unpaid";
-        if (o.status === "cancelled") {
-          payStatus = "Refunded";
-        } else if (o.payment_method === "cod") {
-          payStatus = o.status === "delivered" ? "Paid" : "Unpaid";
-        } else if (o.status === "processing" || o.status === "shipped" || o.status === "delivered" || o.status === "completed") {
-          payStatus = "Paid";
-        } else if (o.payment_receipt) {
-          payStatus = "Pending Verification";
-        } else {
-          payStatus = "Unpaid";
-        }
 
         return {
           id: o.order_ref,
-          customerName: o.customer_name || o.shipping_name,
-          customerEmail: o.customer_email || "Customer Direct",
-          customerPhone: o.shipping_phone || o.customer_phone || "+977-9800000000",
+          orderRef: o.order_ref,
+          customerName: o.shipping_name || o.user_name || "Customer",
+          customerEmail: o.shipping_email || o.user_email || "Customer Direct",
+          customerPhone: o.shipping_phone || o.user_phone || "+977-9800000000",
           shippingAddress: `${o.shipping_address}, ${o.shipping_city}`,
           shippingCity: o.shipping_city,
           notes: o.notes,
           paymentReceipt: o.payment_receipt || null,
+          transactionRef: o.transaction_ref || null,
+          rejectionReason: o.rejection_reason || null,
+          paymentStatus: o.payment_status || "UNPAID",
+          orderStatus: o.status || "ORDER_PLACED",
+          verifiedBy: o.verified_by || null,
+          adminNotes: o.admin_notes || null,
+          deliveryStatus: o.delivery_status || "PENDING",
+          deliveryCarrier: o.delivery_carrier || null,
+          deliveryPerson: o.delivery_person || null,
+          deliveryPhone: o.delivery_phone || null,
+          trackingNumber: o.tracking_number || null,
+          deliveryNotes: o.delivery_notes || null,
+          estimatedDelivery: o.estimated_delivery || null,
           items: items.map((i) => ({
             productId: i.product_id,
             name: i.product_name,
             price: Number(i.unit_price),
             quantity: i.qty,
-            image: "",
+            image: i.product_image || "/p-panelboard.jpg",
           })),
+          subtotal: Number(o.subtotal),
+          shippingFee: Number(o.shipping_fee),
+          discountAmount: Number(o.discount_amount || 0),
           totalAmount: Number(o.grand_total),
-          discountAmount: 0,
           paymentMethod: method,
-          paymentStatus: payStatus,
-          orderStatus: orderStatus,
           createdAt: o.created_at,
+          paymentSubmittedAt: o.payment_submitted_at,
+          paymentVerifiedAt: o.payment_verified_at,
           timeline: [
             { title: "Order Placed", timestamp: new Date(o.created_at).toLocaleString() },
-            ...(o.payment_receipt ? [{ title: "Payment Receipt / Slip Attached", timestamp: "Uploaded" }] : []),
-            ...(o.status === "processing" ? [{ title: "Payment Verified & Order Confirmed", timestamp: "Approved" }] : []),
-            ...(o.status === "shipped" ? [{ title: "Dispatched with Carrier", timestamp: "In Transit" }] : []),
-            ...(o.status === "delivered" ? [{ title: "Delivered to Customer", timestamp: "Completed" }] : []),
-            ...(o.status === "cancelled" ? [{ title: "Order Cancelled / Rejected", timestamp: "Closed" }] : []),
+            ...(o.payment_receipt ? [{ title: "Payment Proof Submitted", timestamp: o.payment_submitted_at ? new Date(o.payment_submitted_at).toLocaleString() : "Submitted" }] : []),
+            ...(o.payment_status === "PAYMENT_VERIFIED" ? [{ title: "Payment Verified & Approved", timestamp: o.payment_verified_at ? new Date(o.payment_verified_at).toLocaleString() : "Verified" }] : []),
+            ...(o.payment_status === "PAYMENT_REJECTED" ? [{ title: `Payment Proof Rejected: ${o.rejection_reason || ""}`, timestamp: "Action Required" }] : []),
+            ...(o.status === "PROCESSING" || o.status === "processing" ? [{ title: "Processing & Equipment Allocation", timestamp: "In Progress" }] : []),
+            ...(o.status === "PACKED" || o.status === "packed" ? [{ title: "Packed & Prepared for Logistics", timestamp: "Ready" }] : []),
+            ...(o.delivery_status === "OUT_FOR_DELIVERY" || o.status === "shipped" ? [{ title: `Out for Delivery via ${o.delivery_carrier || "Fleet Courier"}`, timestamp: "In Transit" }] : []),
+            ...(o.status === "DELIVERED" || o.status === "delivered" || o.status === "completed" ? [{ title: "Successfully Delivered to Customer", timestamp: "Delivered" }] : []),
+            ...(o.status === "CANCELLED" || o.status === "cancelled" ? [{ title: "Order Cancelled / Terminated", timestamp: "Closed" }] : []),
           ],
         };
-      }),
+      })
     );
     res.json(orders);
   } catch (err) {
@@ -846,67 +1183,300 @@ app.get("/api/admin/orders", authMiddleware, adminMiddleware, async (_req, res, 
   }
 });
 
-app.put("/api/admin/orders/:ref/status", authMiddleware, adminMiddleware, async (req, res, next) => {
-  let { status } = req.body ?? {};
-  if (!status) return res.status(400).json({ error: "status is required" });
-  status = status.toLowerCase();
-  if (status === "completed") status = "delivered";
-  const validStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
-  if (!validStatuses.includes(status)) {
-    return res.status(400).json({ error: `status must be one of: ${validStatuses.join(", ")}` });
-  }
-  try {
-    const rawRef = req.params.ref;
-    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
-    const result = await query(
-      "UPDATE orders SET status = ? WHERE order_ref = ? OR order_ref = ?",
-      [status, rawRef, refWithPrefix],
-    );
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Order not found" });
-    }
-    res.json({ ok: true, status });
-  } catch (err) {
-    next(err);
-  }
-});
-
-/* Admin Verify / Approve Payment for Order */
+/* 6. ADMIN — VERIFY OR REJECT PAYMENT PROOF */
 app.put("/api/admin/orders/:ref/verify-payment", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const { approve } = req.body ?? {};
+  const { approve, rejectionReason, notes } = req.body ?? {};
+
   try {
+    await ensureFullOrderSchema();
     const rawRef = req.params.ref;
     const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
-    const newStatus = approve ? "processing" : "cancelled";
-    const result = await query(
-      "UPDATE orders SET status = ? WHERE order_ref = ? OR order_ref = ?",
-      [newStatus, rawRef, refWithPrefix],
+
+    const orderRows = await query(
+      "SELECT * FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
+      [rawRef, refWithPrefix]
     );
-    if (result.affectedRows === 0) {
+
+    if (orderRows.length === 0) {
       return res.status(404).json({ error: "Order not found" });
     }
-    res.json({
-      ok: true,
-      status: newStatus,
-      message: approve ? "Payment verified and order approved!" : "Payment rejected",
-    });
+
+    const order = orderRows[0];
+    const adminIdentifier = req.user.email || "Admin";
+
+    if (approve) {
+      // Approve Payment
+      await query(
+        `UPDATE orders SET
+          payment_status = 'PAYMENT_VERIFIED',
+          status = 'PROCESSING',
+          payment_verified_at = CURRENT_TIMESTAMP,
+          verified_by = ?,
+          admin_notes = ?,
+          rejection_reason = NULL
+        WHERE id = ?`,
+        [adminIdentifier, notes || null, order.id]
+      );
+
+      await logOrderStatusChange({
+        orderId: order.id,
+        orderRef: order.order_ref,
+        statusType: "payment_verification",
+        oldValue: order.payment_status,
+        newValue: "PAYMENT_VERIFIED",
+        changedBy: adminIdentifier,
+        notes: notes || "Payment slip confirmed & verified by admin"
+      });
+
+      // Send Customer Email via FormSubmit (Non-blocking)
+      const customerEmail = order.shipping_email;
+      if (customerEmail) {
+        sendNotificationEmail({
+          to: customerEmail,
+          subject: `Payment Verified — Order ${order.order_ref} Confirmed`,
+          data: {
+            "Order Reference": order.order_ref,
+            "Payment Status": "Payment Verified & Approved",
+            "Order Status": "Processing / Preparing Hardware",
+            "Amount Paid": `NPR ${Number(order.grand_total).toLocaleString()}`,
+            "Payment Method": String(order.payment_method).toUpperCase(),
+            "Next Steps": "Our Kathmandu central warehouse is preparing your hardware for secure dispatch.",
+          },
+        }).catch(() => {});
+      }
+
+      res.json({
+        ok: true,
+        paymentStatus: "PAYMENT_VERIFIED",
+        orderStatus: "PROCESSING",
+        message: "Payment successfully verified and order is now processing",
+      });
+    } else {
+      // Reject Payment with Reason
+      const reason = rejectionReason || "Payment screenshot could not be verified. Please upload a clearer payment receipt.";
+      await query(
+        `UPDATE orders SET
+          payment_status = 'PAYMENT_REJECTED',
+          rejection_reason = ?,
+          verified_by = ?,
+          admin_notes = ?
+        WHERE id = ?`,
+        [reason, adminIdentifier, notes || null, order.id]
+      );
+
+      await logOrderStatusChange({
+        orderId: order.id,
+        orderRef: order.order_ref,
+        statusType: "payment_rejection",
+        oldValue: order.payment_status,
+        newValue: "PAYMENT_REJECTED",
+        changedBy: adminIdentifier,
+        notes: `Rejected: ${reason}`
+      });
+
+      // Send Customer Rejection Email via FormSubmit (Non-blocking)
+      const customerEmail = order.shipping_email;
+      if (customerEmail) {
+        sendNotificationEmail({
+          to: customerEmail,
+          subject: `Payment Verification Update — Order ${order.order_ref}`,
+          data: {
+            "Order Reference": order.order_ref,
+            "Payment Status": "Payment Slip Rejected",
+            "Reason": reason,
+            "Action Required": "Please visit your order page and upload a clearer payment screenshot or correct transaction reference.",
+          },
+        }).catch(() => {});
+      }
+
+      res.json({
+        ok: true,
+        paymentStatus: "PAYMENT_REJECTED",
+        rejectionReason: reason,
+        message: "Payment rejected and customer notified",
+      });
+    }
   } catch (err) {
     next(err);
   }
 });
 
+/* 7. ADMIN — UPDATE DELIVERY INFORMATION */
+app.put("/api/admin/orders/:ref/delivery", authMiddleware, adminMiddleware, async (req, res, next) => {
+  const {
+    deliveryStatus,
+    deliveryCarrier,
+    deliveryPerson,
+    deliveryPhone,
+    trackingNumber,
+    deliveryNotes,
+    estimatedDelivery,
+  } = req.body ?? {};
+
+  try {
+    await ensureFullOrderSchema();
+    const rawRef = req.params.ref;
+    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
+
+    const orderRows = await query(
+      "SELECT id, order_ref, shipping_email, shipping_name FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
+      [rawRef, refWithPrefix]
+    );
+
+    if (orderRows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const order = orderRows[0];
+    const newDeliveryStatus = deliveryStatus ? String(deliveryStatus).toUpperCase() : "PENDING";
+
+    // Synchronize order status if delivery reaches out_for_delivery or delivered
+    let newOrderStatusClause = "";
+    const params = [
+      newDeliveryStatus,
+      deliveryCarrier || null,
+      deliveryPerson || null,
+      deliveryPhone || null,
+      trackingNumber || null,
+      deliveryNotes || null,
+      estimatedDelivery || null,
+    ];
+
+    if (newDeliveryStatus === "OUT_FOR_DELIVERY") {
+      newOrderStatusClause = ", status = 'OUT_FOR_DELIVERY'";
+    } else if (newDeliveryStatus === "DELIVERED") {
+      newOrderStatusClause = ", status = 'DELIVERED'";
+    }
+
+    params.push(order.id);
+
+    await query(
+      `UPDATE orders SET
+        delivery_status = ?,
+        delivery_carrier = ?,
+        delivery_person = ?,
+        delivery_phone = ?,
+        tracking_number = ?,
+        delivery_notes = ?,
+        estimated_delivery = ?
+        ${newOrderStatusClause}
+      WHERE id = ?`,
+      params
+    );
+
+    await logOrderStatusChange({
+      orderId: order.id,
+      orderRef: order.order_ref,
+      statusType: "delivery_update",
+      oldValue: null,
+      newValue: newDeliveryStatus,
+      changedBy: req.user.email || "Admin",
+      notes: trackingNumber ? `Tracking #${trackingNumber} via ${deliveryCarrier || "Courier"}` : "Delivery telemetry updated"
+    });
+
+    // Notify customer if dispatched
+    if (newDeliveryStatus === "OUT_FOR_DELIVERY" && order.shipping_email) {
+      sendNotificationEmail({
+        to: order.shipping_email,
+        subject: `Your OMSUN Order is Out for Delivery! — ${order.order_ref}`,
+        data: {
+          "Order Reference": order.order_ref,
+          "Carrier": deliveryCarrier || "OMSUN Express Logistics",
+          "Courier Agent": deliveryPerson || "Assigned Driver",
+          "Courier Phone": deliveryPhone || "N/A",
+          "Tracking Number": trackingNumber || "N/A",
+          "Status": "On the way to your delivery address",
+        },
+      }).catch(() => {});
+    }
+
+    res.json({ ok: true, message: "Delivery details updated successfully" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* 8. ADMIN — UPDATE GENERAL ORDER STATUS */
+app.put("/api/admin/orders/:ref/status", authMiddleware, adminMiddleware, async (req, res, next) => {
+  let { status, notes } = req.body ?? {};
+  if (!status) return res.status(400).json({ error: "status is required" });
+
+  try {
+    await ensureFullOrderSchema();
+    const rawRef = req.params.ref;
+    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
+
+    const orderRows = await query(
+      "SELECT id, order_ref, status, shipping_email, shipping_name FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
+      [rawRef, refWithPrefix]
+    );
+
+    if (orderRows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const order = orderRows[0];
+    const upperStatus = String(status).toUpperCase();
+
+    await query("UPDATE orders SET status = ?, admin_notes = COALESCE(?, admin_notes) WHERE id = ?", [
+      upperStatus,
+      notes || null,
+      order.id,
+    ]);
+
+    await logOrderStatusChange({
+      orderId: order.id,
+      orderRef: order.order_ref,
+      statusType: "order_lifecycle",
+      oldValue: order.status,
+      newValue: upperStatus,
+      changedBy: req.user.email || "Admin",
+      notes: notes || `Lifecycle updated to ${upperStatus}`
+    });
+
+    // If cancelled, release reserved stock
+    if (upperStatus === "CANCELLED") {
+      const items = await query("SELECT product_id, qty FROM order_items WHERE order_id = ?", [order.id]);
+      for (const item of items) {
+        await query("UPDATE products SET stock = stock + ? WHERE id = ?", [item.qty, item.product_id]);
+      }
+    }
+
+    // Send customer notification for major status updates
+    if (order.shipping_email && ["PROCESSING", "PACKED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"].includes(upperStatus)) {
+      sendNotificationEmail({
+        to: order.shipping_email,
+        subject: `Order Status Update: ${upperStatus} — ${order.order_ref}`,
+        data: {
+          "Order Reference": order.order_ref,
+          "New Status": upperStatus,
+          "Notes": notes || "Your order has progressed to the next fulfillment phase.",
+          "Timestamp": new Date().toLocaleString(),
+        },
+      }).catch(() => {});
+    }
+
+    res.json({ ok: true, status: upperStatus });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* 9. ADMIN — DELETE ORDER */
 app.delete("/api/admin/orders/:ref", authMiddleware, adminMiddleware, async (req, res, next) => {
   try {
+    await ensureFullOrderSchema();
     const rawRef = req.params.ref;
     const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
     const rows = await query(
       "SELECT id FROM orders WHERE order_ref = ? OR order_ref = ?",
-      [rawRef, refWithPrefix],
+      [rawRef, refWithPrefix]
     );
     if (rows.length === 0) {
       return res.status(404).json({ error: "Order not found" });
     }
     const orderId = rows[0].id;
+    await query("DELETE FROM order_status_history WHERE order_id = ?", [orderId]);
     await query("DELETE FROM order_items WHERE order_id = ?", [orderId]);
     await query("DELETE FROM orders WHERE id = ?", [orderId]);
     res.json({ ok: true, message: `Order ${rawRef} deleted successfully` });

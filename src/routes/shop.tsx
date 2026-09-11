@@ -54,19 +54,19 @@ import switchgearImg from "@/assets/p-panelboard.jpg";
 import stabilizerImg from "@/assets/products/omsun-mter-10kva.webp";
 
 type ShopSearch = {
-  q?: string;
-  category?: string;
-  subcategory?: string;
-  brand?: string;
+  q?: string | undefined;
+  category?: string | undefined;
+  subcategory?: string | undefined;
+  brand?: string | undefined;
 };
 
 export const Route = createFileRoute("/shop")({
   validateSearch: (search: Record<string, unknown>): ShopSearch => {
     return {
-      q: typeof search.q === "string" ? search.q : undefined,
-      category: typeof search.category === "string" ? search.category : undefined,
-      subcategory: typeof search.subcategory === "string" ? search.subcategory : undefined,
-      brand: typeof search.brand === "string" ? search.brand : undefined,
+      q: typeof search["q"] === "string" ? search["q"] : undefined,
+      category: typeof search["category"] === "string" ? search["category"] : undefined,
+      subcategory: typeof search["subcategory"] === "string" ? search["subcategory"] : undefined,
+      brand: typeof search["brand"] === "string" ? search["brand"] : undefined,
     };
   },
   head: () => ({

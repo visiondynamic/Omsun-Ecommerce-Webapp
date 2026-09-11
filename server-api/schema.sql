@@ -38,27 +38,76 @@ CREATE TABLE IF NOT EXISTS orders (
   user_id INT UNSIGNED NULL,
   shipping_name VARCHAR(120) NOT NULL,
   shipping_phone VARCHAR(30) NOT NULL,
+  shipping_email VARCHAR(190) NULL,
   shipping_address TEXT NOT NULL,
   shipping_city VARCHAR(120) NOT NULL,
   subtotal DECIMAL(12, 2) NOT NULL,
   shipping_fee DECIMAL(12, 2) NOT NULL DEFAULT 0,
+  discount_amount DECIMAL(12, 2) NOT NULL DEFAULT 0,
   grand_total DECIMAL(12, 2) NOT NULL,
-  payment_method ENUM('esewa', 'khalti', 'bank', 'cod') NOT NULL,
-  status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
+  payment_method VARCHAR(60) NOT NULL DEFAULT 'fonepay',
+  payment_status VARCHAR(60) NOT NULL DEFAULT 'UNPAID',
+  payment_receipt MEDIUMTEXT NULL,
+  transaction_ref VARCHAR(100) NULL,
+  rejection_reason TEXT NULL,
+  payment_submitted_at TIMESTAMP NULL,
+  payment_verified_at TIMESTAMP NULL,
+  verified_by VARCHAR(120) NULL,
+  admin_notes TEXT NULL,
+  status VARCHAR(60) NOT NULL DEFAULT 'ORDER_PLACED',
+  delivery_status VARCHAR(60) NOT NULL DEFAULT 'PENDING',
+  delivery_carrier VARCHAR(120) NULL,
+  delivery_person VARCHAR(120) NULL,
+  delivery_phone VARCHAR(30) NULL,
+  tracking_number VARCHAR(100) NULL,
+  delivery_notes TEXT NULL,
+  estimated_delivery DATE NULL,
   notes TEXT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_orders_ref (order_ref),
+  INDEX idx_orders_user (user_id),
+  INDEX idx_orders_payment_status (payment_status),
+  INDEX idx_orders_status (status),
   CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS order_items (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_id INT UNSIGNED NOT NULL,
-  product_id VARCHAR(32) NOT NULL,
+  product_id VARCHAR(64) NOT NULL,
   product_name VARCHAR(255) NOT NULL,
+  product_image VARCHAR(500) NULL,
   qty INT NOT NULL,
   unit_price DECIMAL(12, 2) NOT NULL,
   CONSTRAINT fk_items_order FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE,
   CONSTRAINT fk_items_product FOREIGN KEY (product_id) REFERENCES products (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS order_status_history (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_id INT UNSIGNED NOT NULL,
+  order_ref VARCHAR(32) NOT NULL,
+  status_type VARCHAR(40) NOT NULL,
+  old_value VARCHAR(80) NULL,
+  new_value VARCHAR(80) NOT NULL,
+  changed_by VARCHAR(120) NULL,
+  notes TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_history_order (order_id),
+  INDEX idx_history_ref (order_ref),
+  CONSTRAINT fk_history_order FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS payment_logs (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_ref VARCHAR(32) NOT NULL,
+  action VARCHAR(60) NOT NULL,
+  payload JSON NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'success',
+  notes TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_payment_logs_ref (order_ref)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS contact_messages (

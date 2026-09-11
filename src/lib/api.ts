@@ -179,25 +179,96 @@ class ApiClient {
   /* ── Orders ── */
   async createOrder(body: {
     items: { productId: string; quantity: number }[];
-    shipping: { name: string; phone: string; address: string; city: string; notes?: string };
+    shipping: { name: string; phone: string; email?: string; address: string; city: string; notes?: string };
     paymentMethod: string;
     paymentReceipt?: string | null;
+    couponCode?: string;
   }) {
-    return this.request<{ ok: boolean; orderRef: string; grandTotal: number; receiptUrl?: string }>("/api/orders", {
+    return this.request<{
+      ok: boolean;
+      orderId: number;
+      orderRef: string;
+      grandTotal: number;
+      subtotal: number;
+      shippingFee: number;
+      discountAmount: number;
+      paymentMethod: string;
+      paymentStatus: string;
+      orderStatus: string;
+      receiptUrl?: string;
+    }>("/api/orders", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
+  async getOrder(orderRef: string) {
+    return this.request<OrderDetail>(`/api/orders/${orderRef}`);
+  }
+
+  async submitPaymentProof(
+    orderRef: string,
+    body: { receiptBase64: string; transactionRef?: string | undefined }
+  ) {
+    return this.request<{
+      ok: boolean;
+      receiptUrl: string;
+      transactionRef?: string | undefined;
+      paymentStatus: string;
+      message: string;
+    }>(`/api/orders/${orderRef}/receipt`, {
       method: "POST",
       body: JSON.stringify(body),
     });
   }
 
   async uploadOrderReceipt(orderRef: string, receiptBase64: string) {
-    return this.request<{ ok: boolean; receiptUrl: string; message: string }>(`/api/orders/${orderRef}/receipt`, {
-      method: "POST",
-      body: JSON.stringify({ receiptBase64 }),
-    });
+    return this.submitPaymentProof(orderRef, { receiptBase64 });
   }
 
   async getOrders() {
     return this.request<OrderRow[]>("/api/orders");
+  }
+
+  async adminVerifyPayment(
+    orderRef: string,
+    body: { approve: boolean; rejectionReason?: string | undefined; notes?: string | undefined }
+  ) {
+    return this.request<{
+      ok: boolean;
+      paymentStatus: string;
+      orderStatus?: string | undefined;
+      rejectionReason?: string | undefined;
+      message: string;
+    }>(`/api/admin/orders/${orderRef}/verify-payment`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
+  }
+
+  async adminUpdateDelivery(
+    orderRef: string,
+    body: {
+      deliveryStatus?: string | undefined;
+      deliveryCarrier?: string | undefined;
+      deliveryPerson?: string | undefined;
+      deliveryPhone?: string | undefined;
+      trackingNumber?: string | undefined;
+      deliveryNotes?: string | undefined;
+      estimatedDelivery?: string | undefined;
+    }
+  ) {
+    return this.request<{ ok: boolean; message: string }>(`/api/admin/orders/${orderRef}/delivery`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
+  }
+
+  async adminUpdateOrderStatus(orderRef: string, status: string, notes?: string | undefined) {
+    return this.request<{ ok: boolean; status: string }>(`/api/admin/orders/${orderRef}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status, notes }),
+    });
   }
 
   /* ── Contact ── */
@@ -455,20 +526,120 @@ export interface ProductRow {
   badges: string[];
 }
 
+export type PaymentStatus =
+  | "UNPAID"
+  | "PAYMENT_SUBMITTED"
+  | "PAYMENT_UNDER_REVIEW"
+  | "PAYMENT_VERIFIED"
+  | "PAYMENT_REJECTED"
+  | "PAYMENT_REFUNDED";
+
+export type OrderLifecycleStatus =
+  | "ORDER_PLACED"
+  | "PAYMENT_PENDING"
+  | "PAYMENT_SUBMITTED"
+  | "PAYMENT_VERIFIED"
+  | "PROCESSING"
+  | "PACKED"
+  | "READY_FOR_DELIVERY"
+  | "OUT_FOR_DELIVERY"
+  | "DELIVERED"
+  | "CANCELLED"
+  | "RETURN_REQUESTED"
+  | "RETURNED"
+  | "REFUNDED";
+
+export type DeliveryStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "READY_FOR_DELIVERY"
+  | "OUT_FOR_DELIVERY"
+  | "DELIVERED"
+  | "CANCELLED"
+  | "FAILED_ATTEMPT";
+
+export interface OrderItemRow {
+  id?: number;
+  order_id?: number;
+  productId: string;
+  product_id?: string;
+  name: string;
+  product_name?: string;
+  image?: string;
+  product_image?: string;
+  quantity?: number;
+  qty: number;
+  price?: number;
+  unitPrice?: number;
+  unit_price?: number;
+}
+
+export interface OrderDetail {
+  id: number;
+  orderRef: string;
+  userId?: number | null;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  shippingAddress: string;
+  shippingCity: string;
+  subtotal: number;
+  shippingFee: number;
+  discountAmount: number;
+  grandTotal: number;
+  paymentMethod: string;
+  paymentStatus: PaymentStatus | string;
+  paymentReceipt: string | null;
+  transactionRef: string | null;
+  rejectionReason: string | null;
+  paymentSubmittedAt?: string | null;
+  paymentVerifiedAt?: string | null;
+  status: OrderLifecycleStatus | string;
+  deliveryStatus: DeliveryStatus | string;
+  deliveryCarrier?: string | null;
+  deliveryPerson?: string | null;
+  deliveryPhone?: string | null;
+  trackingNumber?: string | null;
+  deliveryNotes?: string | null;
+  estimatedDelivery?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  items: OrderItemRow[];
+  history?: {
+    id: number;
+    statusType: string;
+    oldValue: string | null;
+    newValue: string;
+    changedBy: string | null;
+    notes: string | null;
+    createdAt: string;
+  }[];
+}
+
 export interface OrderRow {
   id: number;
   order_ref: string;
+  orderRef?: string;
   user_id: number;
   shipping_name: string;
   shipping_phone: string;
+  shipping_email?: string | null;
   shipping_address: string;
   shipping_city: string;
   subtotal: number;
   shipping_fee: number;
+  discount_amount?: number;
   grand_total: number;
   payment_method: string;
+  payment_status?: string;
   payment_receipt?: string | null;
+  transaction_ref?: string | null;
+  rejection_reason?: string | null;
   status: string;
+  delivery_status?: string;
+  delivery_person?: string | null;
+  delivery_phone?: string | null;
+  tracking_number?: string | null;
   notes: string | null;
   created_at: string;
   items: {
@@ -476,6 +647,7 @@ export interface OrderRow {
     order_id: number;
     product_id: string;
     product_name: string;
+    product_image?: string;
     qty: number;
     unit_price: number;
   }[];
@@ -483,19 +655,36 @@ export interface OrderRow {
 
 export interface AdminOrderRow {
   id: string;
+  orderRef?: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
   shippingAddress: string;
+  shippingCity?: string;
   notes?: string | null;
   paymentReceipt?: string | null;
+  transactionRef?: string | null;
+  rejectionReason?: string | null;
+  verifiedBy?: string | null;
+  adminNotes?: string | null;
+  deliveryStatus?: string;
+  deliveryCarrier?: string | null;
+  deliveryPerson?: string | null;
+  deliveryPhone?: string | null;
+  trackingNumber?: string | null;
+  deliveryNotes?: string | null;
+  estimatedDelivery?: string | null;
   items: { productId: string; name: string; price: number; quantity: number; image: string }[];
-  totalAmount: number;
+  subtotal?: number;
+  shippingFee?: number;
   discountAmount: number;
+  totalAmount: number;
   paymentMethod: string;
   paymentStatus: string;
   orderStatus: string;
   createdAt: string;
+  paymentSubmittedAt?: string | null;
+  paymentVerifiedAt?: string | null;
   timeline: { title: string; timestamp: string; note?: string }[];
 }
 
