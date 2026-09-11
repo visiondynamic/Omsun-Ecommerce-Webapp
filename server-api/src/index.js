@@ -58,23 +58,13 @@ function safeParseJson(val, fallback = []) {
   }
 }
 
-// Auto-bootstrap MySQL schema & catalog seed on fresh databases (e.g. Railway)
+// Auto-bootstrap MySQL schema & catalog sync on start
 async function autoInitDatabase() {
   try {
-    const tables = await query("SHOW TABLES LIKE 'products'");
-    if (tables.length === 0) {
-      console.log("[omsun-api] Database tables missing. Running automatic setup & seeding...");
-      await setup();
-      console.log("[omsun-api] Automatic setup & seeding completed!");
-    } else {
-      const rows = await query("SELECT COUNT(*) as count FROM products");
-      if (rows[0].count === 0) {
-        console.log("[omsun-api] Products table empty. Running automatic setup & seeding...");
-        await setup();
-        console.log("[omsun-api] Automatic setup & seeding completed!");
-      }
-    }
+    console.log("[omsun-api] Synchronizing official catalog and schema with database...");
+    await setup();
     await ensureProductImagesColumn();
+    console.log("[omsun-api] Automatic catalog sync completed!");
   } catch (err) {
     console.log("[omsun-api] Auto database init check note:", err.message);
   }
