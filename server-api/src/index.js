@@ -12,9 +12,22 @@ import { setup } from "./setup-db.js";
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsDir = path.resolve(__dirname, "../../public/uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+const candidateUploads = [
+  path.resolve(__dirname, "../../public/uploads"),
+  path.resolve(__dirname, "../public/uploads"),
+  path.resolve(process.cwd(), "public/uploads"),
+  path.resolve(process.cwd(), "uploads"),
+];
+let uploadsDir = candidateUploads.find((p) => fs.existsSync(p)) || candidateUploads[0];
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch {
+  uploadsDir = path.resolve(process.cwd(), "uploads");
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
 }
 
 // Auto-ensure images column and column types in products table
@@ -88,9 +101,18 @@ app.use(
   },
   express.static(uploadsDir)
 );
-const publicDir = path.resolve(__dirname, "../../public");
-app.use("/products", express.static(path.join(publicDir, "products")));
-app.use(express.static(publicDir));
+const candidatePublic = [
+  path.resolve(__dirname, "../../public"),
+  path.resolve(__dirname, "../public"),
+  path.resolve(process.cwd(), "public"),
+];
+const publicDir = candidatePublic.find((p) => fs.existsSync(p)) || candidatePublic[0];
+try {
+  if (fs.existsSync(publicDir)) {
+    app.use("/products", express.static(path.join(publicDir, "products")));
+    app.use(express.static(publicDir));
+  }
+} catch {}
 
 /* ─── Simple JWT-like token helpers (no jsonwebtoken dependency) ─── */
 function createToken(user) {
