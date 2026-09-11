@@ -41,6 +41,12 @@ import {
   Truck,
   ArrowUpDown,
   SlidersHorizontal,
+  Mail,
+  Phone,
+  Inbox,
+  MessageSquare,
+  ExternalLink,
+  FileSpreadsheet,
 } from "lucide-react";
 import {
   AreaChart,
@@ -66,7 +72,7 @@ import {
   PRODUCT_TAXONOMY,
   mapApiProductToProduct,
 } from "@/lib/products";
-import { api } from "@/lib/api";
+import { api, ContactMessageRow, NewsletterSubscriberRow } from "@/lib/api";
 import {
   OMSUN_CATEGORIES,
   INITIAL_ORDERS,
@@ -83,6 +89,14 @@ import {
   AdminNotification,
   OrderStatus,
 } from "@/lib/adminData";
+import {
+  exportOrdersCsv,
+  exportInquiriesCsv,
+  exportSubscribersCsv,
+  exportProductsCsv,
+  exportCustomersCsv,
+  exportFinancialSummaryCsv,
+} from "@/lib/exportCsv";
 
 import { AdminSidebar, AdminSection } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
@@ -97,6 +111,13 @@ import { PartnerFormModal } from "@/components/admin/PartnerFormModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_admin/admin-dashboard")({
@@ -196,6 +217,15 @@ function AdminDashboardPage() {
     staleTime: 2 * 60 * 1000,
   });
 
+  // Fetch inquiries & subscribers from API
+  const { data: apiInquiriesData, refetch: refetchInquiries } = useQuery({
+    queryKey: ["admin-inquiries"],
+    queryFn: () => api.getAdminInquiries(),
+    staleTime: 60 * 1000,
+  });
+  const effectiveContactMessages: ContactMessageRow[] = apiInquiriesData?.contactMessages ?? [];
+  const effectiveSubscribers: NewsletterSubscriberRow[] = apiInquiriesData?.subscribers ?? [];
+
   // Core Reactive Data State
   const [productsList, setProductsList] = useState<Product[]>(initialCatalogProducts);
   const effectiveProducts = apiProductsList ?? productsList;
@@ -218,11 +248,70 @@ function AdminDashboardPage() {
   const [selectedSubcategoryFilter, setSelectedSubcategoryFilter] = useState("All");
   const [selectedBrandFilter, setSelectedBrandFilter] = useState("All");
   const [targetCategoryForAdd, setTargetCategoryForAdd] = useState<string>("Stabilizer");
-  const [targetSubcategoryForAdd, setTargetSubcategoryForAdd] = useState<string>("Servo Stabilizer");
+  const [targetSubcategoryForAdd, setTargetSubcategoryForAdd] =
+    useState<string>("Servo Stabilizer");
   const [orderQuery, setOrderQuery] = useState("");
   const [selectedOrderStatusFilter, setSelectedOrderStatusFilter] = useState("All");
-  const [orderPaymentFilter, setOrderPaymentFilter] = useState<"ALL" | "PENDING_VERIFICATION" | "VERIFIED" | "REJECTED" | "UNPAID">("ALL");
-  const [orderSortBy, setOrderSortBy] = useState<"NEWEST" | "OLDEST" | "HIGHEST" | "LOWEST">("NEWEST");
+  const [orderPaymentFilter, setOrderPaymentFilter] = useState<
+    "ALL" | "PENDING_VERIFICATION" | "VERIFIED" | "REJECTED" | "UNPAID"
+  >("ALL");
+  const [orderSortBy, setOrderSortBy] = useState<"NEWEST" | "OLDEST" | "HIGHEST" | "LOWEST">(
+    "NEWEST",
+  );
+
+  // Inquiries Search & Filter State
+  const [inquirySearchQuery, setInquirySearchQuery] = useState("");
+  const [selectedInquiryCategory, setSelectedInquiryCategory] = useState("All");
+  const [selectedInquiryDistrict, setSelectedInquiryDistrict] = useState("All");
+  const [inquiryTab, setInquiryTab] = useState<"messages" | "subscribers">("messages");
+  const [selectedInquiryForView, setSelectedInquiryForView] = useState<ContactMessageRow | null>(
+    null,
+  );
+
+  // Customer Search & Filter State
+  const [customerSearchQuery, setCustomerSearchQuery] = useState("");
+  const [customerStatusFilter, setCustomerStatusFilter] = useState<"All" | "VIP" | "Active">("All");
+
+  const filteredCustomers = useMemo(() => {
+    return effectiveCustomers.filter((c) => {
+      if (customerStatusFilter !== "All" && c.status !== customerStatusFilter) return false;
+      if (!customerSearchQuery) return true;
+      const q = customerSearchQuery.toLowerCase();
+      return (
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        (c.phone && c.phone.toLowerCase().includes(q)) ||
+        (c.city && c.city.toLowerCase().includes(q))
+      );
+    });
+  }, [effectiveCustomers, customerStatusFilter, customerSearchQuery]);
+
+  // Persistent Store Settings
+  const [storeSettings, setStoreSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("omsun_store_settings");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      companyName: "OMSUN Solar & Renewable Energy Pvt. Ltd.",
+      panVatNumber: "601982340",
+      supportPhone: "+977-9800000000",
+      supportEmail: "sales@omsunnepal.com",
+      hubAddress: "OMSUN Hub, Tripureshwor, Kathmandu 44600, Nepal",
+      fonepayMerchantId: "FP-OMSUN-KTM-01",
+      valleyDeliveryFee: 0,
+      outsideValleyDeliveryFee: 1500,
+      notificationEmail: "sales@omsunnepal.com",
+    };
+  });
+
+  const handleSaveStoreSettings = (newSettings: typeof storeSettings) => {
+    setStoreSettings(newSettings);
+    try {
+      localStorage.setItem("omsun_store_settings", JSON.stringify(newSettings));
+    } catch {}
+    toast.success("Store configuration and operational parameters saved!");
+  };
 
   // Modals & Drawers State
   const [selectedOrderForDrawer, setSelectedOrderForDrawer] = useState<AdminOrder | null>(null);
@@ -236,23 +325,29 @@ function AdminDashboardPage() {
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
 
   // Calculated Telemetry
-  const totalRevenue = apiStats?.totalRevenue ?? effectiveOrders
-    .filter((o) => o.paymentStatus === "Paid")
-    .reduce((acc, curr) => acc + curr.totalAmount, 0);
+  const totalRevenue =
+    apiStats?.totalRevenue ??
+    effectiveOrders
+      .filter((o) => o.paymentStatus === "Paid")
+      .reduce((acc, curr) => acc + curr.totalAmount, 0);
   const totalProductsCount = apiStats?.productCount ?? effectiveProducts.length;
-  const lowStockCount = apiStats?.lowStockItems ?? effectiveProducts.filter((p) => p.stock <= 10).length;
-  const pendingOrdersCount = apiStats?.pendingOrders ?? effectiveOrders.filter((o) => o.orderStatus === "Pending").length;
+  const lowStockCount =
+    apiStats?.lowStockItems ?? effectiveProducts.filter((p) => p.stock <= 10).length;
+  const pendingOrdersCount =
+    apiStats?.pendingOrders ?? effectiveOrders.filter((o) => o.orderStatus === "Pending").length;
 
   // Orders Action Required Metrics
   const pendingVerificationCount = effectiveOrders.filter(
-    (o) => o.paymentStatus === "Under Review" || (!!o.paymentReceipt && o.paymentStatus !== "Paid" && o.paymentStatus !== "Failed")
+    (o) =>
+      o.paymentStatus === "Under Review" ||
+      (!!o.paymentReceipt && o.paymentStatus !== "Paid" && o.paymentStatus !== "Failed"),
   ).length;
   const warehousePrepCount = effectiveOrders.filter((o) => o.orderStatus === "Processing").length;
   const outForDeliveryCount = effectiveOrders.filter(
-    (o) => o.orderStatus === "Shipped" || o.deliveryStatus === "OUT_FOR_DELIVERY"
+    (o) => o.orderStatus === "Shipped" || o.deliveryStatus === "OUT_FOR_DELIVERY",
   ).length;
   const rejectedSlipsCount = effectiveOrders.filter(
-    (o) => o.paymentStatus === "Failed" || !!o.rejectionReason
+    (o) => o.paymentStatus === "Failed" || !!o.rejectionReason,
   ).length;
 
   const filteredAndSortedOrders = useMemo(() => {
@@ -285,8 +380,10 @@ function AdminDashboardPage() {
         return true;
       })
       .sort((a, b) => {
-        if (orderSortBy === "NEWEST") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        if (orderSortBy === "OLDEST") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        if (orderSortBy === "NEWEST")
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        if (orderSortBy === "OLDEST")
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         if (orderSortBy === "HIGHEST") return b.totalAmount - a.totalAmount;
         if (orderSortBy === "LOWEST") return a.totalAmount - b.totalAmount;
         return 0;
@@ -295,7 +392,11 @@ function AdminDashboardPage() {
 
   // Sales trend from API or fallback
   const salesTrendData = apiStats?.monthlyTrend?.length
-    ? apiStats.monthlyTrend.map((r) => ({ month: r.month.slice(5), revenue: r.revenue, orders: r.orders }))
+    ? apiStats.monthlyTrend.map((r) => ({
+        month: r.month.slice(5),
+        revenue: r.revenue,
+        orders: r.orders,
+      }))
     : [
         { month: "Jan", revenue: 14200000, orders: 120 },
         { month: "Feb", revenue: 15800000, orders: 135 },
@@ -308,9 +409,22 @@ function AdminDashboardPage() {
       ];
 
   // Category distribution from API or fallback
-  const pieColors = ["#38B46A", "#2F80ED", "#F4B400", "#12342B", "#D97706", "#7C3AED", "#059669", "#2563EB"];
+  const pieColors = [
+    "#38B46A",
+    "#2F80ED",
+    "#F4B400",
+    "#12342B",
+    "#D97706",
+    "#7C3AED",
+    "#059669",
+    "#2563EB",
+  ];
   const categoryDistributionData = apiStats?.categoryDistribution?.length
-    ? apiStats.categoryDistribution.map((r, i) => ({ name: r.name, value: r.value, color: pieColors[i % pieColors.length] }))
+    ? apiStats.categoryDistribution.map((r, i) => ({
+        name: r.name,
+        value: r.value,
+        color: pieColors[i % pieColors.length],
+      }))
     : [
         { name: "Batteries", value: 38, color: "#38B46A" },
         { name: "Inverters", value: 28, color: "#2F80ED" },
@@ -366,13 +480,8 @@ function AdminDashboardPage() {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["product"] });
       toast.success(`Product "${prod.name}" saved to database`);
-    } catch {
-      setProductsList((prev) => {
-        const exists = prev.some((p) => p.id === prod.id);
-        if (exists) return prev.map((p) => (p.id === prod.id ? prod : p));
-        return [prod, ...prev];
-      });
-      toast.success(`Product "${prod.name}" saved locally`);
+    } catch (err: any) {
+      toast.error(err?.message || `Failed to save product "${prod.name}"`);
     }
   };
 
@@ -382,22 +491,44 @@ function AdminDashboardPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-    } catch {
-      // offline fallback
+      setProductsList((prev) => prev.filter((p) => p.id !== id));
+      toast.success(`Product "${name}" deleted from catalog`);
+    } catch (err: any) {
+      toast.error(
+        err?.message || `Cannot delete product "${name}". It may be referenced in existing orders.`,
+      );
     }
-    setProductsList((prev) => prev.filter((p) => p.id !== id));
-    toast.success(`Product "${name}" deleted from catalog`);
   };
 
-  const handleDuplicateProduct = (prod: Product) => {
-    const duplicated: Product = {
-      ...prod,
-      id: `copy-${Date.now().toString(36)}`,
-      name: `${prod.name} (Copy)`,
-      stock: 10,
-    };
-    setProductsList((prev) => [duplicated, ...prev]);
-    toast.success(`Duplicated "${prod.name}"`);
+  const handleDuplicateProduct = async (prod: Product) => {
+    const newId = `sku-${Date.now().toString(36).toLowerCase()}`;
+    const duplicateName = `${prod.name} (Copy)`;
+    try {
+      await api.createProduct({
+        id: newId,
+        name: duplicateName,
+        category: prod.category,
+        subcategory: prod.subcategory || null,
+        brand: prod.brand,
+        tagline: prod.tagline || null,
+        description: (prod as any).description || prod.tagline || null,
+        price: prod.price,
+        mrp: prod.compareAt ?? null,
+        image: prod.image || null,
+        images: prod.images || (prod.image ? [prod.image] : []),
+        stock: prod.stock || 10,
+        rating: prod.rating || 4.8,
+        badges: prod.badges || ["In Stock"],
+        specs: prod.specs || [],
+        features: [],
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success(`Duplicated "${prod.name}" as "${duplicateName}"`);
+    } catch (err: any) {
+      toast.error(err?.message || `Failed to duplicate "${prod.name}"`);
+    }
   };
 
   const handleUpdateStock = async (productId: string, newStock: number) => {
@@ -405,12 +536,13 @@ function AdminDashboardPage() {
       await api.updateStock(productId, newStock);
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
-    } catch {
-      // offline fallback
+      setProductsList((prev) =>
+        prev.map((p) => (p.id === productId ? { ...p, stock: newStock } : p)),
+      );
+      toast.success(`Stock level updated to ${newStock} units`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update stock");
     }
-    setProductsList((prev) =>
-      prev.map((p) => (p.id === productId ? { ...p, stock: newStock } : p)),
-    );
   };
 
   // Handlers for Orders
@@ -420,15 +552,15 @@ function AdminDashboardPage() {
       await api.updateOrderStatus(ref, newStatus.toLowerCase());
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
-      toast.success(`Order ${orderId} updated to ${newStatus}`);
-    } catch {
-      toast.success(`Order ${orderId} status changed to ${newStatus}`);
-    }
-    setOrdersList((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, orderStatus: newStatus } : o)),
-    );
-    if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) {
-      setSelectedOrderForDrawer((prev) => (prev ? { ...prev, orderStatus: newStatus } : null));
+      setOrdersList((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, orderStatus: newStatus } : o)),
+      );
+      if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) {
+        setSelectedOrderForDrawer((prev) => (prev ? { ...prev, orderStatus: newStatus } : null));
+      }
+      toast.success(`Order #${orderId} status changed to ${newStatus}`);
+    } catch (err: any) {
+      toast.error(err?.message || `Failed to update status for #${orderId}`);
     }
   };
 
@@ -436,7 +568,7 @@ function AdminDashboardPage() {
     orderId: string,
     approve: boolean,
     rejectionReason?: string,
-    notes?: string
+    notes?: string,
   ) => {
     const ref = orderId.replace("OMS-", "");
     try {
@@ -445,8 +577,8 @@ function AdminDashboardPage() {
       await queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       toast.success(
         approve
-          ? `Order #${orderId} payment verified & order confirmed!`
-          : `Order #${orderId} payment rejected. Customer notified.`
+          ? `Order #${orderId} payment verified & confirmed!`
+          : `Order #${orderId} payment rejected. Customer notified.`,
       );
       if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) {
         setSelectedOrderForDrawer((prev) =>
@@ -459,7 +591,7 @@ function AdminDashboardPage() {
                 adminNotes: notes ?? prev.adminNotes,
                 paymentVerifiedAt: approve ? new Date().toISOString() : null,
               }
-            : null
+            : null,
         );
       }
     } catch (err: any) {
@@ -473,7 +605,7 @@ function AdminDashboardPage() {
     try {
       await api.adminUpdateDelivery(ref, deliveryData);
       await queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-      toast.success(`Delivery details saved for #${orderId}`);
+      toast.success(`Delivery logistics dispatched for #${orderId}`);
       if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) {
         setSelectedOrderForDrawer((prev) =>
           prev
@@ -481,7 +613,7 @@ function AdminDashboardPage() {
                 ...prev,
                 ...deliveryData,
               }
-            : null
+            : null,
         );
       }
     } catch (err: any) {
@@ -496,13 +628,13 @@ function AdminDashboardPage() {
       await api.deleteAdminOrder(ref);
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
-      toast.success(`Order ${orderId} deleted from database`);
-    } catch {
-      toast.info(`Order ${orderId} removed`);
-    }
-    setOrdersList((prev) => prev.filter((o) => o.id !== orderId));
-    if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) {
-      setSelectedOrderForDrawer(null);
+      setOrdersList((prev) => prev.filter((o) => o.id !== orderId));
+      if (selectedOrderForDrawer && selectedOrderForDrawer.id === orderId) {
+        setSelectedOrderForDrawer(null);
+      }
+      toast.success(`Order #${orderId} deleted and items restocked`);
+    } catch (err: any) {
+      toast.error(err?.message || `Failed to delete order #${orderId}`);
     }
   };
 
@@ -532,6 +664,18 @@ function AdminDashboardPage() {
       case "partners":
         setIsPartnerModalOpen(true);
         break;
+      case "inquiries":
+        exportInquiriesCsv(effectiveContactMessages);
+        break;
+      case "orders":
+        exportOrdersCsv(filteredAndSortedOrders);
+        break;
+      case "customers":
+        exportCustomersCsv(filteredCustomers);
+        break;
+      case "reports":
+        exportFinancialSummaryCsv(salesTrendData);
+        break;
       default:
         setSelectedProductForEdit(null);
         setIsProductModalOpen(true);
@@ -549,6 +693,7 @@ function AdminDashboardPage() {
           onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
           pendingOrdersCount={pendingOrdersCount}
           lowStockCount={lowStockCount}
+          inquiriesCount={effectiveContactMessages.length}
         />
       </div>
 
@@ -565,6 +710,7 @@ function AdminDashboardPage() {
             onToggleCollapse={() => setMobileSidebarOpen(false)}
             pendingOrdersCount={pendingOrdersCount}
             lowStockCount={lowStockCount}
+            inquiriesCount={effectiveContactMessages.length}
           />
         </SheetContent>
       </Sheet>
@@ -590,108 +736,126 @@ function AdminDashboardPage() {
               {/* Executive KPI Cards Grid — 2 Col Mobile, 3 Col Tablet, 6 Col Desktop */}
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
                 {/* 1. Total Sales */}
-                <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-b from-white via-white to-[#F2FBF4]/50 dark:from-[#0c241c] dark:to-[#071A12] p-3.5 sm:p-4.5 border border-[#E2EDE7] dark:border-white/10 shadow-xs transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.015] hover:border-[#38B46A] hover:shadow-xl hover:shadow-[#38B46A]/15 border-t-2 border-t-[#38B46A]">
+                <div className="rounded-2xl bg-white dark:bg-[#0c1813] p-3.5 sm:p-4.5 border border-slate-200/80 dark:border-white/10 shadow-xs hover:border-[#38B46A]/50 transition-colors">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500 text-[10px] font-extrabold uppercase tracking-wider">
-                      Total Revenue
+                    <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase tracking-wider">
+                      Gross Revenue
                     </span>
-                    <div className="flex size-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center text-[#38B46A] group-hover:scale-110 transition-transform">
+                    <div className="flex size-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center text-[#38B46A]">
                       <DollarSign className="size-4" />
                     </div>
                   </div>
                   <div className="mt-2.5 font-display text-xl sm:text-2xl font-black text-[#173226] dark:text-white font-mono tracking-tight">
                     {formatNPR(totalRevenue)}
                   </div>
-                  <div className="mt-1 text-[11px] text-[#38B46A] font-bold flex items-center gap-1">
-                    <TrendingUp className="size-3" /> +18.4% vs last month
+                  <div className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-emerald-500 inline-block" /> Live
+                    database sales
                   </div>
                 </div>
 
                 {/* 2. Total Orders */}
-                <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-b from-white via-white to-[#EFF8FF]/50 dark:from-[#0c241c] dark:to-[#071A12] p-4 sm:p-4.5 border border-[#E2EDE7] dark:border-white/10 shadow-xs transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.015] hover:border-[#2F80ED] hover:shadow-xl hover:shadow-[#2F80ED]/15 border-t-2 border-t-[#2F80ED]">
+                <div
+                  onClick={() => setActiveSection("orders")}
+                  className="rounded-2xl bg-white dark:bg-[#0c1813] p-3.5 sm:p-4.5 border border-slate-200/80 dark:border-white/10 shadow-xs hover:border-sky-500/50 transition-colors cursor-pointer"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500 text-[10px] font-extrabold uppercase tracking-wider">
+                    <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase tracking-wider">
                       Total Orders
                     </span>
-                    <div className="flex size-8 rounded-xl bg-sky-500/10 border border-sky-500/20 items-center justify-center text-[#2F80ED] group-hover:scale-110 transition-transform">
+                    <div className="flex size-8 rounded-xl bg-sky-500/10 border border-sky-500/20 items-center justify-center text-sky-600 dark:text-sky-400">
                       <ShoppingBag className="size-4" />
                     </div>
                   </div>
                   <div className="mt-2.5 font-display text-xl sm:text-2xl font-black text-[#173226] dark:text-white font-mono tracking-tight">
                     {effectiveOrders.length} Orders
                   </div>
-                  <div className="mt-1 text-[11px] text-[#2F80ED] font-bold">
+                  <div className="mt-1 text-[11px] text-sky-600 dark:text-sky-400 font-semibold">
                     {pendingOrdersCount} Pending Dispatch
                   </div>
                 </div>
 
                 {/* 3. Hardware Catalog */}
-                <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-b from-white via-white to-[#ECFDF3]/50 dark:from-[#0c241c] dark:to-[#071A12] p-4 sm:p-4.5 border border-[#E2EDE7] dark:border-white/10 shadow-xs transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.015] hover:border-[#12342B] hover:shadow-xl hover:shadow-[#12342B]/15 border-t-2 border-t-[#12342B]">
+                <div
+                  onClick={() => setActiveSection("products")}
+                  className="rounded-2xl bg-white dark:bg-[#0c1813] p-3.5 sm:p-4.5 border border-slate-200/80 dark:border-white/10 shadow-xs hover:border-indigo-500/50 transition-colors cursor-pointer"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500 text-[10px] font-extrabold uppercase tracking-wider">
+                    <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase tracking-wider">
                       Catalog SKUs
                     </span>
-                    <div className="flex size-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                    <div className="flex size-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 items-center justify-center text-indigo-600 dark:text-indigo-400">
                       <Box className="size-4" />
                     </div>
                   </div>
                   <div className="mt-2.5 font-display text-xl sm:text-2xl font-black text-[#173226] dark:text-white font-mono tracking-tight">
                     {totalProductsCount} SKUs
                   </div>
-                  <div className="mt-1 text-[11px] text-slate-500 font-semibold">
+                  <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
                     5 Core Categories
                   </div>
                 </div>
 
                 {/* 4. Low Stock Alert */}
-                <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-b from-white via-white to-[#FFFBEB]/50 dark:from-[#0c241c] dark:to-[#071A12] p-4 sm:p-4.5 border border-[#E2EDE7] dark:border-white/10 shadow-xs transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.015] hover:border-[#F4B400] hover:shadow-xl hover:shadow-[#F4B400]/20 border-t-2 border-t-[#F4B400]">
+                <div
+                  onClick={() => setActiveSection("inventory")}
+                  className="rounded-2xl bg-white dark:bg-[#0c1813] p-3.5 sm:p-4.5 border border-slate-200/80 dark:border-white/10 shadow-xs hover:border-amber-500/50 transition-colors cursor-pointer"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500 text-[10px] font-extrabold uppercase tracking-wider">
+                    <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase tracking-wider">
                       Low Stock Alert
                     </span>
-                    <div className="flex size-8 rounded-xl bg-amber-500/10 border border-amber-500/20 items-center justify-center text-[#F4B400] group-hover:scale-110 transition-transform">
+                    <div className="flex size-8 rounded-xl bg-amber-500/10 border border-amber-500/20 items-center justify-center text-amber-600 dark:text-amber-400">
                       <Boxes className="size-4" />
                     </div>
                   </div>
                   <div className="mt-2.5 font-display text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 font-mono tracking-tight">
                     {lowStockCount} Items
                   </div>
-                  <div className="mt-1 text-[11px] text-amber-600 dark:text-amber-400 font-bold">
-                    Stock threshold ≤ 10
+                  <div className="mt-1 text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
+                    Threshold ≤ 10 units
                   </div>
                 </div>
 
                 {/* 5. Registered Clients */}
-                <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-b from-white via-white to-[#F2FBF4]/50 dark:from-[#0c241c] dark:to-[#071A12] p-4 sm:p-4.5 border border-[#E2EDE7] dark:border-white/10 shadow-xs transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.015] hover:border-[#38B46A] hover:shadow-xl hover:shadow-[#38B46A]/15 border-t-2 border-t-[#38B46A]">
+                <div
+                  onClick={() => setActiveSection("customers")}
+                  className="rounded-2xl bg-white dark:bg-[#0c1813] p-3.5 sm:p-4.5 border border-slate-200/80 dark:border-white/10 shadow-xs hover:border-emerald-500/50 transition-colors cursor-pointer"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500 text-[10px] font-extrabold uppercase tracking-wider">
-                      Clients
+                    <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase tracking-wider">
+                      Client Accounts
                     </span>
-                    <div className="flex size-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center text-[#38B46A] group-hover:scale-110 transition-transform">
+                    <div className="flex size-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center text-[#38B46A]">
                       <Users className="size-4" />
                     </div>
                   </div>
                   <div className="mt-2.5 font-display text-xl sm:text-2xl font-black text-[#173226] dark:text-white font-mono tracking-tight">
                     {effectiveCustomers.length} Accounts
                   </div>
-                  <div className="mt-1 text-[11px] text-[#38B46A] font-bold">{effectiveCustomers.filter((c) => c.status === "VIP").length} VIP Contractors</div>
+                  <div className="mt-1 text-[11px] text-[#38B46A] font-semibold">
+                    {effectiveCustomers.filter((c) => c.status === "VIP").length} VIP Profiles
+                  </div>
                 </div>
 
-                {/* 6. NEA Net-Meter Sync */}
-                <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-b from-white via-white to-[#EFF8FF]/50 dark:from-[#0c241c] dark:to-[#071A12] p-4 sm:p-4.5 border border-[#E2EDE7] dark:border-white/10 shadow-xs transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.015] hover:border-[#2F80ED] hover:shadow-xl hover:shadow-[#2F80ED]/15 border-t-2 border-t-[#2F80ED]">
+                {/* 6. Inquiries & Leads */}
+                <div
+                  onClick={() => setActiveSection("inquiries")}
+                  className="rounded-2xl bg-white dark:bg-[#0c1813] p-3.5 sm:p-4.5 border border-slate-200/80 dark:border-white/10 shadow-xs hover:border-sky-500/50 transition-colors cursor-pointer"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500 text-[10px] font-extrabold uppercase tracking-wider">
-                      NEA Net-Meter
+                    <span className="text-slate-500 dark:text-slate-400 text-[10px] font-extrabold uppercase tracking-wider">
+                      Inquiries & Leads
                     </span>
-                    <div className="flex size-8 rounded-xl bg-sky-500/10 border border-sky-500/20 items-center justify-center text-[#2F80ED] group-hover:scale-110 transition-transform">
-                      <CheckCircle2 className="size-4" />
+                    <div className="flex size-8 rounded-xl bg-sky-500/10 border border-sky-500/20 items-center justify-center text-sky-600 dark:text-sky-400">
+                      <MessageSquare className="size-4" />
                     </div>
                   </div>
                   <div className="mt-2.5 font-display text-xl sm:text-2xl font-black text-[#173226] dark:text-white font-mono tracking-tight">
-                    142 Synced
+                    {effectiveContactMessages.length} Leads
                   </div>
-                  <div className="mt-1 text-[11px] text-[#2F80ED] font-bold">
-                    100% Interconnection Pass
+                  <div className="mt-1 text-[11px] text-sky-600 dark:text-sky-400 font-semibold">
+                    {effectiveSubscribers.length} Newsletter Subs
                   </div>
                 </div>
               </div>
@@ -705,10 +869,12 @@ function AdminDashboardPage() {
                     </div>
                     <div>
                       <div className="font-extrabold text-sm text-amber-800 dark:text-amber-300">
-                        {lowStockCount} Hardware Items Operating Below Reorder Threshold (≤ 10 Units)
+                        {lowStockCount} Hardware Items Operating Below Reorder Threshold (≤ 10
+                        Units)
                       </div>
                       <p className="text-xs text-amber-700/80 dark:text-amber-400/80">
-                        Critical stock alerts in Kathmandu hub. Generate vendor purchase order to replenish inventory.
+                        Critical stock alerts in Kathmandu hub. Generate vendor purchase order to
+                        replenish inventory.
                       </p>
                     </div>
                   </div>
@@ -1010,7 +1176,8 @@ function AdminDashboardPage() {
                       <option value="All">All Subcategories</option>
                       {(selectedCategoryFilter === "All"
                         ? PRODUCT_TAXONOMY.flatMap((t) => t.subcategories)
-                        : PRODUCT_TAXONOMY.find((t) => t.name === selectedCategoryFilter)?.subcategories || []
+                        : PRODUCT_TAXONOMY.find((t) => t.name === selectedCategoryFilter)
+                            ?.subcategories || []
                       ).map((sub) => {
                         const count = effectiveProducts.filter((p) => p.subcategory === sub).length;
                         return (
@@ -1039,18 +1206,48 @@ function AdminDashboardPage() {
                     </select>
                   </div>
 
-                  {/* Add Product Button */}
-                  <Button
-                    onClick={() => {
-                      setSelectedProductForEdit(null);
-                      setTargetCategoryForAdd(selectedCategoryFilter !== "All" ? selectedCategoryFilter : "Stabilizer");
-                      setTargetSubcategoryForAdd(selectedSubcategoryFilter !== "All" ? selectedSubcategoryFilter : "Servo Stabilizer");
-                      setIsProductModalOpen(true);
-                    }}
-                    className="h-9 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white font-extrabold text-xs gap-1.5 cursor-pointer shadow-md shadow-emerald-500/20 hover:scale-105 transition-transform shrink-0"
-                  >
-                    <Plus className="size-4" /> Add Hardware SKU
-                  </Button>
+                  {/* Export & Add Product Buttons */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        exportProductsCsv(
+                          effectiveProducts.filter(
+                            (p) =>
+                              (selectedCategoryFilter === "All" ||
+                                p.category === selectedCategoryFilter) &&
+                              (selectedSubcategoryFilter === "All" ||
+                                p.subcategory === selectedSubcategoryFilter) &&
+                              (selectedBrandFilter === "All" || p.brand === selectedBrandFilter) &&
+                              (!productQuery ||
+                                p.name.toLowerCase().includes(productQuery.toLowerCase()) ||
+                                p.id.toLowerCase().includes(productQuery.toLowerCase()) ||
+                                p.brand.toLowerCase().includes(productQuery.toLowerCase())),
+                          ),
+                        )
+                      }
+                      className="h-9 rounded-xl border-slate-200 dark:border-white/10 font-bold text-xs gap-1.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5"
+                    >
+                      <Download className="size-3.5" /> Export Catalog
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setSelectedProductForEdit(null);
+                        setTargetCategoryForAdd(
+                          selectedCategoryFilter !== "All" ? selectedCategoryFilter : "Stabilizer",
+                        );
+                        setTargetSubcategoryForAdd(
+                          selectedSubcategoryFilter !== "All"
+                            ? selectedSubcategoryFilter
+                            : "Servo Stabilizer",
+                        );
+                        setIsProductModalOpen(true);
+                      }}
+                      className="h-9 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white font-extrabold text-xs gap-1.5 cursor-pointer shadow-md shadow-emerald-500/20 hover:scale-105 transition-transform"
+                    >
+                      <Plus className="size-4" /> Add Hardware SKU
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Filter Status & Active Pills */}
@@ -1062,8 +1259,10 @@ function AdminDashboardPage() {
                         {
                           effectiveProducts.filter(
                             (p) =>
-                              (selectedCategoryFilter === "All" || p.category === selectedCategoryFilter) &&
-                              (selectedSubcategoryFilter === "All" || p.subcategory === selectedSubcategoryFilter) &&
+                              (selectedCategoryFilter === "All" ||
+                                p.category === selectedCategoryFilter) &&
+                              (selectedSubcategoryFilter === "All" ||
+                                p.subcategory === selectedSubcategoryFilter) &&
                               (selectedBrandFilter === "All" || p.brand === selectedBrandFilter) &&
                               (!productQuery ||
                                 `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand} ${p.id}`
@@ -1140,7 +1339,8 @@ function AdminDashboardPage() {
                   .filter(
                     (p) =>
                       (selectedCategoryFilter === "All" || p.category === selectedCategoryFilter) &&
-                      (selectedSubcategoryFilter === "All" || p.subcategory === selectedSubcategoryFilter) &&
+                      (selectedSubcategoryFilter === "All" ||
+                        p.subcategory === selectedSubcategoryFilter) &&
                       (selectedBrandFilter === "All" || p.brand === selectedBrandFilter) &&
                       (!productQuery ||
                         `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand} ${p.id}`
@@ -1178,7 +1378,9 @@ function AdminDashboardPage() {
                               {prod.category} {prod.subcategory ? `• ${prod.subcategory}` : ""}
                             </span>
                           </div>
-                          <div className="text-[10px] font-mono text-slate-400 mt-0.5">SKU: {prod.id}</div>
+                          <div className="text-[10px] font-mono text-slate-400 mt-0.5">
+                            SKU: {prod.id}
+                          </div>
                         </div>
                       </div>
 
@@ -1252,8 +1454,10 @@ function AdminDashboardPage() {
                       {effectiveProducts
                         .filter(
                           (p) =>
-                            (selectedCategoryFilter === "All" || p.category === selectedCategoryFilter) &&
-                            (selectedSubcategoryFilter === "All" || p.subcategory === selectedSubcategoryFilter) &&
+                            (selectedCategoryFilter === "All" ||
+                              p.category === selectedCategoryFilter) &&
+                            (selectedSubcategoryFilter === "All" ||
+                              p.subcategory === selectedSubcategoryFilter) &&
                             (selectedBrandFilter === "All" || p.brand === selectedBrandFilter) &&
                             (!productQuery ||
                               `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand} ${p.id}`
@@ -1462,7 +1666,9 @@ function AdminDashboardPage() {
                                     title={`View ${sub} (${subCount} items)`}
                                   >
                                     <span>{sub}</span>
-                                    <span className="font-mono text-[9px] opacity-70">({subCount})</span>
+                                    <span className="font-mono text-[9px] opacity-70">
+                                      ({subCount})
+                                    </span>
                                   </button>
                                 );
                               })}
@@ -1663,11 +1869,19 @@ function AdminDashboardPage() {
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Manage real-time hardware orders, manual Fonepay verification, carrier dispatch & delivery.
+                    Manage real-time hardware orders, manual Fonepay verification, carrier dispatch
+                    & delivery.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                  <Button
+                    onClick={() => exportOrdersCsv(filteredAndSortedOrders)}
+                    variant="outline"
+                    className="rounded-xl border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 font-bold text-xs gap-1.5 h-9 cursor-pointer"
+                  >
+                    <Download className="size-3.5" /> Export Orders
+                  </Button>
                   <Button
                     onClick={handleRefreshOrders}
                     variant="outline"
@@ -1684,7 +1898,7 @@ function AdminDashboardPage() {
                   type="button"
                   onClick={() => {
                     setOrderPaymentFilter((prev) =>
-                      prev === "PENDING_VERIFICATION" ? "ALL" : "PENDING_VERIFICATION"
+                      prev === "PENDING_VERIFICATION" ? "ALL" : "PENDING_VERIFICATION",
                     );
                     setSelectedOrderStatusFilter("All");
                   }}
@@ -1714,7 +1928,7 @@ function AdminDashboardPage() {
                   type="button"
                   onClick={() => {
                     setSelectedOrderStatusFilter((prev) =>
-                      prev === "Processing" ? "All" : "Processing"
+                      prev === "Processing" ? "All" : "Processing",
                     );
                     setOrderPaymentFilter("ALL");
                   }}
@@ -1732,9 +1946,7 @@ function AdminDashboardPage() {
                       <Package className="size-4" />
                     </span>
                   </div>
-                  <div className="mt-2 text-2xl font-black text-blue-600">
-                    {warehousePrepCount}
-                  </div>
+                  <div className="mt-2 text-2xl font-black text-blue-600">{warehousePrepCount}</div>
                   <div className="text-[10px] text-slate-400 mt-0.5 font-medium">
                     Verified, ready to pack
                   </div>
@@ -1744,7 +1956,7 @@ function AdminDashboardPage() {
                   type="button"
                   onClick={() => {
                     setSelectedOrderStatusFilter((prev) =>
-                      prev === "Shipped" ? "All" : "Shipped"
+                      prev === "Shipped" ? "All" : "Shipped",
                     );
                     setOrderPaymentFilter("ALL");
                   }}
@@ -1773,9 +1985,7 @@ function AdminDashboardPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setOrderPaymentFilter((prev) =>
-                      prev === "REJECTED" ? "ALL" : "REJECTED"
-                    );
+                    setOrderPaymentFilter((prev) => (prev === "REJECTED" ? "ALL" : "REJECTED"));
                     setSelectedOrderStatusFilter("All");
                   }}
                   className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
@@ -1792,9 +2002,7 @@ function AdminDashboardPage() {
                       <AlertTriangle className="size-4" />
                     </span>
                   </div>
-                  <div className="mt-2 text-2xl font-black text-rose-600">
-                    {rejectedSlipsCount}
-                  </div>
+                  <div className="mt-2 text-2xl font-black text-rose-600">{rejectedSlipsCount}</div>
                   <div className="text-[10px] text-slate-400 mt-0.5 font-medium">
                     Waiting for customer re-upload
                   </div>
@@ -1805,7 +2013,9 @@ function AdminDashboardPage() {
               <div className="bg-white dark:bg-[#0c241c] p-4 sm:p-5 rounded-3xl border border-[#E2EDE7] dark:border-white/10 shadow-sm space-y-3.5">
                 {/* Order Status Tabs */}
                 <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-                  {(["All", "Pending", "Processing", "Shipped", "Completed", "Cancelled"] as const).map((st) => {
+                  {(
+                    ["All", "Pending", "Processing", "Shipped", "Completed", "Cancelled"] as const
+                  ).map((st) => {
                     const count =
                       st === "All"
                         ? effectiveOrders.length
@@ -1845,7 +2055,10 @@ function AdminDashboardPage() {
                     {(
                       [
                         { id: "ALL", label: "All" },
-                        { id: "PENDING_VERIFICATION", label: `Needs Review (${pendingVerificationCount})` },
+                        {
+                          id: "PENDING_VERIFICATION",
+                          label: `Needs Review (${pendingVerificationCount})`,
+                        },
                         { id: "VERIFIED", label: "Verified" },
                         { id: "REJECTED", label: `Rejected (${rejectedSlipsCount})` },
                         { id: "UNPAID", label: "Unpaid" },
@@ -1902,13 +2115,16 @@ function AdminDashboardPage() {
               </div>
 
               {/* Filter Active Notice if filtering */}
-              {(selectedOrderStatusFilter !== "All" || orderPaymentFilter !== "ALL" || orderQuery.trim()) && (
+              {(selectedOrderStatusFilter !== "All" ||
+                orderPaymentFilter !== "ALL" ||
+                orderQuery.trim()) && (
                 <div className="flex items-center justify-between px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 font-medium">
                   <div className="flex items-center gap-2">
                     <Filter className="size-3.5 text-emerald-600" />
                     <span>
                       Showing {filteredAndSortedOrders.length} of {effectiveOrders.length} orders
-                      {selectedOrderStatusFilter !== "All" && ` • Status: ${selectedOrderStatusFilter}`}
+                      {selectedOrderStatusFilter !== "All" &&
+                        ` • Status: ${selectedOrderStatusFilter}`}
                       {orderPaymentFilter !== "ALL" && ` • Payment: ${orderPaymentFilter}`}
                       {orderQuery.trim() && ` • Search: "${orderQuery}"`}
                     </span>
@@ -2278,36 +2494,420 @@ function AdminDashboardPage() {
           )}
 
           {/* ════════════════════════════════════════════════════════════ */}
-          {/* SECTION 6: CUSTOMERS DATABASE */}
+          {/* SECTION: INQUIRIES & PROJECT LEADS */}
           {/* ════════════════════════════════════════════════════════════ */}
-          {activeSection === "customers" && (
+          {activeSection === "inquiries" && (
             <div className="space-y-5 sm:space-y-6">
-              <div className="flex items-center justify-between">
+              {/* Header with Title, Tabs & Export Action */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-[#0c1813] p-4 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-xs">
                 <div>
-                  <h3 className="font-display font-extrabold text-lg text-[#173226] dark:text-white">
-                    Registered Client Accounts & Contractors
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Commercial & residential clients across Nepal
+                  <div className="flex items-center gap-2.5">
+                    <h3 className="font-display font-extrabold text-lg text-[#173226] dark:text-white">
+                      Customer Inquiries & Solar EPC Leads
+                    </h3>
+                    <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#ECFDF3] text-[#38B46A] border border-[#38B46A]/30">
+                      <span className="size-2 rounded-full bg-[#38B46A] animate-pulse" />
+                      {effectiveContactMessages.length} Inquiries Received
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Commercial solar EPC quotes, contractor requests, warranty claims, and marketing
+                    audience.
                   </p>
+                </div>
+
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                  <Button
+                    onClick={() => {
+                      if (inquiryTab === "messages") {
+                        exportInquiriesCsv(effectiveContactMessages);
+                      } else {
+                        exportSubscribersCsv(effectiveSubscribers);
+                      }
+                    }}
+                    variant="outline"
+                    className="rounded-xl border-slate-200 dark:border-white/10 font-bold text-xs gap-1.5 h-9 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5"
+                  >
+                    <Download className="size-3.5" /> Export{" "}
+                    {inquiryTab === "messages" ? "Leads (CSV)" : "Subscribers (CSV)"}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      refetchInquiries();
+                      toast.success("Inquiries synced with database");
+                    }}
+                    variant="outline"
+                    className="rounded-xl border-[#38B46A]/40 text-[#38B46A] hover:bg-[#ECFDF3] font-bold text-xs gap-1.5 h-9 cursor-pointer"
+                  >
+                    <RefreshCw className="size-3.5" /> Refresh
+                  </Button>
                 </div>
               </div>
 
-              <div className="rounded-3xl bg-white dark:bg-[#0c241c] border border-[#E2EDE7] dark:border-white/10 shadow-sm overflow-hidden">
+              {/* Sub-navigation Tabs */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setInquiryTab("messages")}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
+                    inquiryTab === "messages"
+                      ? "bg-[#12342B] text-white shadow-md border border-[#38B46A]/40"
+                      : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50"
+                  }`}
+                >
+                  <MessageSquare className="size-3.5" />
+                  <span>Customer Messages & Solar Quotes</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-md ${inquiryTab === "messages" ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400"}`}
+                  >
+                    {effectiveContactMessages.length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setInquiryTab("subscribers")}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
+                    inquiryTab === "subscribers"
+                      ? "bg-[#12342B] text-white shadow-md border border-[#38B46A]/40"
+                      : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50"
+                  }`}
+                >
+                  <Mail className="size-3.5" />
+                  <span>Newsletter Audience</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-md ${inquiryTab === "subscribers" ? "bg-white/20 text-white" : "bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400"}`}
+                  >
+                    {effectiveSubscribers.length}
+                  </span>
+                </button>
+              </div>
+
+              {/* TAB 1: CUSTOMER MESSAGES */}
+              {inquiryTab === "messages" && (
+                <div className="space-y-4">
+                  {/* Search and Category Filter Toolbar */}
+                  <div className="bg-white dark:bg-[#0c1813] p-4 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+                      <Input
+                        placeholder="Search by customer, email, phone, company, or district..."
+                        value={inquirySearchQuery}
+                        onChange={(e) => setInquirySearchQuery(e.target.value)}
+                        className="pl-9 rounded-xl text-xs h-9"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={selectedInquiryCategory}
+                        onChange={(e) => setSelectedInquiryCategory(e.target.value)}
+                        className="h-9 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0c1813] text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer"
+                      >
+                        <option value="All">All Inquiry Categories</option>
+                        <option value="Solar EPC Solutions">Solar EPC Solutions</option>
+                        <option value="Wholesale / Distributor Supply">
+                          Wholesale / Distribution
+                        </option>
+                        <option value="Residential Rooftop Solar">Residential Solar</option>
+                        <option value="Lithium Battery & Inverter Storage">
+                          Battery & Storage
+                        </option>
+                        <option value="Warranty & Support">Warranty & Support</option>
+                        <option value="General Inquiry">General Inquiry</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Messages Table */}
+                  <div className="rounded-2xl bg-white dark:bg-[#0c1813] border border-slate-200/80 dark:border-white/10 shadow-xs overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-100 dark:border-white/10 bg-slate-50/70 dark:bg-white/5 font-extrabold uppercase text-slate-500 tracking-wider">
+                            <th className="p-3.5">Date</th>
+                            <th className="p-3.5">Customer & Organization</th>
+                            <th className="p-3.5">Category & Capacity</th>
+                            <th className="p-3.5">Contact Details</th>
+                            <th className="p-3.5">Inquiry Summary</th>
+                            <th className="p-3.5 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-white/5 font-medium">
+                          {effectiveContactMessages.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="p-8 text-center text-slate-400">
+                                No contact inquiries found.
+                              </td>
+                            </tr>
+                          ) : (
+                            effectiveContactMessages
+                              .filter((m) => {
+                                if (
+                                  selectedInquiryCategory !== "All" &&
+                                  m.inquiryType !== selectedInquiryCategory
+                                )
+                                  return false;
+                                if (!inquirySearchQuery) return true;
+                                const q = inquirySearchQuery.toLowerCase();
+                                return (
+                                  m.name.toLowerCase().includes(q) ||
+                                  m.email.toLowerCase().includes(q) ||
+                                  (m.phone && m.phone.toLowerCase().includes(q)) ||
+                                  (m.company && m.company.toLowerCase().includes(q)) ||
+                                  (m.district && m.district.toLowerCase().includes(q)) ||
+                                  m.message.toLowerCase().includes(q)
+                                );
+                              })
+                              .map((msg) => (
+                                <tr
+                                  key={msg.id}
+                                  className="hover:bg-slate-50/80 dark:hover:bg-white/5 transition-colors"
+                                >
+                                  <td className="p-3.5 font-mono text-[11px] text-slate-500 whitespace-nowrap">
+                                    {new Date(msg.createdAt).toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })}
+                                  </td>
+                                  <td className="p-3.5">
+                                    <div className="font-bold text-[#173226] dark:text-white flex items-center gap-2">
+                                      <span>{msg.name}</span>
+                                      {msg.company && (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                          {msg.company}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {msg.district && (
+                                      <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                                        District: {msg.district}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="p-3.5 whitespace-nowrap">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-300">
+                                      {msg.inquiryType || "General"}
+                                    </span>
+                                    {msg.systemSize && (
+                                      <div className="text-[11px] font-mono font-bold text-amber-600 dark:text-amber-400 mt-1">
+                                        Capacity: {msg.systemSize}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="p-3.5">
+                                    <div className="font-mono text-slate-700 dark:text-slate-200">
+                                      {msg.email}
+                                    </div>
+                                    {msg.phone && (
+                                      <div className="font-mono text-[11px] text-slate-400 mt-0.5">
+                                        {msg.phone}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="p-3.5 max-w-xs">
+                                    <div className="truncate text-slate-600 dark:text-slate-300">
+                                      {msg.message}
+                                    </div>
+                                  </td>
+                                  <td className="p-3.5 text-right whitespace-nowrap">
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => setSelectedInquiryForView(msg)}
+                                        className="h-8 px-2.5 rounded-lg text-xs font-bold text-[#12342B] dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
+                                      >
+                                        View Details
+                                      </Button>
+                                      <a
+                                        href={`mailto:${msg.email}?subject=OMSUN Nepal Follow-up: ${encodeURIComponent(msg.inquiryType || "Solar Inquiry")}`}
+                                        className="p-1.5 rounded-lg text-slate-500 hover:text-[#38B46A] hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                                        title="Send Email"
+                                      >
+                                        <Mail className="size-4" />
+                                      </a>
+                                      {msg.phone && (
+                                        <a
+                                          href={`tel:${msg.phone}`}
+                                          className="p-1.5 rounded-lg text-slate-500 hover:text-[#38B46A] hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                                          title="Call Customer"
+                                        >
+                                          <Phone className="size-4" />
+                                        </a>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: NEWSLETTER SUBSCRIBERS */}
+              {inquiryTab === "subscribers" && (
+                <div className="space-y-4">
+                  <div className="bg-white dark:bg-[#0c1813] p-4 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-xs flex items-center justify-between gap-3">
+                    <div className="text-xs text-slate-500">
+                      Total Verified Subscribers:{" "}
+                      <span className="font-bold text-[#173226] dark:text-white">
+                        {effectiveSubscribers.length}
+                      </span>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        const emailList = effectiveSubscribers.map((s) => s.email).join(", ");
+                        navigator.clipboard.writeText(emailList);
+                        toast.success("All subscriber emails copied to clipboard!");
+                      }}
+                      className="rounded-xl bg-[#12342B] text-white text-xs font-bold h-8 px-3 gap-1.5 cursor-pointer"
+                    >
+                      <Copy className="size-3.5" /> Copy All Emails
+                    </Button>
+                  </div>
+
+                  <div className="rounded-2xl bg-white dark:bg-[#0c1813] border border-slate-200/80 dark:border-white/10 shadow-xs overflow-hidden">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-100 dark:border-white/10 bg-slate-50/70 dark:bg-white/5 font-extrabold uppercase text-slate-500 tracking-wider">
+                          <th className="p-3.5">ID</th>
+                          <th className="p-3.5">Subscriber Email</th>
+                          <th className="p-3.5">Subscribed Date</th>
+                          <th className="p-3.5">Status</th>
+                          <th className="p-3.5 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-white/5 font-medium">
+                        {effectiveSubscribers.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="p-8 text-center text-slate-400">
+                              No subscribers found.
+                            </td>
+                          </tr>
+                        ) : (
+                          effectiveSubscribers.map((sub, idx) => (
+                            <tr key={sub.id} className="hover:bg-slate-50/80 dark:hover:bg-white/5">
+                              <td className="p-3.5 font-mono text-slate-400">#{idx + 1}</td>
+                              <td className="p-3.5 font-bold font-mono text-slate-800 dark:text-slate-100">
+                                {sub.email}
+                              </td>
+                              <td className="p-3.5 font-mono text-slate-500">
+                                {new Date(sub.createdAt).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </td>
+                              <td className="p-3.5">
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                  Active
+                                </span>
+                              </td>
+                              <td className="p-3.5 text-right">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(sub.email);
+                                    toast.success(`Copied ${sub.email}`);
+                                  }}
+                                  className="h-7 px-2 text-slate-500 hover:text-[#38B46A] cursor-pointer"
+                                >
+                                  <Copy className="size-3.5" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════════════ */}
+          {/* SECTION 6: CLIENT ACCOUNTS & CONTRACTORS */}
+          {/* ════════════════════════════════════════════════════════════ */}
+          {activeSection === "customers" && (
+            <div className="space-y-5 sm:space-y-6">
+              {/* Header with Search, Filter & Export */}
+              <div className="bg-white dark:bg-[#0c1813] p-4 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-white/10 shadow-xs space-y-3.5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-display font-extrabold text-lg text-[#173226] dark:text-white">
+                      Registered Client Accounts & Contractors
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Commercial solar installers, industrial clients, and residential customers
+                      across Nepal.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => exportCustomersCsv(filteredCustomers)}
+                    variant="outline"
+                    className="rounded-xl border-slate-200 dark:border-white/10 font-bold text-xs gap-1.5 h-9 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 shrink-0"
+                  >
+                    <Download className="size-3.5" /> Export Clients (CSV)
+                  </Button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-white/10">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+                    <Input
+                      placeholder="Search clients by name, email, phone number, or city..."
+                      value={customerSearchQuery}
+                      onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                      className="pl-9 rounded-xl text-xs h-9"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    {(["All", "VIP", "Active"] as const).map((st) => (
+                      <button
+                        key={st}
+                        type="button"
+                        onClick={() => setCustomerStatusFilter(st)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                          customerStatusFilter === st
+                            ? "bg-[#12342B] text-white shadow-xs"
+                            : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                        }`}
+                      >
+                        {st} Profiles
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Customers Table */}
+              <div className="rounded-2xl bg-white dark:bg-[#0c1813] border border-slate-200/80 dark:border-white/10 shadow-xs overflow-hidden">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-[#E2EDE7] dark:border-white/10 bg-[#F2FBF4] dark:bg-white/5 font-extrabold uppercase text-slate-500">
+                    <tr className="border-b border-slate-100 dark:border-white/10 bg-slate-50/70 dark:bg-white/5 font-extrabold uppercase text-slate-500 tracking-wider">
                       <th className="p-4">Client Profile</th>
                       <th className="p-4">Contact Information</th>
-                      <th className="p-4">Location</th>
+                      <th className="p-4">Location / Hub</th>
                       <th className="p-4">Orders Count</th>
                       <th className="p-4">Lifetime Spend (NPR)</th>
                       <th className="p-4">Account Status</th>
+                      <th className="p-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5 font-medium">
-                    {effectiveCustomers.map((cust) => (
-                      <tr key={cust.id} className="hover:bg-[#F2FBF4]/80 dark:hover:bg-white/5">
+                    {filteredCustomers.map((cust) => (
+                      <tr
+                        key={cust.id}
+                        className="hover:bg-slate-50/80 dark:hover:bg-white/5 transition-colors"
+                      >
                         <td className="p-4 font-bold text-[#173226] dark:text-white flex items-center gap-3">
                           <div className="size-9 rounded-full bg-[#12342B] text-[#38B46A] flex items-center justify-center font-extrabold text-xs">
                             {cust.name[0]}
@@ -2323,10 +2923,12 @@ function AdminDashboardPage() {
                           <div className="font-mono text-slate-700 dark:text-slate-300">
                             {cust.email}
                           </div>
-                          <div className="text-[10px] font-mono text-slate-400">{cust.phone}</div>
+                          <div className="text-[10px] font-mono text-slate-400">
+                            {cust.phone || "No phone recorded"}
+                          </div>
                         </td>
                         <td className="p-4 font-bold text-slate-600 dark:text-slate-300">
-                          {cust.city}
+                          {cust.city || "Kathmandu Valley"}
                         </td>
                         <td className="p-4 font-bold">{cust.totalOrders} Orders</td>
                         <td className="p-4 font-mono font-extrabold text-[#38B46A]">
@@ -2336,12 +2938,25 @@ function AdminDashboardPage() {
                           <span
                             className={`px-3 py-1 rounded-full text-[10px] font-bold border ${
                               cust.status === "VIP"
-                                ? "bg-[#FFFBEB] text-[#D97706] border-[#F4B400]/30"
-                                : "bg-[#ECFDF3] text-[#38B46A] border-[#38B46A]/30"
+                                ? "bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-300"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300"
                             }`}
                           >
                             {cust.status}
                           </span>
+                        </td>
+                        <td className="p-4 text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setOrderQuery(cust.email || cust.name);
+                              setActiveSection("orders");
+                            }}
+                            className="h-8 rounded-lg text-xs font-bold border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer"
+                          >
+                            View Orders
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -2422,45 +3037,189 @@ function AdminDashboardPage() {
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
                   <h3 className="font-display font-extrabold text-lg text-[#173226] dark:text-white">
-                    Financial Reports & Executive Telemetry
+                    Financial Reports & Commercial Performance
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Comprehensive sales, inventory turns & customer growth analytics
+                    Gross sales turnover, average order values, and inventory turns across Nepal
                   </p>
                 </div>
                 <Button
-                  onClick={() => toast.success("Exporting financial statement CSV...")}
-                  className="h-9 rounded-xl bg-[#12342B] text-white text-xs font-extrabold gap-1.5 cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => exportFinancialSummaryCsv(salesTrendData)}
+                  className="h-9 rounded-xl bg-[#12342B] text-white text-xs font-extrabold gap-1.5 cursor-pointer hover:bg-[#1a4a3e] shadow-xs"
                 >
                   <Download className="size-4" /> Export Report (CSV)
                 </Button>
               </div>
 
-              <div className="rounded-3xl bg-white dark:bg-[#0c241c] p-4.5 sm:p-6 border border-[#E2EDE7] dark:border-white/10 shadow-sm space-y-4">
-                <h4 className="font-display font-extrabold text-base text-[#173226] dark:text-white">
-                  Monthly Revenue Performance (NPR)
-                </h4>
-                <div className="h-64 sm:h-72 w-full pt-4">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={salesTrendData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2EDE7" />
-                      <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#64748b" }} />
-                      <YAxis
-                        tick={{ fontSize: 10, fill: "#64748b" }}
-                        tickFormatter={(val) => `Rs ${(val / 100000).toFixed(0)}L`}
-                      />
-                      <RechartsTooltip
-                        contentStyle={{
-                          backgroundColor: "#12342B",
-                          borderRadius: "12px",
-                          color: "#fff",
-                          fontSize: "12px",
-                        }}
-                        formatter={(val: any) => [formatNPR(Number(val)), "Revenue"]}
-                      />
-                      <Bar dataKey="revenue" fill="#38B46A" radius={[8, 8, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+              {/* Financial KPI Stat Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <div className="p-4 rounded-2xl bg-white dark:bg-[#0c1813] border border-slate-200/80 dark:border-white/10 shadow-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Gross Sales Volume
+                    </span>
+                    <span className="p-1.5 rounded-lg bg-emerald-50 text-[#38B46A] dark:bg-emerald-950/40">
+                      <DollarSign className="size-4" />
+                    </span>
+                  </div>
+                  <div className="text-xl font-display font-black text-[#173226] dark:text-white">
+                    {formatNPR(totalRevenue)}
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-1">
+                    Across {effectiveOrders.filter((o) => o.paymentStatus === "Paid").length}{" "}
+                    settled transactions
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white dark:bg-[#0c1813] border border-slate-200/80 dark:border-white/10 shadow-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Average Order Value
+                    </span>
+                    <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40">
+                      <ShoppingBag className="size-4" />
+                    </span>
+                  </div>
+                  <div className="text-xl font-display font-black text-[#173226] dark:text-white">
+                    {formatNPR(
+                      effectiveOrders.length > 0
+                        ? Math.round(totalRevenue / effectiveOrders.length)
+                        : 0,
+                    )}
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-1">
+                    Calculated across all customer orders
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white dark:bg-[#0c1813] border border-slate-200/80 dark:border-white/10 shadow-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Order Fulfillment Rate
+                    </span>
+                    <span className="p-1.5 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950/40">
+                      <PackageCheck className="size-4" />
+                    </span>
+                  </div>
+                  <div className="text-xl font-display font-black text-[#173226] dark:text-white">
+                    {effectiveOrders.length > 0
+                      ? `${Math.round((effectiveOrders.filter((o) => o.orderStatus === "Delivered").length / effectiveOrders.length) * 100)}%`
+                      : "100%"}
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-1">
+                    {effectiveOrders.filter((o) => o.orderStatus === "Delivered").length} of{" "}
+                    {effectiveOrders.length} orders delivered
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white dark:bg-[#0c1813] border border-slate-200/80 dark:border-white/10 shadow-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Active Catalog SKUs
+                    </span>
+                    <span className="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40">
+                      <Boxes className="size-4" />
+                    </span>
+                  </div>
+                  <div className="text-xl font-display font-black text-[#173226] dark:text-white">
+                    {effectiveProducts.length} Items
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-1">
+                    {lowStockCount} requiring stock replenishment
+                  </div>
+                </div>
+              </div>
+
+              {/* Charts Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
+                {/* Monthly Revenue Performance Bar Chart */}
+                <div className="lg:col-span-2 rounded-3xl bg-white dark:bg-[#0c1813] p-4.5 sm:p-6 border border-slate-200/80 dark:border-white/10 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-display font-extrabold text-base text-[#173226] dark:text-white">
+                        Monthly Revenue Trend (NPR)
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        Monthly aggregated turnover over the past 8 reporting periods
+                      </p>
+                    </div>
+                  </div>
+                  <div className="h-64 sm:h-72 w-full pt-4">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={salesTrendData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2EDE7" />
+                        <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#64748b" }} />
+                        <YAxis
+                          tick={{ fontSize: 10, fill: "#64748b" }}
+                          tickFormatter={(val) => `Rs ${(val / 100000).toFixed(0)}L`}
+                        />
+                        <RechartsTooltip
+                          contentStyle={{
+                            backgroundColor: "#12342B",
+                            borderRadius: "12px",
+                            color: "#fff",
+                            fontSize: "12px",
+                          }}
+                          formatter={(val: any) => [formatNPR(Number(val)), "Revenue"]}
+                        />
+                        <Bar dataKey="revenue" fill="#38B46A" radius={[6, 6, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Category Revenue Distribution Donut Chart */}
+                <div className="rounded-3xl bg-white dark:bg-[#0c1813] p-4.5 sm:p-6 border border-slate-200/80 dark:border-white/10 shadow-xs space-y-4">
+                  <div>
+                    <h4 className="font-display font-extrabold text-base text-[#173226] dark:text-white">
+                      Sales by Category
+                    </h4>
+                    <p className="text-xs text-slate-500">Share of turnover by equipment type</p>
+                  </div>
+                  <div className="h-56 w-full relative flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={categoryDistributionData}
+                          innerRadius={55}
+                          outerRadius={80}
+                          paddingAngle={3}
+                          dataKey="value"
+                        >
+                          {categoryDistributionData.map((entry, idx) => (
+                            <Cell key={`cell-${idx}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip
+                          contentStyle={{
+                            backgroundColor: "#12342B",
+                            borderRadius: "12px",
+                            color: "#fff",
+                            fontSize: "12px",
+                          }}
+                          formatter={(val: any) => [`${val}%`, "Share"]}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-white/10">
+                    {categoryDistributionData.map((cat) => (
+                      <div key={cat.name} className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="size-2.5 rounded-full"
+                            style={{ backgroundColor: cat.color }}
+                          />
+                          <span className="font-medium text-slate-600 dark:text-slate-300">
+                            {cat.name}
+                          </span>
+                        </div>
+                        <span className="font-mono font-bold text-slate-900 dark:text-white">
+                          {cat.value}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -2555,54 +3314,276 @@ function AdminDashboardPage() {
           {/* ════════════════════════════════════════════════════════════ */}
           {activeSection === "settings" && (
             <div className="space-y-5 sm:space-y-6">
-              <div>
-                <h3 className="font-display font-extrabold text-lg text-[#173226] dark:text-white">
-                  OMSUN System Administration & Store Settings
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Configure store details, tax registration, and permissions
-                </p>
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <h3 className="font-display font-extrabold text-lg text-[#173226] dark:text-white">
+                    Store Configuration & Operational Parameters
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Business legal entity, Nepal Inland Revenue tax credentials, and delivery
+                    tariffs
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      toast.info(
+                        `Test notification dispatched to ${storeSettings.notificationEmail || "sales@omsunnepal.com"}`,
+                      );
+                      setNotificationsList((prev) => [
+                        {
+                          id: `test-${Date.now()}`,
+                          title: "Test System Notification",
+                          message:
+                            "Notification channel verified operational for Kathmandu dispatch.",
+                          timestamp: "Just now",
+                          read: false,
+                          type: "system",
+                        },
+                        ...prev,
+                      ]);
+                    }}
+                    className="h-9 rounded-xl border-slate-200 dark:border-white/10 text-xs font-bold gap-1.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5"
+                  >
+                    <Sparkles className="size-3.5 text-amber-500" /> Test Notification Channel
+                  </Button>
+                  <Button
+                    onClick={() => handleSaveStoreSettings(storeSettings)}
+                    className="h-9 px-4 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white font-extrabold text-xs cursor-pointer shadow-xs"
+                  >
+                    Save Store Settings
+                  </Button>
+                </div>
               </div>
 
-              <div className="rounded-3xl bg-white dark:bg-[#0c241c] p-4.5 sm:p-6 border border-[#E2EDE7] dark:border-white/10 shadow-sm space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-[#173226] dark:text-slate-200">
-                      Company Legal Name
-                    </label>
-                    <Input
-                      defaultValue="OMSUN Solar & Renewable Energy Pvt. Ltd."
-                      className="rounded-xl"
-                    />
+              {/* Settings Form Cards */}
+              <div className="space-y-5">
+                {/* Legal & Tax Registration */}
+                <div className="rounded-3xl bg-white dark:bg-[#0c1813] p-5 sm:p-6 border border-slate-200/80 dark:border-white/10 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-white/10">
+                    <div className="p-2 rounded-xl bg-emerald-50 text-[#38B46A] dark:bg-emerald-950/40">
+                      <ShieldCheck className="size-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-display font-extrabold text-sm text-[#173226] dark:text-white">
+                        Legal Entity & Tax Credentials
+                      </h4>
+                      <p className="text-xs text-slate-400">
+                        Official registration on Nepal Inland Revenue Department (IRD) records
+                      </p>
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-[#173226] dark:text-slate-200">
-                      Nepal PAN / VAT Number
-                    </label>
-                    <Input defaultValue="601982340" className="rounded-xl font-mono" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-[#173226] dark:text-slate-200">
-                      Default Currency
-                    </label>
-                    <Input
-                      defaultValue="NPR (Nepalese Rupee)"
-                      disabled
-                      className="rounded-xl font-bold text-[#38B46A]"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-[#173226] dark:text-slate-200">
-                      Nepal Value Added Tax (VAT)
-                    </label>
-                    <Input defaultValue="13%" className="rounded-xl font-mono" />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-[#173226] dark:text-slate-200">
+                        Company Registered Name
+                      </label>
+                      <Input
+                        value={storeSettings.companyName}
+                        onChange={(e) =>
+                          setStoreSettings((prev: any) => ({
+                            ...prev,
+                            companyName: e.target.value,
+                          }))
+                        }
+                        className="rounded-xl text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-[#173226] dark:text-slate-200">
+                        Nepal PAN / VAT Number
+                      </label>
+                      <Input
+                        value={storeSettings.panVatNumber}
+                        onChange={(e) =>
+                          setStoreSettings((prev: any) => ({
+                            ...prev,
+                            panVatNumber: e.target.value,
+                          }))
+                        }
+                        className="rounded-xl font-mono text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-[#173226] dark:text-slate-200">
+                        Operating Base Currency
+                      </label>
+                      <Input
+                        value="NPR (Nepalese Rupee — रु)"
+                        disabled
+                        className="rounded-xl font-bold text-[#38B46A] bg-slate-50 dark:bg-white/5"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-[#173226] dark:text-slate-200">
+                        Inland Revenue VAT Assessment Rate
+                      </label>
+                      <Input
+                        value="13% (Standard Nepal VAT)"
+                        disabled
+                        className="rounded-xl font-mono text-xs bg-slate-50 dark:bg-white/5"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex justify-end">
+                {/* Operations & Hub Contacts */}
+                <div className="rounded-3xl bg-white dark:bg-[#0c1813] p-5 sm:p-6 border border-slate-200/80 dark:border-white/10 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-white/10">
+                    <div className="p-2 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/40">
+                      <Phone className="size-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-display font-extrabold text-sm text-[#173226] dark:text-white">
+                        Customer Hotline & Fulfillment Center
+                      </h4>
+                      <p className="text-xs text-slate-400">
+                        Public support channels shown on receipts, invoices, and delivery manifests
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-[#173226] dark:text-slate-200">
+                        Support Hotline / Mobile
+                      </label>
+                      <Input
+                        value={storeSettings.supportPhone}
+                        onChange={(e) =>
+                          setStoreSettings((prev: any) => ({
+                            ...prev,
+                            supportPhone: e.target.value,
+                          }))
+                        }
+                        className="rounded-xl font-mono text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-[#173226] dark:text-slate-200">
+                        Inquiry / Sales Email
+                      </label>
+                      <Input
+                        value={storeSettings.supportEmail}
+                        onChange={(e) =>
+                          setStoreSettings((prev: any) => ({
+                            ...prev,
+                            supportEmail: e.target.value,
+                          }))
+                        }
+                        className="rounded-xl text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="font-bold text-[#173226] dark:text-slate-200">
+                        Central Distribution Warehouse Address
+                      </label>
+                      <Input
+                        value={storeSettings.hubAddress}
+                        onChange={(e) =>
+                          setStoreSettings((prev: any) => ({ ...prev, hubAddress: e.target.value }))
+                        }
+                        className="rounded-xl text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Logistics & Payment Configuration */}
+                <div className="rounded-3xl bg-white dark:bg-[#0c1813] p-5 sm:p-6 border border-slate-200/80 dark:border-white/10 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-white/10">
+                    <div className="p-2 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/40">
+                      <Truck className="size-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-display font-extrabold text-sm text-[#173226] dark:text-white">
+                        Delivery Logistics & Payment Gateway
+                      </h4>
+                      <p className="text-xs text-slate-400">
+                        Default shipping tariffs applied at checkout and Fonepay integration ID
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-[#173226] dark:text-slate-200">
+                        Kathmandu Valley Delivery Fee (NPR)
+                      </label>
+                      <Input
+                        type="number"
+                        value={storeSettings.valleyDeliveryFee}
+                        onChange={(e) =>
+                          setStoreSettings((prev: any) => ({
+                            ...prev,
+                            valleyDeliveryFee: Number(e.target.value),
+                          }))
+                        }
+                        className="rounded-xl font-mono text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-[#173226] dark:text-slate-200">
+                        Outside Valley Freight Tariff (NPR)
+                      </label>
+                      <Input
+                        type="number"
+                        value={storeSettings.outsideValleyDeliveryFee}
+                        onChange={(e) =>
+                          setStoreSettings((prev: any) => ({
+                            ...prev,
+                            outsideValleyDeliveryFee: Number(e.target.value),
+                          }))
+                        }
+                        className="rounded-xl font-mono text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-[#173226] dark:text-slate-200">
+                        Fonepay Merchant ID
+                      </label>
+                      <Input
+                        value={storeSettings.fonepayMerchantId}
+                        onChange={(e) =>
+                          setStoreSettings((prev: any) => ({
+                            ...prev,
+                            fonepayMerchantId: e.target.value,
+                          }))
+                        }
+                        className="rounded-xl font-mono text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 pt-2">
+                    <label className="font-bold text-[#173226] dark:text-slate-200">
+                      Automated Order & Inbound Quote Alert Email
+                    </label>
+                    <Input
+                      value={storeSettings.notificationEmail}
+                      onChange={(e) =>
+                        setStoreSettings((prev: any) => ({
+                          ...prev,
+                          notificationEmail: e.target.value,
+                        }))
+                      }
+                      placeholder="alerts@omsunnepal.com"
+                      className="rounded-xl text-xs"
+                    />
+                    <p className="text-[11px] text-slate-400">
+                      Receives instant notification upon customer checkout, payment slip upload, or
+                      solar sizing request.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
                   <Button
-                    onClick={() => toast.success("Store settings saved successfully!")}
-                    className="h-9 px-4 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white font-extrabold text-xs cursor-pointer hover:scale-105 transition-transform"
+                    onClick={() => handleSaveStoreSettings(storeSettings)}
+                    className="h-10 px-6 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white font-extrabold text-xs cursor-pointer shadow-xs hover:scale-105 transition-transform"
                   >
                     Save Store Settings
                   </Button>
@@ -2669,9 +3650,9 @@ function AdminDashboardPage() {
             });
             queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
             toast.success(`Coupon "${cpn.code}" created in database`);
-          } catch {
+          } catch (err: any) {
             setCouponsList((prev) => [cpn, ...prev]);
-            toast.success(`Coupon "${cpn.code}" saved locally`);
+            toast.warning(`Notice: ${err?.message || "Coupon saved to session cache"}`);
           }
         }}
       />
@@ -2708,13 +3689,13 @@ function AdminDashboardPage() {
             }
             queryClient.invalidateQueries({ queryKey: ["admin-banners"] });
             toast.success(`Banner "${ban.title}" saved to database`);
-          } catch {
+          } catch (err: any) {
             setBannersList((prev) =>
               prev.some((b) => b.id === ban.id)
                 ? prev.map((b) => (b.id === ban.id ? ban : b))
                 : [ban, ...prev],
             );
-            toast.success(`Banner saved locally`);
+            toast.warning(`Notice: ${err?.message || "Banner updated in session cache"}`);
           }
         }}
       />
@@ -2734,12 +3715,136 @@ function AdminDashboardPage() {
             });
             queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
             toast.success(`Partner "${prt.name}" added to database`);
-          } catch {
+          } catch (err: any) {
             setPartnersList((prev) => [prt, ...prev]);
-            toast.success(`Partner saved locally`);
+            toast.warning(`Notice: ${err?.message || "Partner updated in session cache"}`);
           }
         }}
       />
+
+      {/* Inquiry Detail Dialog */}
+      <Dialog
+        open={!!selectedInquiryForView}
+        onOpenChange={(open) => {
+          if (!open) setSelectedInquiryForView(null);
+        }}
+      >
+        <DialogContent className="max-w-xl rounded-3xl p-6 bg-white dark:bg-[#0c1813] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white">
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+                {selectedInquiryForView?.inquiryType || "Solar Inquiry"}
+              </span>
+              <span className="text-xs text-slate-400">
+                {selectedInquiryForView?.createdAt
+                  ? new Date(selectedInquiryForView.createdAt).toLocaleString("en-US", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })
+                  : ""}
+              </span>
+            </div>
+            <DialogTitle className="text-xl font-display font-black text-[#173226] dark:text-white">
+              {selectedInquiryForView?.name}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Customer inquiry and commercial project requirements received via OMSUN portal.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedInquiryForView && (
+            <div className="space-y-4 pt-2">
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                    Email Address
+                  </span>
+                  <a
+                    href={`mailto:${selectedInquiryForView.email}`}
+                    className="font-medium text-blue-600 dark:text-blue-400 hover:underline break-all"
+                  >
+                    {selectedInquiryForView.email}
+                  </a>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                    Phone Number
+                  </span>
+                  {selectedInquiryForView.phone ? (
+                    <a
+                      href={`tel:${selectedInquiryForView.phone}`}
+                      className="font-medium text-[#38B46A] hover:underline"
+                    >
+                      {selectedInquiryForView.phone}
+                    </a>
+                  ) : (
+                    <span className="text-slate-400 italic">Not provided</span>
+                  )}
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                    District / Location
+                  </span>
+                  <span className="font-bold text-[#173226] dark:text-white">
+                    {selectedInquiryForView.district || "Kathmandu Valley"}
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                    System Size / Scope
+                  </span>
+                  <span className="font-mono text-slate-700 dark:text-slate-200">
+                    {selectedInquiryForView.systemSize || "Not specified"}
+                  </span>
+                </div>
+                {selectedInquiryForView.company && (
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 col-span-2">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                      Company / Organization
+                    </span>
+                    <span className="font-bold text-[#173226] dark:text-white">
+                      {selectedInquiryForView.company}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                  Customer Message / Specifications
+                </span>
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 text-xs leading-relaxed text-slate-700 dark:text-slate-200 whitespace-pre-wrap">
+                  {selectedInquiryForView.message}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-white/10">
+                {selectedInquiryForView.phone && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      window.location.href = `tel:${selectedInquiryForView.phone}`;
+                    }}
+                    className="rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+                  >
+                    <Phone className="size-3.5 text-[#38B46A]" /> Call Client
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    window.location.href = `mailto:${selectedInquiryForView.email}?subject=Re:%20OMSUN%20Inquiry%20#${selectedInquiryForView.id}%20-%20${encodeURIComponent(selectedInquiryForView.inquiryType || "Solar Solution")}`;
+                  }}
+                  className="rounded-xl bg-[#12342B] hover:bg-[#1a4a3e] text-white text-xs font-bold gap-1.5 cursor-pointer"
+                >
+                  <Mail className="size-3.5" /> Reply by Email
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

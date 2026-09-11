@@ -5,6 +5,7 @@ import {
   FolderTree,
   Boxes,
   ShoppingBag,
+  MessageSquare,
   Users,
   Ticket,
   BarChart3,
@@ -26,6 +27,7 @@ export type AdminSection =
   | "categories"
   | "inventory"
   | "orders"
+  | "inquiries"
   | "customers"
   | "coupons"
   | "reports"
@@ -39,6 +41,7 @@ interface AdminSidebarProps {
   onToggleCollapse: () => void;
   pendingOrdersCount?: number;
   lowStockCount?: number;
+  inquiriesCount?: number;
 }
 
 export function AdminSidebar({
@@ -46,8 +49,9 @@ export function AdminSidebar({
   onSelectSection,
   collapsed,
   onToggleCollapse,
-  pendingOrdersCount = 2,
-  lowStockCount = 1,
+  pendingOrdersCount = 0,
+  lowStockCount = 0,
+  inquiriesCount = 0,
 }: AdminSidebarProps) {
   const { user, logout } = useAuth();
 
@@ -65,15 +69,27 @@ export function AdminSidebar({
       id: "inventory",
       label: "Inventory Control",
       icon: Boxes,
-      ...(lowStockCount > 0 ? { badge: lowStockCount, badgeColor: "bg-amber-500 text-black font-bold" } : {}),
+      ...(lowStockCount > 0
+        ? { badge: lowStockCount, badgeColor: "bg-amber-500 text-black font-bold" }
+        : {}),
     },
     {
       id: "orders",
-      label: "Order Management",
+      label: "Order Fulfillment",
       icon: ShoppingBag,
-      ...(pendingOrdersCount > 0 ? { badge: pendingOrdersCount, badgeColor: "bg-emerald-500 text-black font-bold" } : {}),
+      ...(pendingOrdersCount > 0
+        ? { badge: pendingOrdersCount, badgeColor: "bg-emerald-500 text-black font-bold" }
+        : {}),
     },
-    { id: "customers", label: "Customers", icon: Users },
+    {
+      id: "inquiries",
+      label: "Inquiries & Leads",
+      icon: MessageSquare,
+      ...(inquiriesCount > 0
+        ? { badge: inquiriesCount, badgeColor: "bg-sky-400 text-black font-bold" }
+        : {}),
+    },
+    { id: "customers", label: "Client Accounts", icon: Users },
     { id: "coupons", label: "Coupons / Promos", icon: Ticket },
     { id: "reports", label: "Reports & Analytics", icon: BarChart3 },
     { id: "partners", label: "Partner Brands", icon: Handshake },
@@ -98,11 +114,9 @@ export function AdminSidebar({
           {!collapsed && (
             <div className="flex flex-col truncate">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#38B46A] bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30 w-fit">
-                COMMAND CENTER
+                Store Operations
               </span>
-              <span className="text-[10px] font-mono text-slate-400 mt-0.5">
-                v2.6 Admin
-              </span>
+              <span className="text-[10px] font-mono text-slate-300 mt-0.5">OMSUN Nepal</span>
             </div>
           )}
         </div>
@@ -121,7 +135,7 @@ export function AdminSidebar({
         <div className="mx-4 mt-3 px-3 py-2 rounded-xl bg-[#0b251d] border border-[#184537] flex items-center justify-between text-[11px] text-emerald-400 font-mono font-medium">
           <div className="flex items-center gap-1.5">
             <Radio className="size-3 text-emerald-400 animate-pulse" />
-            <span>NEA Net-Grid Active</span>
+            <span>OMSUN Store Online</span>
           </div>
           <span className="text-[10px] text-slate-400 font-sans">Nepal GMT+5:45</span>
         </div>
@@ -181,7 +195,10 @@ export function AdminSidebar({
               return (
                 <Tooltip key={item.id}>
                   <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
-                  <TooltipContent side="right" className="bg-[#0b241c] text-white border-[#1e4a3d] font-bold text-xs">
+                  <TooltipContent
+                    side="right"
+                    className="bg-[#0b241c] text-white border-[#1e4a3d] font-bold text-xs"
+                  >
                     {item.label}
                   </TooltipContent>
                 </Tooltip>

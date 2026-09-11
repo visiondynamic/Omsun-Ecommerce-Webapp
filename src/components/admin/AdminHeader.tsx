@@ -24,11 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 
@@ -42,17 +38,65 @@ interface AdminHeaderProps {
   onSelectSection: (section: AdminSection) => void;
 }
 
-const SECTION_TITLES: Record<AdminSection, { title: string; subtitle: string; actionLabel?: string }> = {
-  overview: { title: "Dashboard Overview", subtitle: "System Telemetry & Real-Time E-Commerce Analytics", actionLabel: "Generate Report" },
-  products: { title: "Product Catalog", subtitle: "Solar, Inverters, Storage & Electrical Hardware SKUs", actionLabel: "Add Product" },
-  categories: { title: "Categories Management", subtitle: "5 Core Hardware Verticals: UPS, Stabilizer, Security, Solar & Battery", actionLabel: "Add Category" },
-  inventory: { title: "Inventory Control", subtitle: "Real-time Stock Levels, Low Stock Alerts & Warehouse Telemetry", actionLabel: "Update Stock" },
-  orders: { title: "Order Management", subtitle: "Customer Purchases, Dispatch Status & Payment Records", actionLabel: "Export Orders" },
-  customers: { title: "Customer Database", subtitle: "Registered Accounts, Purchasing History & VIP Profiles", actionLabel: "Add Customer" },
-  coupons: { title: "Coupons & Promotions", subtitle: "Discount Codes, Seasonal Deals & Campaign Management", actionLabel: "Create Coupon" },
-  reports: { title: "Reports & Financial Analytics", subtitle: "Revenue Breakdown, Sales Growth & Stock Movement", actionLabel: "Export CSV" },
-  partners: { title: "Partner Brands", subtitle: "Authorized Distribution (Dyna, Excite, Luminous, Smarten)", actionLabel: "Add Partner" },
-  settings: { title: "Admin & Store Settings", subtitle: "Store Details, Nepal Tax, NPR Currency & Staff Permissions", actionLabel: "Save Changes" },
+const SECTION_TITLES: Record<
+  AdminSection,
+  { title: string; subtitle: string; actionLabel?: string }
+> = {
+  overview: {
+    title: "Dashboard Overview",
+    subtitle: "Store Operations & Real-Time E-Commerce Analytics",
+    actionLabel: "Generate Report",
+  },
+  products: {
+    title: "Product Catalog",
+    subtitle: "Solar, Inverters, Storage & Electrical Hardware SKUs",
+    actionLabel: "Add Product",
+  },
+  categories: {
+    title: "Categories Management",
+    subtitle: "5 Core Hardware Verticals: UPS, Stabilizer, Security, Solar & Battery",
+    actionLabel: "Add Category",
+  },
+  inventory: {
+    title: "Inventory Control",
+    subtitle: "Real-time Stock Levels, Low Stock Alerts & Warehouse Tracking",
+    actionLabel: "Update Stock",
+  },
+  orders: {
+    title: "Order Fulfillment",
+    subtitle: "Customer Purchases, Fonepay Verification & Courier Dispatch",
+    actionLabel: "Export Orders",
+  },
+  inquiries: {
+    title: "Inquiries & Project Leads",
+    subtitle: "Solar EPC quotes, customer messages & newsletter subscribers",
+    actionLabel: "Export Leads",
+  },
+  customers: {
+    title: "Client Accounts",
+    subtitle: "Registered Accounts, Purchasing History & VIP Profiles",
+    actionLabel: "Export Clients",
+  },
+  coupons: {
+    title: "Coupons & Promotions",
+    subtitle: "Discount Codes, Seasonal Deals & Campaign Management",
+    actionLabel: "Create Coupon",
+  },
+  reports: {
+    title: "Reports & Financial Analytics",
+    subtitle: "Revenue Breakdown, Sales Growth & Stock Movement",
+    actionLabel: "Export CSV",
+  },
+  partners: {
+    title: "Partner Brands",
+    subtitle: "Authorized Distribution (Dyna, Excite, Luminous, Smarten)",
+    actionLabel: "Add Partner",
+  },
+  settings: {
+    title: "Admin & Store Settings",
+    subtitle: "Store Details, Nepal Tax, NPR Currency & Staff Permissions",
+    actionLabel: "Save Changes",
+  },
 };
 
 export function AdminHeader({
@@ -232,7 +276,10 @@ export function AdminHeader({
                 <ChevronDown className="size-3.5 text-slate-400" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-1.5 bg-white dark:bg-[#0c241c] border-[#E2EDE7] dark:border-white/10 shadow-xl">
+            <DropdownMenuContent
+              align="end"
+              className="w-56 rounded-2xl p-1.5 bg-white dark:bg-[#0c241c] border-[#E2EDE7] dark:border-white/10 shadow-xl"
+            >
               <DropdownMenuLabel className="p-2">
                 <div className="text-xs font-bold text-[#173226] dark:text-white">
                   {user?.name || "Executive Admin"}
