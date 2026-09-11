@@ -149,29 +149,31 @@ export function ProductFormModal({
         const currentImages = prev.images || (prev.image ? [prev.image] : []);
         return {
           ...prev,
-          image: prev.image || previewDataUrls[0],
+          image: prev.image || previewDataUrls[0] || "",
           images: [...currentImages, ...previewDataUrls],
         };
       });
 
       // Concurrently upload to server
       const uploadedMap = new Map<string, string>(); // dataUrl -> serverUrl
-      for (const item of loadedPreviews) {
-        try {
-          const res = await api.uploadImage(item.file);
-          if (res?.url) {
-            uploadedMap.set(item.dataUrl, res.url);
+      await Promise.all(
+        loadedPreviews.map(async (item) => {
+          try {
+            const res = await api.uploadImage(item.file);
+            if (res?.url) {
+              uploadedMap.set(item.dataUrl, res.url);
+            }
+          } catch (err: any) {
+            console.warn("[upload] Gallery item upload error, fallback to preview:", item.file.name, err);
           }
-        } catch (err) {
-          console.warn("[upload] Gallery item fallback to preview data:", item.file.name);
-        }
-      }
+        })
+      );
 
       // Replace uploaded server URLs
       setFormData((prev) => {
         const currentImages = prev.images || [];
         const mappedImages = currentImages.map((img) => uploadedMap.get(img) || img);
-        const nextPrimary = uploadedMap.get(prev.image || "") || prev.image || mappedImages[0];
+        const nextPrimary = uploadedMap.get(prev.image || "") || prev.image || mappedImages[0] || "";
         return {
           ...prev,
           image: nextPrimary,
@@ -212,7 +214,7 @@ export function ProductFormModal({
       const newPrimary = nextImages[0] || "";
       return {
         ...prev,
-        image: prev.image === currentImages[indexToRemove] ? newPrimary : prev.image,
+        image: (prev.image === currentImages[indexToRemove] ? newPrimary : prev.image) || "",
         images: nextImages,
       };
     });
@@ -300,6 +302,10 @@ export function ProductFormModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isUploading) {
+      toast.info("Please wait a moment while showcase photos are uploading to the server...");
+      return;
+    }
     if (!formData.name || !formData.price) {
       toast.error("Please provide a valid product name and price");
       return;
@@ -316,7 +322,9 @@ export function ProductFormModal({
           .filter(Boolean)
       : formData.badges || [];
 
-    const galleryList = (formData.images || []).filter((img) => typeof img === "string" && img.trim().length > 0);
+    const galleryList = (formData.images || []).filter(
+      (img): img is string => typeof img === "string" && img.trim().length > 0 && !img.startsWith("blob:")
+    );
     const primaryImg = formData.image?.trim() || galleryList[0] || "";
     const finalGallery = galleryList.length > 0
       ? (primaryImg && !galleryList.includes(primaryImg) ? [primaryImg, ...galleryList] : galleryList)
@@ -865,11 +873,25 @@ export function ProductFormModal({
           </div>
 
           <DialogFooter className="pt-4 border-t border-slate-100 dark:border-white/10">
-            <Button type="button" variant="outline" onClick={onClose} className="rounded-xl text-xs font-bold">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isUploading} className="rounded-xl text-xs font-bold">
               Cancel
             </Button>
-            <Button type="submit" className="rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white font-extrabold text-xs gap-1.5">
-              <Check className="size-4" /> Save Hardware SKU
+            <Button
+              type="submit"
+              disabled={isUploading}
+              className="rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white font-extrabold text-xs gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>Uploading Media...</span>
+                </>
+              ) : (
+                <>
+                  <Check className="size-4" />
+                  <span>Save Hardware SKU</span>
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

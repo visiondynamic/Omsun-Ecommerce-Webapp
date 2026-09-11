@@ -82,10 +82,14 @@ function ProductPage() {
 
   const product = apiProduct ?? fallbackProduct;
   const allProducts = apiProducts ?? fallbackProducts;
-  const gallery =
+  const rawGallery =
     product.images && product.images.length > 0
       ? product.images
-      : [product.image];
+      : (product.image ? [product.image] : []);
+  const gallery =
+    product.image && !rawGallery.includes(product.image)
+      ? [product.image, ...rawGallery]
+      : rawGallery;
   const related = allProducts.filter((p) => p.id !== product.id).slice(0, 3);
   const out = product.stock === 0;
 

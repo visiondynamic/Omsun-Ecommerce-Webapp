@@ -17,14 +17,31 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Auto-ensure images column in products table
+// Auto-ensure images column and column types in products table
 async function ensureProductImagesColumn() {
   try {
-    await query("ALTER TABLE products ADD COLUMN IF NOT EXISTS images JSON NULL AFTER image");
+    await query("ALTER TABLE products ADD COLUMN IF NOT EXISTS images LONGTEXT NULL AFTER image");
   } catch {
     try {
-      await query("ALTER TABLE products ADD COLUMN images JSON NULL");
+      await query("ALTER TABLE products ADD COLUMN images LONGTEXT NULL");
     } catch {}
+  }
+  try {
+    await query("ALTER TABLE products MODIFY COLUMN image TEXT NULL");
+  } catch {}
+  try {
+    await query("ALTER TABLE products MODIFY COLUMN images LONGTEXT NULL");
+  } catch {}
+}
+
+// Helper for safe JSON parsing
+function safeParseJson(val, fallback = []) {
+  if (!val) return fallback;
+  if (typeof val === "object") return val;
+  try {
+    return JSON.parse(val);
+  } catch {
+    return fallback;
   }
 }
 
@@ -38,10 +55,10 @@ async function autoInitDatabase() {
       console.log("[omsun-api] Automatic setup & seeding completed!");
     } else {
       const rows = await query("SELECT COUNT(*) as count FROM products");
-      if (rows[0].count !== 32) {
-        console.log("[omsun-api] Upgrading catalog to official 32 products...");
+      if (rows[0].count === 0) {
+        console.log("[omsun-api] Products table empty. Running automatic setup & seeding...");
         await setup();
-        console.log("[omsun-api] Official 32 products synchronized!");
+        console.log("[omsun-api] Automatic setup & seeding completed!");
       }
     }
     await ensureProductImagesColumn();
@@ -494,7 +511,7 @@ app.get("/api/products", async (_req, res, next) => {
       price: Number(r.price),
       mrp: r.mrp ? Number(r.mrp) : null,
       rating: Number(r.rating) || 0,
-      images: typeof r.images === "string" ? JSON.parse(r.images) : r.images || [],
+      images: safeParseJson(r.images, r.image ? [r.image] : []),
       badges: typeof r.badges === "string" ? JSON.parse(r.badges) : r.badges || [],
     }));
     res.json(products);
@@ -515,7 +532,7 @@ app.get("/api/products/:id", async (req, res, next) => {
       price: Number(p.price),
       mrp: p.mrp ? Number(p.mrp) : null,
       rating: Number(p.rating) || 0,
-      images: typeof p.images === "string" ? JSON.parse(p.images) : p.images || [],
+      images: safeParseJson(p.images, p.image ? [p.image] : []),
       badges: typeof p.badges === "string" ? JSON.parse(p.badges) : p.badges || [],
       features: typeof p.features === "string" ? JSON.parse(p.features) : p.features || [],
       specs: typeof p.specs === "string" ? JSON.parse(p.specs) : p.specs || [],
@@ -731,70 +748,6 @@ app.post("/api/newsletter", async (req, res, next) => {
 });
 
 /* ═══════════════════════════════════════════════════════════════════ */
-/* ADMIN — Products CRUD                                              */
-/* ═══════════════════════════════════════════════════════════════════ */
-app.get("/api/admin/products", authMiddleware, adminMiddleware, async (_req, res, next) => {
-  try {
-    const rows = await query("SELECT * FROM products ORDER BY name");
-    const products = rows.map((r) => ({
-      ...r,
-      price: Number(r.price),
-      mrp: r.mrp ? Number(r.mrp) : null,
-      rating: Number(r.rating) || 0,
-      badges: typeof r.badges === "string" ? JSON.parse(r.badges) : r.badges || [],
-      features: typeof r.features === "string" ? JSON.parse(r.features) : r.features || [],
-      specs: typeof r.specs === "string" ? JSON.parse(r.specs) : r.specs || [],
-    }));
-    res.json(products);
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.post("/api/admin/products", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const { id, name, category, brand, tagline, description, price, mrp, image, features, specs, stock, rating, badges } = req.body ?? {};
-  if (!id || !name || !category || !brand || price == null) {
-    return res.status(400).json({ error: "id, name, category, brand, and price are required" });
-  }
-  try {
-    await query(
-      "INSERT INTO products (id, name, category, brand, tagline, description, price, mrp, image, features, specs, stock, rating, badges) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [id, name, category, brand, tagline || null, description || null, price, mrp || null, image || null, JSON.stringify(features || []), JSON.stringify(specs || []), stock || 0, rating || 0, JSON.stringify(badges || [])],
-    );
-    res.status(201).json({ ok: true, id });
-  } catch (err) {
-    if (err.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({ error: "Product ID already exists" });
-    }
-    next(err);
-  }
-});
-
-app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const { name, category, brand, tagline, description, price, mrp, image, features, specs, stock, rating, badges } = req.body ?? {};
-  try {
-    const existing = await query("SELECT id FROM products WHERE id = ?", [req.params.id]);
-    if (existing.length === 0) return res.status(404).json({ error: "Product not found" });
-    await query(
-      "UPDATE products SET name=COALESCE(?,name), category=COALESCE(?,category), brand=COALESCE(?,brand), tagline=COALESCE(?,tagline), description=COALESCE(?,description), price=COALESCE(?,price), mrp=COALESCE(?,mrp), image=COALESCE(?,image), features=COALESCE(?,features), specs=COALESCE(?,specs), stock=COALESCE(?,stock), rating=COALESCE(?,rating), badges=COALESCE(?,badges) WHERE id=?",
-      [name, category, brand, tagline, description, price, mrp, image, features ? JSON.stringify(features) : null, specs ? JSON.stringify(specs) : null, stock, rating, badges ? JSON.stringify(badges) : null, req.params.id],
-    );
-    res.json({ ok: true });
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.delete("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, res, next) => {
-  try {
-    await query("DELETE FROM products WHERE id = ?", [req.params.id]);
-    res.json({ ok: true });
-  } catch (err) {
-    next(err);
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════ */
 /* ADMIN — Orders Management                                          */
 /* ═══════════════════════════════════════════════════════════════════ */
 app.get("/api/admin/orders", authMiddleware, adminMiddleware, async (_req, res, next) => {
@@ -975,7 +928,7 @@ app.post("/api/upload", authMiddleware, adminMiddleware, async (req, res, next) 
 
     const ext = (fileName && path.extname(fileName)) || detectedExt;
     const cleanExt = ext.replace(/[^a-zA-Z0-9.]/g, "") || ".png";
-    const safeName = `omsun-${Date.now()}-${Math.random().toString(36).substring(2, 7)}${cleanExt}`;
+    const safeName = `omsun-${Date.now()}-${Math.random().toString(36).substring(2, 7)}${cleanExt.startsWith(".") ? cleanExt : `.${cleanExt}`}`;
     const targetPath = path.join(uploadsDir, safeName);
 
     await fs.promises.writeFile(targetPath, buffer);
@@ -999,10 +952,10 @@ app.get("/api/admin/products", authMiddleware, adminMiddleware, async (_req, res
       mrp: r.mrp ? Number(r.mrp) : null,
       rating: Number(r.rating) || 0,
       stock: Number(r.stock) || 0,
-      images: typeof r.images === "string" ? JSON.parse(r.images) : r.images || [],
-      badges: typeof r.badges === "string" ? JSON.parse(r.badges) : r.badges || [],
-      features: typeof r.features === "string" ? JSON.parse(r.features) : r.features || [],
-      specs: typeof r.specs === "string" ? JSON.parse(r.specs) : r.specs || [],
+      images: safeParseJson(r.images, r.image ? [r.image] : []),
+      badges: safeParseJson(r.badges, []),
+      features: safeParseJson(r.features, []),
+      specs: safeParseJson(r.specs, []),
     }));
     res.json(products);
   } catch (err) {
@@ -1036,6 +989,13 @@ app.post("/api/admin/products", authMiddleware, adminMiddleware, async (req, res
 
   try {
     const prodId = id || `sku-${Date.now().toString(36)}`;
+    const galleryList = Array.isArray(images)
+      ? images
+      : (typeof images === "string" ? safeParseJson(images, []) : (image ? [image] : []));
+    const finalImages = galleryList.length > 0
+      ? (image && !galleryList.includes(image) ? [image, ...galleryList] : galleryList)
+      : (image ? [image] : []);
+
     await query(
       `INSERT INTO products (id, name, category, subcategory, brand, tagline, description, price, mrp, image, images, features, specs, stock, rating, badges)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1050,7 +1010,7 @@ app.post("/api/admin/products", authMiddleware, adminMiddleware, async (req, res
         Number(price) || 0,
         mrp != null ? Number(mrp) : null,
         image || null,
-        JSON.stringify(images || (image ? [image] : [])),
+        JSON.stringify(finalImages),
         JSON.stringify(features || []),
         JSON.stringify(specs || []),
         Number(stock) || 0,
@@ -1087,9 +1047,21 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
   } = req.body ?? {};
 
   try {
-    const existing = await query("SELECT id FROM products WHERE id = ?", [req.params.id]);
+    const existing = await query("SELECT id, image, images FROM products WHERE id = ?", [req.params.id]);
     if (existing.length === 0) {
       return res.status(404).json({ error: "Product not found" });
+    }
+
+    let serializedImages = undefined;
+    if (images !== undefined) {
+      const parsedImages = Array.isArray(images)
+        ? images
+        : (typeof images === "string" ? safeParseJson(images, []) : []);
+      const primaryImg = image !== undefined ? image : existing[0].image;
+      const finalGallery = parsedImages.length > 0
+        ? (primaryImg && !parsedImages.includes(primaryImg) ? [primaryImg, ...parsedImages] : parsedImages)
+        : (primaryImg ? [primaryImg] : []);
+      serializedImages = JSON.stringify(finalGallery);
     }
 
     await query(
@@ -1103,7 +1075,7 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
          price = COALESCE(?, price),
          mrp = ?,
          image = COALESCE(?, image),
-         images = ?,
+         images = COALESCE(?, images),
          features = COALESCE(?, features),
          specs = COALESCE(?, specs),
          stock = COALESCE(?, stock),
@@ -1111,26 +1083,27 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
          badges = COALESCE(?, badges)
        WHERE id = ?`,
       [
-        name,
-        category,
+        name !== undefined ? name : null,
+        category !== undefined ? category : null,
         subcategory !== undefined ? subcategory : null,
-        brand,
+        brand !== undefined ? brand : null,
         tagline !== undefined ? tagline : null,
         description !== undefined ? description : null,
         price != null ? Number(price) : null,
         mrp != null ? Number(mrp) : null,
-        image,
-        images ? JSON.stringify(images) : (image ? JSON.stringify([image]) : null),
-        features ? JSON.stringify(features) : null,
-        specs ? JSON.stringify(specs) : null,
+        image !== undefined ? image : null,
+        serializedImages !== undefined ? serializedImages : null,
+        features !== undefined ? (features ? JSON.stringify(features) : JSON.stringify([])) : null,
+        specs !== undefined ? (specs ? JSON.stringify(specs) : JSON.stringify([])) : null,
         stock != null ? Number(stock) : null,
         rating != null ? Number(rating) : null,
-        badges ? JSON.stringify(badges) : null,
+        badges !== undefined ? (badges ? JSON.stringify(badges) : JSON.stringify([])) : null,
         req.params.id,
       ]
     );
     res.json({ ok: true });
   } catch (err) {
+    console.error("[omsun-api] PUT /api/admin/products/:id error:", err);
     next(err);
   }
 });

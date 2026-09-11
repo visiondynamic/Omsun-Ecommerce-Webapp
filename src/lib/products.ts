@@ -972,7 +972,7 @@ export function mapApiProductToProduct(apiProduct: {
   price: number;
   mrp: number | null;
   image: string | null;
-  images?: string[] | null;
+  images?: string[] | string | null;
   stock: number;
   rating: number;
   badges: string[];
@@ -980,14 +980,27 @@ export function mapApiProductToProduct(apiProduct: {
 }): Product {
   const resolvedImage = resolveDbImage(apiProduct.image, apiProduct.category, apiProduct.id);
   
+  let rawImages = apiProduct.images;
+  if (typeof rawImages === "string") {
+    try {
+      rawImages = JSON.parse(rawImages);
+    } catch {
+      rawImages = [];
+    }
+  }
+
   let resolvedImages: string[] = resolvedImage ? [resolvedImage] : [];
-  if (apiProduct.images && Array.isArray(apiProduct.images) && apiProduct.images.length > 0) {
-    const mapped = apiProduct.images
-      .filter((img) => typeof img === "string" && img.trim().length > 0)
+  if (rawImages && Array.isArray(rawImages) && rawImages.length > 0) {
+    const mapped = rawImages
+      .filter((img): img is string => typeof img === "string" && img.trim().length > 0)
       .map((img) => resolveDbImage(img, apiProduct.category, apiProduct.id))
       .filter((img) => img.length > 0);
     if (mapped.length > 0) {
-      resolvedImages = mapped;
+      if (resolvedImage && !mapped.includes(resolvedImage)) {
+        resolvedImages = [resolvedImage, ...mapped];
+      } else {
+        resolvedImages = mapped;
+      }
     }
   }
 

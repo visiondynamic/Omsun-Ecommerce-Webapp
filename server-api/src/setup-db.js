@@ -904,7 +904,7 @@ export async function setup() {
          price = VALUES(price), 
          mrp = VALUES(mrp), 
          image = VALUES(image), 
-         images = VALUES(images),
+         images = COALESCE(products.images, VALUES(images)),
          features = VALUES(features), 
          specs = VALUES(specs), 
          stock = VALUES(stock), 
@@ -935,7 +935,7 @@ export async function setup() {
   const activeProductIds = products.map((p) => p.id);
   if (activeProductIds.length > 0) {
     await conn.query("SET FOREIGN_KEY_CHECKS = 0");
-    await conn.query("DELETE FROM products WHERE id NOT IN (?)", [activeProductIds]);
+    await conn.query("DELETE FROM products WHERE id NOT IN (?) AND id NOT LIKE 'sku-%' AND id NOT LIKE 'prod-%' AND id NOT LIKE 'custom-%'", [activeProductIds]);
     await conn.query("SET FOREIGN_KEY_CHECKS = 1");
   }
   console.log(`✓ Synchronized all ${products.length} official products and purged obsolete items!`);
