@@ -1247,6 +1247,7 @@ app.put("/api/admin/orders/:ref/verify-payment", authMiddleware, adminMiddleware
 
       res.json({
         ok: true,
+        status: "PROCESSING",
         paymentStatus: "PAYMENT_VERIFIED",
         orderStatus: "PROCESSING",
         message: "Payment successfully verified and order is now processing",
@@ -1263,6 +1264,8 @@ app.put("/api/admin/orders/:ref/verify-payment", authMiddleware, adminMiddleware
         WHERE id = ?`,
         [reason, adminIdentifier, notes || null, order.id]
       );
+      // Restock inventory safely
+      await adjustInventoryForOrder(order.id, "RESTOCK");
 
       await logOrderStatusChange({
         orderId: order.id,
@@ -1303,15 +1306,14 @@ app.put("/api/admin/orders/:ref/verify-payment", authMiddleware, adminMiddleware
 
 /* 7. ADMIN — UPDATE DELIVERY INFORMATION */
 app.put("/api/admin/orders/:ref/delivery", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const {
-    deliveryStatus,
-    deliveryCarrier,
-    deliveryPerson,
-    deliveryPhone,
-    trackingNumber,
-    deliveryNotes,
-    estimatedDelivery,
-  } = req.body ?? {};
+  const body = req.body ?? {};
+  const deliveryStatus = body.deliveryStatus || body.status;
+  const deliveryCarrier = body.deliveryCarrier || body.carrier;
+  const deliveryPerson = body.deliveryPerson || body.person;
+  const deliveryPhone = body.deliveryPhone || body.phone;
+  const trackingNumber = body.trackingNumber || body.tracking;
+  const deliveryNotes = body.deliveryNotes || body.notes;
+  const estimatedDelivery = body.estimatedDelivery || body.eta;
 
   try {
     await ensureFullOrderSchema();
