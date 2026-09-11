@@ -6,7 +6,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { query } from "./db.js";
+import { query, pool } from "./db.js";
 import { setup } from "./setup-db.js";
 
 dotenv.config();
@@ -89,7 +89,7 @@ app.use(
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     next();
   },
-  express.static(uploadsDir)
+  express.static(uploadsDir),
 );
 const candidatePublic = [
   path.resolve(__dirname, "../../public"),
@@ -104,9 +104,75 @@ try {
   }
 } catch {}
 
-/* ─── Simple JWT-like token helpers (no jsonwebtoken dependency) ─── */
+/* ─── Sliding-Window In-Memory Rate Limiter ─── */
+const ipRateLimitStore = new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of ipRateLimitStore.entries()) {
+    if (now > entry.resetTime) ipRateLimitStore.delete(key);
+  }
+}, 60000);
+
+function rateLimiter({
+  windowMs = 60000,
+  max = 30,
+  message = "Too many requests. Please try again later.",
+} = {}) {
+  return (req, res, next) => {
+    const ip = req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress || "global";
+    const key = `${req.baseUrl || ""}${req.path}:${ip}`;
+    const now = Date.now();
+    const entry = ipRateLimitStore.get(key) || { count: 0, resetTime: now + windowMs };
+
+    if (now > entry.resetTime) {
+      entry.count = 1;
+      entry.resetTime = now + windowMs;
+    } else {
+      entry.count++;
+    }
+    ipRateLimitStore.set(key, entry);
+
+    if (entry.count > max) {
+      return res.status(429).json({ error: message });
+    }
+    next();
+  };
+}
+
+const authLimiter = rateLimiter({
+  windowMs: 60000,
+  max: 15,
+  message: "Too many authentication requests. Please try again in 1 minute.",
+});
+const orderLimiter = rateLimiter({
+  windowMs: 300000,
+  max: 20,
+  message: "Order submission limit reached. Please wait 5 minutes.",
+});
+const uploadLimiter = rateLimiter({
+  windowMs: 600000,
+  max: 30,
+  message: "Upload limit exceeded. Please wait a few minutes.",
+});
+const contactLimiter = rateLimiter({
+  windowMs: 300000,
+  max: 10,
+  message: "Too many contact submissions. Please wait 5 minutes.",
+});
+const newsletterLimiter = rateLimiter({
+  windowMs: 300000,
+  max: 10,
+  message: "Too many subscription requests. Please wait 5 minutes.",
+});
+
+/* ─── Hardened JWT-like token helpers with 7-day expiration & constant-time check ─── */
 function createToken(user) {
-  const payload = { id: user.id, email: user.email, role: user.role };
+  const payload = {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7-day expiration
+  };
   const token = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const sig = crypto.createHmac("sha256", JWT_SECRET).update(token).digest("base64url");
   return `${token}.${sig}`;
@@ -114,11 +180,27 @@ function createToken(user) {
 
 function verifyToken(token) {
   try {
-    const [tokenPart, sig] = token.split(".");
-    if (!tokenPart || !sig) return null;
+    if (!token || typeof token !== "string") return null;
+    const parts = token.split(".");
+    if (parts.length !== 2) return null;
+    const [tokenPart, sig] = parts;
     const expected = crypto.createHmac("sha256", JWT_SECRET).update(tokenPart).digest("base64url");
-    if (sig !== expected) return null;
-    return JSON.parse(Buffer.from(tokenPart, "base64url").toString());
+
+    const sigBuf = Buffer.from(sig);
+    const expBuf = Buffer.from(expected);
+    if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+      return null;
+    }
+
+    const payload = JSON.parse(Buffer.from(tokenPart, "base64url").toString("utf-8"));
+    if (
+      payload.exp &&
+      typeof payload.exp === "number" &&
+      payload.exp < Math.floor(Date.now() / 1000)
+    ) {
+      return null; // Expired token
+    }
+    return payload;
   } catch {
     return null;
   }
@@ -128,7 +210,7 @@ function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) return res.status(401).json({ error: "Not authenticated" });
   const user = verifyToken(header.slice(7));
-  if (!user) return res.status(401).json({ error: "Invalid token" });
+  if (!user) return res.status(401).json({ error: "Invalid or expired token" });
   req.user = user;
   next();
 }
@@ -161,89 +243,9 @@ app.get("/api/health", async (_req, res) => {
 });
 
 /* ═══════════════════════════════════════════════════════════════════ */
-/* MEDIA & FILE UPLOADS                                               */
-/* ═══════════════════════════════════════════════════════════════════ */
-app.post("/api/upload", async (req, res, next) => {
-  try {
-    const { imageBase64, fileName } = req.body ?? {};
-    if (!imageBase64) {
-      return res.status(400).json({ error: "imageBase64 is required" });
-    }
-
-    // Extract mime type and clean base64 data
-    const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    let buffer;
-    let ext = "png";
-
-    if (matches && matches.length === 3) {
-      const mime = matches[1].toLowerCase();
-      if (mime.includes("jpeg") || mime.includes("jpg")) ext = "jpg";
-      else if (mime.includes("webp")) ext = "webp";
-      else if (mime.includes("svg")) ext = "svg";
-      else if (mime.includes("gif")) ext = "gif";
-      else if (mime.includes("png")) ext = "png";
-      buffer = Buffer.from(matches[2], "base64");
-    } else {
-      buffer = Buffer.from(imageBase64, "base64");
-    }
-
-    // Sanitize filename
-    const origBase = (fileName || "product-image")
-      .replace(/\.[^/.]+$/, "")
-      .replace(/[^a-zA-Z0-9_-]/g, "-")
-      .toLowerCase()
-      .slice(0, 40);
-    const uniqueName = `${origBase || "upload"}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}.${ext}`;
-    const filePath = path.join(uploadsDir, uniqueName);
-
-    await fs.promises.writeFile(filePath, buffer);
-
-    const publicUrl = `/uploads/${uniqueName}`;
-    console.log(`[omsun-api] File uploaded successfully: ${publicUrl} (${buffer.length} bytes)`);
-    res.status(201).json({ ok: true, url: publicUrl, fileName: uniqueName });
-  } catch (err) {
-    console.error("[omsun-api] Upload error:", err);
-    next(err);
-  }
-});
-
-app.post("/api/auth/avatar", authMiddleware, async (req, res, next) => {
-  try {
-    const { imageBase64 } = req.body ?? {};
-    if (!imageBase64) {
-      return res.status(400).json({ error: "imageBase64 is required" });
-    }
-
-    const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    let buffer;
-    let ext = "png";
-    if (matches && matches.length === 3) {
-      const mime = matches[1].toLowerCase();
-      if (mime.includes("jpeg") || mime.includes("jpg")) ext = "jpg";
-      else if (mime.includes("webp")) ext = "webp";
-      else if (mime.includes("png")) ext = "png";
-      buffer = Buffer.from(matches[2], "base64");
-    } else {
-      buffer = Buffer.from(imageBase64, "base64");
-    }
-
-    const uniqueName = `avatar-${req.user.id}-${Date.now()}.${ext}`;
-    const filePath = path.join(uploadsDir, uniqueName);
-    await fs.promises.writeFile(filePath, buffer);
-
-    const avatarUrl = `/uploads/${uniqueName}`;
-    await query("UPDATE users SET avatar = ? WHERE id = ?", [avatarUrl, req.user.id]);
-
-    res.json({ ok: true, avatarUrl, message: "Avatar updated successfully" });
-  } catch (err) {
-    next(err);
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════ */
 /* AUTH                                                               */
 /* ═══════════════════════════════════════════════════════════════════ */
-app.post("/api/auth/register", async (req, res, next) => {
+app.post("/api/auth/register", authLimiter, async (req, res, next) => {
   const { fullName, email, password, phone, company } = req.body ?? {};
   if (!fullName || !email || !password) {
     return res.status(400).json({ error: "fullName, email and password are required" });
@@ -260,13 +262,19 @@ app.post("/api/auth/register", async (req, res, next) => {
     );
     const user = { id: result.insertId, full_name: fullName, email, role: "customer" };
     const token = createToken({ id: user.id, email, role: "customer" });
-    res.status(201).json({ ok: true, token, user: { id: String(user.id), name: fullName, email, role: "customer" } });
+    res
+      .status(201)
+      .json({
+        ok: true,
+        token,
+        user: { id: String(user.id), name: fullName, email, role: "customer" },
+      });
   } catch (err) {
     next(err);
   }
 });
 
-app.post("/api/auth/login", async (req, res, next) => {
+app.post("/api/auth/login", authLimiter, async (req, res, next) => {
   const { email, password } = req.body ?? {};
   if (!email || !password) {
     return res.status(400).json({ error: "email and password are required" });
@@ -285,7 +293,13 @@ app.post("/api/auth/login", async (req, res, next) => {
     res.json({
       ok: true,
       token,
-      user: { id: String(user.id), name: user.full_name, email: user.email, role: user.role, avatar: user.avatar_url || null },
+      user: {
+        id: String(user.id),
+        name: user.full_name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar_url || null,
+      },
     });
   } catch (err) {
     next(err);
@@ -309,10 +323,21 @@ ensureUserAvatarColumn();
 app.get("/api/auth/me", authMiddleware, async (req, res, next) => {
   try {
     await ensureUserAvatarColumn();
-    const rows = await query("SELECT id, full_name, email, phone, company, role, avatar_url FROM users WHERE id = ?", [req.user.id]);
+    const rows = await query(
+      "SELECT id, full_name, email, phone, company, role, avatar_url FROM users WHERE id = ?",
+      [req.user.id],
+    );
     if (rows.length === 0) return res.status(404).json({ error: "User not found" });
     const u = rows[0];
-    res.json({ id: String(u.id), name: u.full_name, email: u.email, phone: u.phone, company: u.company, role: u.role, avatar: u.avatar_url || null });
+    res.json({
+      id: String(u.id),
+      name: u.full_name,
+      email: u.email,
+      phone: u.phone,
+      company: u.company,
+      role: u.role,
+      avatar: u.avatar_url || null,
+    });
   } catch (err) {
     next(err);
   }
@@ -325,11 +350,31 @@ app.put("/api/auth/profile", authMiddleware, async (req, res, next) => {
     await ensureUserAvatarColumn();
     await query(
       "UPDATE users SET full_name = COALESCE(?, full_name), phone = COALESCE(?, phone), company = COALESCE(?, company), avatar_url = COALESCE(?, avatar_url) WHERE id = ?",
-      [fullName || null, phone || null, company || null, avatar !== undefined ? avatar : null, req.user.id]
+      [
+        fullName || null,
+        phone || null,
+        company || null,
+        avatar !== undefined ? avatar : null,
+        req.user.id,
+      ],
     );
-    const rows = await query("SELECT id, full_name, email, phone, company, role, avatar_url FROM users WHERE id = ?", [req.user.id]);
+    const rows = await query(
+      "SELECT id, full_name, email, phone, company, role, avatar_url FROM users WHERE id = ?",
+      [req.user.id],
+    );
     const u = rows[0];
-    res.json({ ok: true, user: { id: String(u.id), name: u.full_name, email: u.email, phone: u.phone, company: u.company, role: u.role, avatar: u.avatar_url || null } });
+    res.json({
+      ok: true,
+      user: {
+        id: String(u.id),
+        name: u.full_name,
+        email: u.email,
+        phone: u.phone,
+        company: u.company,
+        role: u.role,
+        avatar: u.avatar_url || null,
+      },
+    });
   } catch (err) {
     next(err);
   }
@@ -416,18 +461,23 @@ ensureAddressesTable();
 app.get("/api/user/addresses", authMiddleware, async (req, res, next) => {
   try {
     await ensureAddressesTable();
-    const rows = await query("SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, id DESC", [req.user.id]);
-    res.json(rows.map(r => ({
-      id: String(r.id),
-      fullName: r.full_name,
-      street: r.street,
-      area: r.area || "",
-      city: r.city,
-      province: r.province,
-      phone: r.phone,
-      type: r.address_type,
-      isDefault: Boolean(r.is_default),
-    })));
+    const rows = await query(
+      "SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, id DESC",
+      [req.user.id],
+    );
+    res.json(
+      rows.map((r) => ({
+        id: String(r.id),
+        fullName: r.full_name,
+        street: r.street,
+        area: r.area || "",
+        city: r.city,
+        province: r.province,
+        phone: r.phone,
+        type: r.address_type,
+        isDefault: Boolean(r.is_default),
+      })),
+    );
   } catch (err) {
     next(err);
   }
@@ -445,7 +495,17 @@ app.post("/api/user/addresses", authMiddleware, async (req, res, next) => {
     }
     const result = await query(
       "INSERT INTO addresses (user_id, full_name, street, area, city, province, phone, address_type, is_default) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [req.user.id, fullName, street, area || null, city, province || "Bagmati Province", phone, type || "Shipping", isDefault ? 1 : 0]
+      [
+        req.user.id,
+        fullName,
+        street,
+        area || null,
+        city,
+        province || "Bagmati Province",
+        phone,
+        type || "Shipping",
+        isDefault ? 1 : 0,
+      ],
     );
     res.status(201).json({
       id: String(result.insertId),
@@ -472,7 +532,18 @@ app.put("/api/user/addresses/:id", authMiddleware, async (req, res, next) => {
     }
     await query(
       "UPDATE addresses SET full_name = COALESCE(?, full_name), street = COALESCE(?, street), area = COALESCE(?, area), city = COALESCE(?, city), province = COALESCE(?, province), phone = COALESCE(?, phone), address_type = COALESCE(?, address_type), is_default = COALESCE(?, is_default) WHERE id = ? AND user_id = ?",
-      [fullName, street, area, city, province, phone, type, isDefault !== undefined ? (isDefault ? 1 : 0) : null, req.params.id, req.user.id]
+      [
+        fullName,
+        street,
+        area,
+        city,
+        province,
+        phone,
+        type,
+        isDefault !== undefined ? (isDefault ? 1 : 0) : null,
+        req.params.id,
+        req.user.id,
+      ],
     );
     res.json({ ok: true, message: "Address updated" });
   } catch (err) {
@@ -592,7 +663,7 @@ async function ensureFullOrderSchema() {
     "ALTER TABLE orders ADD COLUMN IF NOT EXISTS estimated_delivery DATE NULL",
     "ALTER TABLE orders MODIFY COLUMN status VARCHAR(60) NOT NULL DEFAULT 'ORDER_PLACED'",
     "ALTER TABLE orders MODIFY COLUMN payment_method VARCHAR(60) NOT NULL DEFAULT 'fonepay'",
-    "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS product_image VARCHAR(500) NULL"
+    "ALTER TABLE order_items ADD COLUMN IF NOT EXISTS product_image VARCHAR(500) NULL",
   ];
 
   for (const stmt of alterStatements) {
@@ -639,6 +710,33 @@ async function ensureFullOrderSchema() {
       ) ENGINE=InnoDB
     `);
   } catch {}
+
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS contact_messages (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(120) NOT NULL,
+        email VARCHAR(190) NOT NULL,
+        phone VARCHAR(30) NULL,
+        company VARCHAR(120) NULL,
+        inquiry_type VARCHAR(60) NULL,
+        system_size VARCHAR(60) NULL,
+        district VARCHAR(120) NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB
+    `);
+  } catch {}
+
+  try {
+    await query(`
+      CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(190) NOT NULL UNIQUE,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB
+    `);
+  } catch {}
 }
 ensureFullOrderSchema();
 
@@ -647,7 +745,10 @@ async function generateOrderRef() {
   const currentYear = new Date().getFullYear();
   const prefix = `OMS-${currentYear}-`;
   try {
-    const rows = await query("SELECT order_ref FROM orders WHERE order_ref LIKE ? ORDER BY id DESC LIMIT 1", [`${prefix}%`]);
+    const rows = await query(
+      "SELECT order_ref FROM orders WHERE order_ref LIKE ? ORDER BY id DESC LIMIT 1",
+      [`${prefix}%`],
+    );
     let nextNum = 1;
     if (rows.length > 0 && rows[0].order_ref) {
       const match = rows[0].order_ref.match(/-(\d+)$/);
@@ -669,11 +770,27 @@ async function generateOrderRef() {
   }
 }
 
-async function logOrderStatusChange({ orderId, orderRef, statusType, oldValue, newValue, changedBy, notes }) {
+async function logOrderStatusChange({
+  orderId,
+  orderRef,
+  statusType,
+  oldValue,
+  newValue,
+  changedBy,
+  notes,
+}) {
   try {
     await query(
       "INSERT INTO order_status_history (order_id, order_ref, status_type, old_value, new_value, changed_by, notes) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [orderId, orderRef, statusType, oldValue || null, newValue, changedBy || "System", notes || null]
+      [
+        orderId,
+        orderRef,
+        statusType,
+        oldValue || null,
+        newValue,
+        changedBy || "System",
+        notes || null,
+      ],
     );
   } catch (err) {
     console.error("Order status log error:", err.message);
@@ -681,7 +798,7 @@ async function logOrderStatusChange({ orderId, orderRef, statusType, oldValue, n
 }
 
 /* 1. CREATE ORDER IMMEDIATELY (Before Payment) */
-app.post("/api/orders", optionalAuthMiddleware, async (req, res, next) => {
+app.post("/api/orders", orderLimiter, optionalAuthMiddleware, async (req, res, next) => {
   const body = req.body ?? {};
   const { items, paymentMethod, paymentReceipt, couponCode } = body;
   const shipping = body.shipping || {
@@ -693,7 +810,9 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res, next) => {
     notes: body.deliveryNotes || body.notes,
   };
   if (!items?.length || !shipping?.name || !shipping?.phone || !shipping?.address) {
-    return res.status(400).json({ error: "Items, recipient name, phone, and delivery address are required" });
+    return res
+      .status(400)
+      .json({ error: "Items, recipient name, phone, and delivery address are required" });
   }
 
   try {
@@ -701,30 +820,38 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res, next) => {
     let subtotal = 0;
     const orderItems = [];
 
-    // Calculate subtotal directly from database products — NEVER trust client prices
+    // Strictly validate each product directly against database catalog
     for (const item of items) {
       const prodId = item.productId;
-      const rows = await query("SELECT id, name, price, stock, image FROM products WHERE id = ?", [prodId]);
-      let prodName = item.name || "OMSUN Equipment";
-      let unitPrice = Number(item.price) || 0;
-      let prodImage = item.image || "/p-panelboard.jpg";
-
-      if (rows.length > 0) {
-        const prod = rows[0];
-        prodName = prod.name;
-        unitPrice = Number(prod.price);
-        prodImage = prod.image || prodImage;
-        // Reserve inventory atomically
-        await query("UPDATE products SET stock = GREATEST(0, stock - ?) WHERE id = ?", [Number(item.quantity) || 1, prod.id]);
-      } else {
-        await query(
-          "INSERT INTO products (id, name, category, brand, price, stock, rating) VALUES (?, ?, ?, ?, ?, ?, ?)",
-          [prodId, prodName, "Solar Panels", "OMSUN", unitPrice, 50, 4.8],
-        );
+      if (!prodId) {
+        return res.status(400).json({ error: "Each order item must specify a valid productId" });
       }
-      const qty = Number(item.quantity) || 1;
+
+      const rows = await query("SELECT id, name, price, stock, image FROM products WHERE id = ?", [
+        prodId,
+      ]);
+      if (rows.length === 0) {
+        return res.status(400).json({ error: `Product not found in catalog: "${prodId}"` });
+      }
+
+      const prod = rows[0];
+      const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
+      if (prod.stock < qty) {
+        return res.status(400).json({
+          error: `Insufficient stock for "${prod.name}". Requested: ${qty}, In stock: ${prod.stock}`,
+        });
+      }
+
+      const unitPrice = Number(prod.price);
+      const prodImage = prod.image || "/p-panelboard.jpg";
       subtotal += unitPrice * qty;
-      orderItems.push({ productId: prodId, name: prodName, qty, unitPrice, image: prodImage });
+      orderItems.push({
+        productId: prod.id,
+        name: prod.name,
+        qty,
+        unitPrice,
+        image: prodImage,
+      });
     }
 
     // Standardized payment method
@@ -738,19 +865,27 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res, next) => {
     // Standard shipping rule: Free delivery above 50,000 NPR, else 1,500 NPR
     const shippingFee = subtotal > 50000 ? 0 : 1500;
     let discountAmount = 0;
+    let appliedCouponId = null;
 
-    // Check optional coupon
+    // Check optional coupon with strict validity & usage limits
     if (couponCode) {
-      const cpnRows = await query("SELECT * FROM coupons WHERE code = ? AND status = 'active'", [couponCode.toUpperCase()]);
+      const cpnRows = await query(
+        `SELECT * FROM coupons 
+         WHERE code = ? 
+           AND status = 'active' 
+           AND (expiry_date IS NULL OR expiry_date >= CURRENT_DATE()) 
+           AND (usage_limit = 0 OR usage_count < usage_limit)`,
+        [String(couponCode).toUpperCase().trim()],
+      );
       if (cpnRows.length > 0) {
         const cpn = cpnRows[0];
         if (subtotal >= Number(cpn.min_spend)) {
+          appliedCouponId = cpn.id;
           if (cpn.discount_type === "percentage") {
             discountAmount = Math.round((subtotal * Number(cpn.discount_value)) / 100);
           } else {
-            discountAmount = Number(cpn.discount_value);
+            discountAmount = Math.min(subtotal, Number(cpn.discount_value));
           }
-          await query("UPDATE coupons SET usage_count = usage_count + 1 WHERE id = ?", [cpn.id]);
         }
       }
     }
@@ -777,39 +912,69 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res, next) => {
     const initialPaymentStatus = savedReceiptUrl ? "PAYMENT_SUBMITTED" : "UNPAID";
     const initialOrderStatus = savedReceiptUrl ? "PAYMENT_SUBMITTED" : "ORDER_PLACED";
 
-    const result = await query(
-      `INSERT INTO orders (
-        order_ref, user_id, shipping_name, shipping_phone, shipping_email,
-        shipping_address, shipping_city, subtotal, shipping_fee, discount_amount,
-        grand_total, payment_method, payment_status, payment_receipt, status, notes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        orderRef,
-        userId,
-        shipping.name,
-        shipping.phone,
-        shippingEmail,
-        shipping.address,
-        shipping.city || "Kathmandu",
-        subtotal,
-        shippingFee,
-        discountAmount,
-        grandTotal,
-        method,
-        initialPaymentStatus,
-        savedReceiptUrl,
-        initialOrderStatus,
-        shipping.notes || null,
-      ]
-    );
+    // Execute atomic transaction for inventory reservation and order record creation
+    const conn = await pool.getConnection();
+    let orderId;
+    try {
+      await conn.beginTransaction();
 
-    const orderId = result.insertId;
+      // 1. Reserve inventory atomically
+      for (const item of orderItems) {
+        await conn.query("UPDATE products SET stock = GREATEST(0, stock - ?) WHERE id = ?", [
+          item.qty,
+          item.productId,
+        ]);
+      }
 
-    for (const item of orderItems) {
-      await query(
-        "INSERT INTO order_items (order_id, product_id, product_name, product_image, qty, unit_price) VALUES (?, ?, ?, ?, ?, ?)",
-        [orderId, item.productId, item.name, item.image, item.qty, item.unitPrice]
+      // 2. Increment coupon usage count if applied
+      if (appliedCouponId) {
+        await conn.query("UPDATE coupons SET usage_count = usage_count + 1 WHERE id = ?", [
+          appliedCouponId,
+        ]);
+      }
+
+      // 3. Insert master order record
+      const [orderResult] = await conn.query(
+        `INSERT INTO orders (
+          order_ref, user_id, shipping_name, shipping_phone, shipping_email,
+          shipping_address, shipping_city, subtotal, shipping_fee, discount_amount,
+          grand_total, payment_method, payment_status, payment_receipt, status, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          orderRef,
+          userId,
+          shipping.name,
+          shipping.phone,
+          shippingEmail,
+          shipping.address,
+          shipping.city || "Kathmandu",
+          subtotal,
+          shippingFee,
+          discountAmount,
+          grandTotal,
+          method,
+          initialPaymentStatus,
+          savedReceiptUrl,
+          initialOrderStatus,
+          shipping.notes || null,
+        ],
       );
+      orderId = orderResult.insertId;
+
+      // 4. Insert all order items
+      for (const item of orderItems) {
+        await conn.query(
+          "INSERT INTO order_items (order_id, product_id, product_name, product_image, qty, unit_price) VALUES (?, ?, ?, ?, ?, ?)",
+          [orderId, item.productId, item.name, item.image, item.qty, item.unitPrice],
+        );
+      }
+
+      await conn.commit();
+    } catch (txErr) {
+      await conn.rollback();
+      throw txErr;
+    } finally {
+      conn.release();
     }
 
     // Log creation in audit history
@@ -820,7 +985,7 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res, next) => {
       oldValue: null,
       newValue: initialOrderStatus,
       changedBy: shipping.name,
-      notes: `Order created via ${method.toUpperCase()} checkout`
+      notes: `Order created via ${method.toUpperCase()} checkout`,
     });
 
     // Send Admin Email via FormSubmit (Non-blocking)
@@ -831,12 +996,12 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res, next) => {
         "Order Reference": orderRef,
         "Customer Name": shipping.name,
         "Phone Number": shipping.phone,
-        "Email": shippingEmail || "N/A",
+        Email: shippingEmail || "N/A",
         "Delivery Address": `${shipping.address}, ${shipping.city}`,
         "Ordered Hardware": orderItems.map((i) => `${i.name} (Qty: ${i.qty})`).join(" | "),
-        "Subtotal": `NPR ${subtotal.toLocaleString()}`,
+        Subtotal: `NPR ${subtotal.toLocaleString()}`,
         "Delivery Logistics": `NPR ${shippingFee.toLocaleString()}`,
-        "Discount": `NPR ${discountAmount.toLocaleString()}`,
+        Discount: `NPR ${discountAmount.toLocaleString()}`,
         "Final Amount Payable": `NPR ${grandTotal.toLocaleString()}`,
         "Payment Method": method.toUpperCase(),
         "Payment Status": initialPaymentStatus,
@@ -869,10 +1034,10 @@ app.get("/api/orders/:ref", optionalAuthMiddleware, async (req, res, next) => {
     const rawRef = req.params.ref;
     const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
 
-    const rows = await query(
-      "SELECT * FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
-      [rawRef, refWithPrefix]
-    );
+    const rows = await query("SELECT * FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1", [
+      rawRef,
+      refWithPrefix,
+    ]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "Order not found" });
@@ -882,7 +1047,7 @@ app.get("/api/orders/:ref", optionalAuthMiddleware, async (req, res, next) => {
     const items = await query("SELECT * FROM order_items WHERE order_id = ?", [o.id]);
     const history = await query(
       "SELECT * FROM order_status_history WHERE order_id = ? ORDER BY created_at ASC",
-      [o.id]
+      [o.id],
     );
 
     res.json({
@@ -939,62 +1104,67 @@ app.get("/api/orders/:ref", optionalAuthMiddleware, async (req, res, next) => {
 });
 
 /* 3. UPLOAD PAYMENT RECEIPT & SUBMIT PROOF */
-app.post("/api/orders/:ref/receipt", optionalAuthMiddleware, async (req, res, next) => {
-  const { receiptBase64, transactionRef } = req.body ?? {};
-  if (!receiptBase64) {
-    return res.status(400).json({ error: "Payment receipt image is required" });
-  }
-
-  try {
-    await ensureFullOrderSchema();
-    const rawRef = req.params.ref;
-    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
-
-    const orderRows = await query(
-      "SELECT id, order_ref, shipping_name, shipping_phone, shipping_email, grand_total, payment_status FROM orders WHERE order_ref = ? OR order_ref = ?",
-      [rawRef, refWithPrefix]
-    );
-
-    if (orderRows.length === 0) {
-      return res.status(404).json({ error: "Order not found" });
+app.post(
+  "/api/orders/:ref/receipt",
+  uploadLimiter,
+  optionalAuthMiddleware,
+  async (req, res, next) => {
+    const { receiptBase64, transactionRef } = req.body ?? {};
+    if (!receiptBase64) {
+      return res.status(400).json({ error: "Payment receipt image is required" });
     }
 
-    const order = orderRows[0];
-    let savedReceiptUrl = receiptBase64;
+    try {
+      await ensureFullOrderSchema();
+      const rawRef = req.params.ref;
+      const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
 
-    // Secure base64 file processing
-    if (receiptBase64.startsWith("data:image/")) {
-      const match = receiptBase64.match(/^data:image\/(\w+);base64,(.+)$/);
-      if (!match) {
-        return res.status(400).json({ error: "Invalid image format. Supported formats: JPG, PNG, WebP" });
+      const orderRows = await query(
+        "SELECT id, order_ref, shipping_name, shipping_phone, shipping_email, grand_total, payment_status FROM orders WHERE order_ref = ? OR order_ref = ?",
+        [rawRef, refWithPrefix],
+      );
+
+      if (orderRows.length === 0) {
+        return res.status(404).json({ error: "Order not found" });
       }
 
-      const rawExt = match[1].toLowerCase();
-      let ext = "jpg";
-      if (rawExt === "png") ext = "png";
-      else if (rawExt === "webp") ext = "webp";
-      else if (rawExt === "jpeg" || rawExt === "jpg") ext = "jpg";
-      else {
-        return res.status(400).json({ error: "Only PNG, JPG, and WebP images are allowed" });
+      const order = orderRows[0];
+      let savedReceiptUrl = null;
+
+      if (receiptBase64.startsWith("data:image/")) {
+        const match = receiptBase64.match(/^data:image\/(\w+);base64,(.+)$/);
+        if (!match) {
+          return res
+            .status(400)
+            .json({ error: "Invalid image format. Must be a valid Base64 data URL." });
+        }
+
+        const rawExt = match[1].toLowerCase();
+        let ext = "jpg";
+        if (rawExt === "png") ext = "png";
+        else if (rawExt === "webp") ext = "webp";
+        else if (rawExt === "jpeg" || rawExt === "jpg") ext = "jpg";
+        else {
+          return res.status(400).json({ error: "Only PNG, JPG, and WebP images are allowed" });
+        }
+
+        const buffer = Buffer.from(match[2], "base64");
+        if (buffer.length > 6 * 1024 * 1024) {
+          return res.status(400).json({ error: "Receipt image size exceeds the 5MB limit" });
+        }
+
+        const cleanRef = order.order_ref.replace(/[^A-Za-z0-9_-]/g, "");
+        const filename = `receipt-${cleanRef}-${Date.now()}.${ext}`;
+        const filePath = path.join(uploadsDir, filename);
+        await fs.promises.writeFile(filePath, buffer);
+        savedReceiptUrl = `/uploads/${filename}`;
       }
 
-      const buffer = Buffer.from(match[2], "base64");
-      if (buffer.length > 6 * 1024 * 1024) {
-        return res.status(400).json({ error: "Receipt image size exceeds the 5MB limit" });
-      }
+      const cleanTxRef = transactionRef ? String(transactionRef).trim() : null;
 
-      const cleanRef = order.order_ref.replace(/[^A-Za-z0-9_-]/g, "");
-      const filename = `receipt-${cleanRef}-${Date.now()}.${ext}`;
-      const filePath = path.join(uploadsDir, filename);
-      await fs.promises.writeFile(filePath, buffer);
-      savedReceiptUrl = `/uploads/${filename}`;
-    }
-
-    const cleanTxRef = transactionRef ? String(transactionRef).trim() : null;
-
-    // Update order state: reset rejection reason, set payment to submitted
-    await query(
-      `UPDATE orders SET
+      // Update order state: reset rejection reason, set payment to submitted
+      await query(
+        `UPDATE orders SET
         payment_receipt = ?,
         transaction_ref = COALESCE(?, transaction_ref),
         payment_status = 'PAYMENT_SUBMITTED',
@@ -1002,106 +1172,124 @@ app.post("/api/orders/:ref/receipt", optionalAuthMiddleware, async (req, res, ne
         payment_submitted_at = CURRENT_TIMESTAMP,
         rejection_reason = NULL
       WHERE id = ?`,
-      [savedReceiptUrl, cleanTxRef, order.id]
-    );
+        [savedReceiptUrl, cleanTxRef, order.id],
+      );
 
-    // Audit log
-    await logOrderStatusChange({
-      orderId: order.id,
-      orderRef: order.order_ref,
-      statusType: "payment_proof",
-      oldValue: order.payment_status,
-      newValue: "PAYMENT_SUBMITTED",
-      changedBy: order.shipping_name,
-      notes: cleanTxRef ? `Proof submitted with Ref #${cleanTxRef}` : "Payment screenshot proof submitted"
-    });
+      // Audit log
+      await logOrderStatusChange({
+        orderId: order.id,
+        orderRef: order.order_ref,
+        statusType: "payment_proof",
+        oldValue: order.payment_status,
+        newValue: "PAYMENT_SUBMITTED",
+        changedBy: order.shipping_name,
+        notes: cleanTxRef
+          ? `Proof submitted with Ref #${cleanTxRef}`
+          : "Payment screenshot proof submitted",
+      });
 
-    // Send Admin Email Alert via FormSubmit (Non-blocking)
-    sendNotificationEmail({
-      to: ADMIN_NOTIFICATION_EMAIL,
-      subject: `Omsun — Payment Proof Submitted — ${order.order_ref}`,
-      data: {
-        "Order Reference": order.order_ref,
-        "Customer Name": order.shipping_name,
-        "Customer Phone": order.shipping_phone,
-        "Customer Email": order.shipping_email || "N/A",
-        "Total Order Amount": `NPR ${Number(order.grand_total).toLocaleString()}`,
-        "Transaction / Reference ID": cleanTxRef || "Not provided on receipt",
-        "Payment Proof Status": "Awaiting Admin Verification",
-        "Uploaded Receipt Slip": savedReceiptUrl,
-        "Submission Timestamp": new Date().toLocaleString(),
-      },
-    }).catch(() => {});
+      // Send Admin Email Alert via FormSubmit (Non-blocking)
+      sendNotificationEmail({
+        to: ADMIN_NOTIFICATION_EMAIL,
+        subject: `Omsun — Payment Proof Submitted — ${order.order_ref}`,
+        data: {
+          "Order Reference": order.order_ref,
+          "Customer Name": order.shipping_name,
+          "Customer Phone": order.shipping_phone,
+          "Customer Email": order.shipping_email || "N/A",
+          "Total Order Amount": `NPR ${Number(order.grand_total).toLocaleString()}`,
+          "Transaction / Reference ID": cleanTxRef || "Not provided on receipt",
+          "Payment Proof Status": "Awaiting Admin Verification",
+          "Uploaded Receipt Slip": savedReceiptUrl,
+          "Submission Timestamp": new Date().toLocaleString(),
+        },
+      }).catch(() => {});
 
-    res.json({
-      ok: true,
-      receiptUrl: savedReceiptUrl,
-      transactionRef: cleanTxRef,
-      paymentStatus: "PAYMENT_SUBMITTED",
-      message: "Payment proof has been submitted successfully. Our team will verify your receipt shortly.",
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+      res.json({
+        ok: true,
+        receiptUrl: savedReceiptUrl,
+        transactionRef: cleanTxRef,
+        paymentStatus: "PAYMENT_SUBMITTED",
+        message:
+          "Payment proof has been submitted successfully. Our team will verify your receipt shortly.",
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
-/* 4. CUSTOMER ORDERS LIST */
+/* 4. CUSTOMER ORDERS LIST (Batch Fetched — Zero N+1 Queries) */
 app.get("/api/orders", authMiddleware, async (req, res, next) => {
   try {
     await ensureFullOrderSchema();
-    const rows = await query(
-      "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC",
-      [req.user.id]
+    const rows = await query("SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC", [
+      req.user.id,
+    ]);
+
+    if (rows.length === 0) return res.json([]);
+
+    // Single batch query for items
+    const orderIds = rows.map((o) => o.id);
+    const placeholders = orderIds.map(() => "?").join(",");
+    const allItems = await query(
+      `SELECT * FROM order_items WHERE order_id IN (${placeholders})`,
+      orderIds,
     );
 
-    const orders = await Promise.all(
-      rows.map(async (o) => {
-        const items = await query("SELECT * FROM order_items WHERE order_id = ?", [o.id]);
-        return {
-          id: o.id,
-          order_ref: o.order_ref,
-          orderRef: o.order_ref,
-          user_id: o.user_id,
-          shipping_name: o.shipping_name,
-          shipping_phone: o.shipping_phone,
-          shipping_email: o.shipping_email,
-          shipping_address: o.shipping_address,
-          shipping_city: o.shipping_city,
-          subtotal: Number(o.subtotal),
-          shipping_fee: Number(o.shipping_fee),
-          discount_amount: Number(o.discount_amount || 0),
-          grand_total: Number(o.grand_total),
-          payment_method: o.payment_method,
-          payment_status: o.payment_status || "UNPAID",
-          payment_receipt: o.payment_receipt || null,
-          transaction_ref: o.transaction_ref || null,
-          rejection_reason: o.rejection_reason || null,
-          status: o.status,
-          delivery_status: o.delivery_status || "PENDING",
-          tracking_number: o.tracking_number || null,
-          delivery_person: o.delivery_person || null,
-          delivery_phone: o.delivery_phone || null,
-          notes: o.notes,
-          created_at: o.created_at,
-          items: items.map((i) => ({
-            id: i.id,
-            order_id: i.order_id,
-            product_id: i.product_id,
-            product_name: i.product_name,
-            product_image: i.product_image || "/p-panelboard.jpg",
-            qty: i.qty,
-            unit_price: Number(i.unit_price),
-          })),
-        };
-      })
-    );
+    const itemsByOrderId = {};
+    for (const item of allItems) {
+      if (!itemsByOrderId[item.order_id]) itemsByOrderId[item.order_id] = [];
+      itemsByOrderId[item.order_id].push(item);
+    }
+
+    const orders = rows.map((o) => {
+      const items = itemsByOrderId[o.id] || [];
+      return {
+        id: o.id,
+        order_ref: o.order_ref,
+        orderRef: o.order_ref,
+        user_id: o.user_id,
+        shipping_name: o.shipping_name,
+        shipping_phone: o.shipping_phone,
+        shipping_email: o.shipping_email,
+        shipping_address: o.shipping_address,
+        shipping_city: o.shipping_city,
+        subtotal: Number(o.subtotal),
+        shipping_fee: Number(o.shipping_fee),
+        discount_amount: Number(o.discount_amount || 0),
+        grand_total: Number(o.grand_total),
+        payment_method: o.payment_method,
+        payment_status: o.payment_status || "UNPAID",
+        payment_receipt: o.payment_receipt || null,
+        transaction_ref: o.transaction_ref || null,
+        rejection_reason: o.rejection_reason || null,
+        status: o.status,
+        delivery_status: o.delivery_status || "PENDING",
+        tracking_number: o.tracking_number || null,
+        delivery_person: o.delivery_person || null,
+        delivery_phone: o.delivery_phone || null,
+        notes: o.notes,
+        created_at: o.created_at,
+        items: items.map((i) => ({
+          id: i.id,
+          order_id: i.order_id,
+          product_id: i.product_id,
+          product_name: i.product_name,
+          product_image: i.product_image || "/p-panelboard.jpg",
+          qty: i.qty,
+          unit_price: Number(i.unit_price),
+        })),
+      };
+    });
+
     res.json(orders);
   } catch (err) {
     next(err);
   }
 });
 
-/* 5. ADMIN — ALL ORDERS WITH FULL TELEMETRY */
+/* 5. ADMIN — ALL ORDERS WITH FULL TELEMETRY (Batch Fetched — Zero N+1 Queries) */
 app.get("/api/admin/orders", authMiddleware, adminMiddleware, async (_req, res, next) => {
   try {
     await ensureFullOrderSchema();
@@ -1112,6 +1300,22 @@ app.get("/api/admin/orders", authMiddleware, adminMiddleware, async (_req, res, 
       ORDER BY o.created_at DESC
     `);
 
+    if (rows.length === 0) return res.json([]);
+
+    // Single batch query for items
+    const orderIds = rows.map((o) => o.id);
+    const placeholders = orderIds.map(() => "?").join(",");
+    const allItems = await query(
+      `SELECT * FROM order_items WHERE order_id IN (${placeholders})`,
+      orderIds,
+    );
+
+    const itemsByOrderId = {};
+    for (const item of allItems) {
+      if (!itemsByOrderId[item.order_id]) itemsByOrderId[item.order_id] = [];
+      itemsByOrderId[item.order_id].push(item);
+    }
+
     const paymentMethodDisplay = {
       fonepay: "Fonepay QR",
       cod: "Cash on Delivery",
@@ -1120,63 +1324,102 @@ app.get("/api/admin/orders", authMiddleware, adminMiddleware, async (_req, res, 
       khalti: "Khalti",
     };
 
-    const orders = await Promise.all(
-      rows.map(async (o) => {
-        const items = await query("SELECT * FROM order_items WHERE order_id = ?", [o.id]);
-        const method = paymentMethodDisplay[o.payment_method] || o.payment_method || "Fonepay QR";
+    const orders = rows.map((o) => {
+      const items = itemsByOrderId[o.id] || [];
+      const method = paymentMethodDisplay[o.payment_method] || o.payment_method || "Fonepay QR";
 
-        return {
-          id: o.order_ref,
-          orderRef: o.order_ref,
-          customerName: o.shipping_name || o.user_name || "Customer",
-          customerEmail: o.shipping_email || o.user_email || "Customer Direct",
-          customerPhone: o.shipping_phone || o.user_phone || "+977-9800000000",
-          shippingAddress: `${o.shipping_address}, ${o.shipping_city}`,
-          shippingCity: o.shipping_city,
-          notes: o.notes,
-          paymentReceipt: o.payment_receipt || null,
-          transactionRef: o.transaction_ref || null,
-          rejectionReason: o.rejection_reason || null,
-          paymentStatus: o.payment_status || "UNPAID",
-          orderStatus: o.status || "ORDER_PLACED",
-          verifiedBy: o.verified_by || null,
-          adminNotes: o.admin_notes || null,
-          deliveryStatus: o.delivery_status || "PENDING",
-          deliveryCarrier: o.delivery_carrier || null,
-          deliveryPerson: o.delivery_person || null,
-          deliveryPhone: o.delivery_phone || null,
-          trackingNumber: o.tracking_number || null,
-          deliveryNotes: o.delivery_notes || null,
-          estimatedDelivery: o.estimated_delivery || null,
-          items: items.map((i) => ({
-            productId: i.product_id,
-            name: i.product_name,
-            price: Number(i.unit_price),
-            quantity: i.qty,
-            image: i.product_image || "/p-panelboard.jpg",
-          })),
-          subtotal: Number(o.subtotal),
-          shippingFee: Number(o.shipping_fee),
-          discountAmount: Number(o.discount_amount || 0),
-          totalAmount: Number(o.grand_total),
-          paymentMethod: method,
-          createdAt: o.created_at,
-          paymentSubmittedAt: o.payment_submitted_at,
-          paymentVerifiedAt: o.payment_verified_at,
-          timeline: [
-            { title: "Order Placed", timestamp: new Date(o.created_at).toLocaleString() },
-            ...(o.payment_receipt ? [{ title: "Payment Proof Submitted", timestamp: o.payment_submitted_at ? new Date(o.payment_submitted_at).toLocaleString() : "Submitted" }] : []),
-            ...(o.payment_status === "PAYMENT_VERIFIED" ? [{ title: "Payment Verified & Approved", timestamp: o.payment_verified_at ? new Date(o.payment_verified_at).toLocaleString() : "Verified" }] : []),
-            ...(o.payment_status === "PAYMENT_REJECTED" ? [{ title: `Payment Proof Rejected: ${o.rejection_reason || ""}`, timestamp: "Action Required" }] : []),
-            ...(o.status === "PROCESSING" || o.status === "processing" ? [{ title: "Processing & Equipment Allocation", timestamp: "In Progress" }] : []),
-            ...(o.status === "PACKED" || o.status === "packed" ? [{ title: "Packed & Prepared for Logistics", timestamp: "Ready" }] : []),
-            ...(o.delivery_status === "OUT_FOR_DELIVERY" || o.status === "shipped" ? [{ title: `Out for Delivery via ${o.delivery_carrier || "Fleet Courier"}`, timestamp: "In Transit" }] : []),
-            ...(o.status === "DELIVERED" || o.status === "delivered" || o.status === "completed" ? [{ title: "Successfully Delivered to Customer", timestamp: "Delivered" }] : []),
-            ...(o.status === "CANCELLED" || o.status === "cancelled" ? [{ title: "Order Cancelled / Terminated", timestamp: "Closed" }] : []),
-          ],
-        };
-      })
-    );
+      return {
+        id: o.order_ref,
+        orderRef: o.order_ref,
+        customerName: o.shipping_name || o.user_name || "Customer",
+        customerEmail: o.shipping_email || o.user_email || "Customer Direct",
+        customerPhone: o.shipping_phone || o.user_phone || "+977-9800000000",
+        shippingAddress: `${o.shipping_address}, ${o.shipping_city}`,
+        shippingCity: o.shipping_city,
+        notes: o.notes,
+        paymentReceipt: o.payment_receipt || null,
+        transactionRef: o.transaction_ref || null,
+        rejectionReason: o.rejection_reason || null,
+        paymentStatus: o.payment_status || "UNPAID",
+        orderStatus: o.status || "ORDER_PLACED",
+        verifiedBy: o.verified_by || null,
+        adminNotes: o.admin_notes || null,
+        deliveryStatus: o.delivery_status || "PENDING",
+        deliveryCarrier: o.delivery_carrier || null,
+        deliveryPerson: o.delivery_person || null,
+        deliveryPhone: o.delivery_phone || null,
+        trackingNumber: o.tracking_number || null,
+        deliveryNotes: o.delivery_notes || null,
+        estimatedDelivery: o.estimated_delivery || null,
+        items: items.map((i) => ({
+          productId: i.product_id,
+          name: i.product_name,
+          price: Number(i.unit_price),
+          quantity: i.qty,
+          image: i.product_image || "/p-panelboard.jpg",
+        })),
+        subtotal: Number(o.subtotal),
+        shippingFee: Number(o.shipping_fee),
+        discountAmount: Number(o.discount_amount || 0),
+        totalAmount: Number(o.grand_total),
+        paymentMethod: method,
+        createdAt: o.created_at,
+        paymentSubmittedAt: o.payment_submitted_at,
+        paymentVerifiedAt: o.payment_verified_at,
+        timeline: [
+          { title: "Order Placed", timestamp: new Date(o.created_at).toLocaleString() },
+          ...(o.payment_receipt
+            ? [
+                {
+                  title: "Payment Proof Submitted",
+                  timestamp: o.payment_submitted_at
+                    ? new Date(o.payment_submitted_at).toLocaleString()
+                    : "Submitted",
+                },
+              ]
+            : []),
+          ...(o.payment_status === "PAYMENT_VERIFIED"
+            ? [
+                {
+                  title: "Payment Verified & Approved",
+                  timestamp: o.payment_verified_at
+                    ? new Date(o.payment_verified_at).toLocaleString()
+                    : "Verified",
+                },
+              ]
+            : []),
+          ...(o.payment_status === "PAYMENT_REJECTED"
+            ? [
+                {
+                  title: `Payment Proof Rejected: ${o.rejection_reason || ""}`,
+                  timestamp: "Action Required",
+                },
+              ]
+            : []),
+          ...(o.status === "PROCESSING" || o.status === "processing"
+            ? [{ title: "Processing & Equipment Allocation", timestamp: "In Progress" }]
+            : []),
+          ...(o.status === "PACKED" || o.status === "packed"
+            ? [{ title: "Packed & Prepared for Logistics", timestamp: "Ready" }]
+            : []),
+          ...(o.delivery_status === "OUT_FOR_DELIVERY" || o.status === "shipped"
+            ? [
+                {
+                  title: `Out for Delivery via ${o.delivery_carrier || "Fleet Courier"}`,
+                  timestamp: "In Transit",
+                },
+              ]
+            : []),
+          ...(o.status === "DELIVERED" || o.status === "delivered" || o.status === "completed"
+            ? [{ title: "Successfully Delivered to Customer", timestamp: "Delivered" }]
+            : []),
+          ...(o.status === "CANCELLED" || o.status === "cancelled"
+            ? [{ title: "Order Cancelled / Terminated", timestamp: "Closed" }]
+            : []),
+        ],
+      };
+    });
+
     res.json(orders);
   } catch (err) {
     next(err);
@@ -1184,30 +1427,34 @@ app.get("/api/admin/orders", authMiddleware, adminMiddleware, async (_req, res, 
 });
 
 /* 6. ADMIN — VERIFY OR REJECT PAYMENT PROOF */
-app.put("/api/admin/orders/:ref/verify-payment", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const { approve, rejectionReason, notes } = req.body ?? {};
+app.put(
+  "/api/admin/orders/:ref/verify-payment",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res, next) => {
+    const { approve, rejectionReason, notes } = req.body ?? {};
 
-  try {
-    await ensureFullOrderSchema();
-    const rawRef = req.params.ref;
-    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
+    try {
+      await ensureFullOrderSchema();
+      const rawRef = req.params.ref;
+      const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
 
-    const orderRows = await query(
-      "SELECT * FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
-      [rawRef, refWithPrefix]
-    );
+      const orderRows = await query(
+        "SELECT * FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
+        [rawRef, refWithPrefix],
+      );
 
-    if (orderRows.length === 0) {
-      return res.status(404).json({ error: "Order not found" });
-    }
+      if (orderRows.length === 0) {
+        return res.status(404).json({ error: "Order not found" });
+      }
 
-    const order = orderRows[0];
-    const adminIdentifier = req.user.email || "Admin";
+      const order = orderRows[0];
+      const adminIdentifier = req.user.email || "Admin";
 
-    if (approve) {
-      // Approve Payment
-      await query(
-        `UPDATE orders SET
+      if (approve) {
+        // Approve Payment
+        await query(
+          `UPDATE orders SET
           payment_status = 'PAYMENT_VERIFIED',
           status = 'PROCESSING',
           payment_verified_at = CURRENT_TIMESTAMP,
@@ -1215,145 +1462,154 @@ app.put("/api/admin/orders/:ref/verify-payment", authMiddleware, adminMiddleware
           admin_notes = ?,
           rejection_reason = NULL
         WHERE id = ?`,
-        [adminIdentifier, notes || null, order.id]
-      );
+          [adminIdentifier, notes || null, order.id],
+        );
 
-      await logOrderStatusChange({
-        orderId: order.id,
-        orderRef: order.order_ref,
-        statusType: "payment_verification",
-        oldValue: order.payment_status,
-        newValue: "PAYMENT_VERIFIED",
-        changedBy: adminIdentifier,
-        notes: notes || "Payment slip confirmed & verified by admin"
-      });
+        await logOrderStatusChange({
+          orderId: order.id,
+          orderRef: order.order_ref,
+          statusType: "payment_verification",
+          oldValue: order.payment_status,
+          newValue: "PAYMENT_VERIFIED",
+          changedBy: adminIdentifier,
+          notes: notes || "Payment slip confirmed & verified by admin",
+        });
 
-      // Send Customer Email via FormSubmit (Non-blocking)
-      const customerEmail = order.shipping_email;
-      if (customerEmail) {
-        sendNotificationEmail({
-          to: customerEmail,
-          subject: `Payment Verified — Order ${order.order_ref} Confirmed`,
-          data: {
-            "Order Reference": order.order_ref,
-            "Payment Status": "Payment Verified & Approved",
-            "Order Status": "Processing / Preparing Hardware",
-            "Amount Paid": `NPR ${Number(order.grand_total).toLocaleString()}`,
-            "Payment Method": String(order.payment_method).toUpperCase(),
-            "Next Steps": "Our Kathmandu central warehouse is preparing your hardware for secure dispatch.",
-          },
-        }).catch(() => {});
-      }
+        // Send Customer Email via FormSubmit (Non-blocking)
+        const customerEmail = order.shipping_email;
+        if (customerEmail) {
+          sendNotificationEmail({
+            to: customerEmail,
+            subject: `Payment Verified — Order ${order.order_ref} Confirmed`,
+            data: {
+              "Order Reference": order.order_ref,
+              "Payment Status": "Payment Verified & Approved",
+              "Order Status": "Processing / Preparing Hardware",
+              "Amount Paid": `NPR ${Number(order.grand_total).toLocaleString()}`,
+              "Payment Method": String(order.payment_method).toUpperCase(),
+              "Next Steps":
+                "Our Kathmandu central warehouse is preparing your hardware for secure dispatch.",
+            },
+          }).catch(() => {});
+        }
 
-      res.json({
-        ok: true,
-        status: "PROCESSING",
-        paymentStatus: "PAYMENT_VERIFIED",
-        orderStatus: "PROCESSING",
-        message: "Payment successfully verified and order is now processing",
-      });
-    } else {
-      // Reject Payment with Reason
-      const reason = rejectionReason || "Payment screenshot could not be verified. Please upload a clearer payment receipt.";
-      await query(
-        `UPDATE orders SET
+        res.json({
+          ok: true,
+          status: "PROCESSING",
+          paymentStatus: "PAYMENT_VERIFIED",
+          orderStatus: "PROCESSING",
+          message: "Payment successfully verified and order is now processing",
+        });
+      } else {
+        // Reject Payment with Reason
+        const reason =
+          rejectionReason ||
+          "Payment screenshot could not be verified. Please upload a clearer payment receipt.";
+        await query(
+          `UPDATE orders SET
           payment_status = 'PAYMENT_REJECTED',
           rejection_reason = ?,
           verified_by = ?,
           admin_notes = ?
         WHERE id = ?`,
-        [reason, adminIdentifier, notes || null, order.id]
-      );
-      // Restock inventory safely
-      await adjustInventoryForOrder(order.id, "RESTOCK");
+          [reason, adminIdentifier, notes || null, order.id],
+        );
+        // Restock inventory safely
+        await adjustInventoryForOrder(order.id, "RESTOCK");
 
-      await logOrderStatusChange({
-        orderId: order.id,
-        orderRef: order.order_ref,
-        statusType: "payment_rejection",
-        oldValue: order.payment_status,
-        newValue: "PAYMENT_REJECTED",
-        changedBy: adminIdentifier,
-        notes: `Rejected: ${reason}`
-      });
+        await logOrderStatusChange({
+          orderId: order.id,
+          orderRef: order.order_ref,
+          statusType: "payment_rejection",
+          oldValue: order.payment_status,
+          newValue: "PAYMENT_REJECTED",
+          changedBy: adminIdentifier,
+          notes: `Rejected: ${reason}`,
+        });
 
-      // Send Customer Rejection Email via FormSubmit (Non-blocking)
-      const customerEmail = order.shipping_email;
-      if (customerEmail) {
-        sendNotificationEmail({
-          to: customerEmail,
-          subject: `Payment Verification Update — Order ${order.order_ref}`,
-          data: {
-            "Order Reference": order.order_ref,
-            "Payment Status": "Payment Slip Rejected",
-            "Reason": reason,
-            "Action Required": "Please visit your order page and upload a clearer payment screenshot or correct transaction reference.",
-          },
-        }).catch(() => {});
+        // Send Customer Rejection Email via FormSubmit (Non-blocking)
+        const customerEmail = order.shipping_email;
+        if (customerEmail) {
+          sendNotificationEmail({
+            to: customerEmail,
+            subject: `Payment Verification Update — Order ${order.order_ref}`,
+            data: {
+              "Order Reference": order.order_ref,
+              "Payment Status": "Payment Slip Rejected",
+              Reason: reason,
+              "Action Required":
+                "Please visit your order page and upload a clearer payment screenshot or correct transaction reference.",
+            },
+          }).catch(() => {});
+        }
+
+        res.json({
+          ok: true,
+          paymentStatus: "PAYMENT_REJECTED",
+          rejectionReason: reason,
+          message: "Payment rejected and customer notified",
+        });
       }
-
-      res.json({
-        ok: true,
-        paymentStatus: "PAYMENT_REJECTED",
-        rejectionReason: reason,
-        message: "Payment rejected and customer notified",
-      });
+    } catch (err) {
+      next(err);
     }
-  } catch (err) {
-    next(err);
-  }
-});
+  },
+);
 
 /* 7. ADMIN — UPDATE DELIVERY INFORMATION */
-app.put("/api/admin/orders/:ref/delivery", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const body = req.body ?? {};
-  const deliveryStatus = body.deliveryStatus || body.status;
-  const deliveryCarrier = body.deliveryCarrier || body.carrier;
-  const deliveryPerson = body.deliveryPerson || body.person;
-  const deliveryPhone = body.deliveryPhone || body.phone;
-  const trackingNumber = body.trackingNumber || body.tracking;
-  const deliveryNotes = body.deliveryNotes || body.notes;
-  const estimatedDelivery = body.estimatedDelivery || body.eta;
+app.put(
+  "/api/admin/orders/:ref/delivery",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res, next) => {
+    const body = req.body ?? {};
+    const deliveryStatus = body.deliveryStatus || body.status;
+    const deliveryCarrier = body.deliveryCarrier || body.carrier;
+    const deliveryPerson = body.deliveryPerson || body.person;
+    const deliveryPhone = body.deliveryPhone || body.phone;
+    const trackingNumber = body.trackingNumber || body.tracking;
+    const deliveryNotes = body.deliveryNotes || body.notes;
+    const estimatedDelivery = body.estimatedDelivery || body.eta;
 
-  try {
-    await ensureFullOrderSchema();
-    const rawRef = req.params.ref;
-    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
+    try {
+      await ensureFullOrderSchema();
+      const rawRef = req.params.ref;
+      const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
 
-    const orderRows = await query(
-      "SELECT id, order_ref, shipping_email, shipping_name FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
-      [rawRef, refWithPrefix]
-    );
+      const orderRows = await query(
+        "SELECT id, order_ref, shipping_email, shipping_name FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
+        [rawRef, refWithPrefix],
+      );
 
-    if (orderRows.length === 0) {
-      return res.status(404).json({ error: "Order not found" });
-    }
+      if (orderRows.length === 0) {
+        return res.status(404).json({ error: "Order not found" });
+      }
 
-    const order = orderRows[0];
-    const newDeliveryStatus = deliveryStatus ? String(deliveryStatus).toUpperCase() : "PENDING";
+      const order = orderRows[0];
+      const newDeliveryStatus = deliveryStatus ? String(deliveryStatus).toUpperCase() : "PENDING";
 
-    // Synchronize order status if delivery reaches out_for_delivery or delivered
-    let newOrderStatusClause = "";
-    const params = [
-      newDeliveryStatus,
-      deliveryCarrier || null,
-      deliveryPerson || null,
-      deliveryPhone || null,
-      trackingNumber || null,
-      deliveryNotes || null,
-      estimatedDelivery || null,
-    ];
+      // Synchronize order status if delivery reaches out_for_delivery or delivered
+      let newOrderStatusClause = "";
+      const params = [
+        newDeliveryStatus,
+        deliveryCarrier || null,
+        deliveryPerson || null,
+        deliveryPhone || null,
+        trackingNumber || null,
+        deliveryNotes || null,
+        estimatedDelivery || null,
+      ];
 
-    if (newDeliveryStatus === "OUT_FOR_DELIVERY") {
-      newOrderStatusClause = ", status = 'OUT_FOR_DELIVERY'";
-    } else if (newDeliveryStatus === "DELIVERED") {
-      newOrderStatusClause = ", status = 'DELIVERED'";
-    }
+      if (newDeliveryStatus === "OUT_FOR_DELIVERY") {
+        newOrderStatusClause = ", status = 'OUT_FOR_DELIVERY'";
+      } else if (newDeliveryStatus === "DELIVERED") {
+        newOrderStatusClause = ", status = 'DELIVERED'";
+      }
 
-    params.push(order.id);
+      params.push(order.id);
 
-    await query(
-      `UPDATE orders SET
+      await query(
+        `UPDATE orders SET
         delivery_status = ?,
         delivery_carrier = ?,
         delivery_person = ?,
@@ -1363,106 +1619,121 @@ app.put("/api/admin/orders/:ref/delivery", authMiddleware, adminMiddleware, asyn
         estimated_delivery = ?
         ${newOrderStatusClause}
       WHERE id = ?`,
-      params
-    );
+        params,
+      );
 
-    await logOrderStatusChange({
-      orderId: order.id,
-      orderRef: order.order_ref,
-      statusType: "delivery_update",
-      oldValue: null,
-      newValue: newDeliveryStatus,
-      changedBy: req.user.email || "Admin",
-      notes: trackingNumber ? `Tracking #${trackingNumber} via ${deliveryCarrier || "Courier"}` : "Delivery telemetry updated"
-    });
+      await logOrderStatusChange({
+        orderId: order.id,
+        orderRef: order.order_ref,
+        statusType: "delivery_update",
+        oldValue: null,
+        newValue: newDeliveryStatus,
+        changedBy: req.user.email || "Admin",
+        notes: trackingNumber
+          ? `Tracking #${trackingNumber} via ${deliveryCarrier || "Courier"}`
+          : "Delivery telemetry updated",
+      });
 
-    // Notify customer if dispatched
-    if (newDeliveryStatus === "OUT_FOR_DELIVERY" && order.shipping_email) {
-      sendNotificationEmail({
-        to: order.shipping_email,
-        subject: `Your OMSUN Order is Out for Delivery! — ${order.order_ref}`,
-        data: {
-          "Order Reference": order.order_ref,
-          "Carrier": deliveryCarrier || "OMSUN Express Logistics",
-          "Courier Agent": deliveryPerson || "Assigned Driver",
-          "Courier Phone": deliveryPhone || "N/A",
-          "Tracking Number": trackingNumber || "N/A",
-          "Status": "On the way to your delivery address",
-        },
-      }).catch(() => {});
+      // Notify customer if dispatched
+      if (newDeliveryStatus === "OUT_FOR_DELIVERY" && order.shipping_email) {
+        sendNotificationEmail({
+          to: order.shipping_email,
+          subject: `Your OMSUN Order is Out for Delivery! — ${order.order_ref}`,
+          data: {
+            "Order Reference": order.order_ref,
+            Carrier: deliveryCarrier || "OMSUN Express Logistics",
+            "Courier Agent": deliveryPerson || "Assigned Driver",
+            "Courier Phone": deliveryPhone || "N/A",
+            "Tracking Number": trackingNumber || "N/A",
+            Status: "On the way to your delivery address",
+          },
+        }).catch(() => {});
+      }
+
+      res.json({ ok: true, message: "Delivery details updated successfully" });
+    } catch (err) {
+      next(err);
     }
-
-    res.json({ ok: true, message: "Delivery details updated successfully" });
-  } catch (err) {
-    next(err);
-  }
-});
+  },
+);
 
 /* 8. ADMIN — UPDATE GENERAL ORDER STATUS */
-app.put("/api/admin/orders/:ref/status", authMiddleware, adminMiddleware, async (req, res, next) => {
-  let { status, notes } = req.body ?? {};
-  if (!status) return res.status(400).json({ error: "status is required" });
+app.put(
+  "/api/admin/orders/:ref/status",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res, next) => {
+    let { status, notes } = req.body ?? {};
+    if (!status) return res.status(400).json({ error: "status is required" });
 
-  try {
-    await ensureFullOrderSchema();
-    const rawRef = req.params.ref;
-    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
+    try {
+      await ensureFullOrderSchema();
+      const rawRef = req.params.ref;
+      const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
 
-    const orderRows = await query(
-      "SELECT id, order_ref, status, shipping_email, shipping_name FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
-      [rawRef, refWithPrefix]
-    );
+      const orderRows = await query(
+        "SELECT id, order_ref, status, shipping_email, shipping_name FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
+        [rawRef, refWithPrefix],
+      );
 
-    if (orderRows.length === 0) {
-      return res.status(404).json({ error: "Order not found" });
-    }
-
-    const order = orderRows[0];
-    const upperStatus = String(status).toUpperCase();
-
-    await query("UPDATE orders SET status = ?, admin_notes = COALESCE(?, admin_notes) WHERE id = ?", [
-      upperStatus,
-      notes || null,
-      order.id,
-    ]);
-
-    await logOrderStatusChange({
-      orderId: order.id,
-      orderRef: order.order_ref,
-      statusType: "order_lifecycle",
-      oldValue: order.status,
-      newValue: upperStatus,
-      changedBy: req.user.email || "Admin",
-      notes: notes || `Lifecycle updated to ${upperStatus}`
-    });
-
-    // If cancelled, release reserved stock
-    if (upperStatus === "CANCELLED") {
-      const items = await query("SELECT product_id, qty FROM order_items WHERE order_id = ?", [order.id]);
-      for (const item of items) {
-        await query("UPDATE products SET stock = stock + ? WHERE id = ?", [item.qty, item.product_id]);
+      if (orderRows.length === 0) {
+        return res.status(404).json({ error: "Order not found" });
       }
-    }
 
-    // Send customer notification for major status updates
-    if (order.shipping_email && ["PROCESSING", "PACKED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"].includes(upperStatus)) {
-      sendNotificationEmail({
-        to: order.shipping_email,
-        subject: `Order Status Update: ${upperStatus} — ${order.order_ref}`,
-        data: {
-          "Order Reference": order.order_ref,
-          "New Status": upperStatus,
-          "Notes": notes || "Your order has progressed to the next fulfillment phase.",
-          "Timestamp": new Date().toLocaleString(),
-        },
-      }).catch(() => {});
-    }
+      const order = orderRows[0];
+      const upperStatus = String(status).toUpperCase();
 
-    res.json({ ok: true, status: upperStatus });
-  } catch (err) {
-    next(err);
-  }
-});
+      await query(
+        "UPDATE orders SET status = ?, admin_notes = COALESCE(?, admin_notes) WHERE id = ?",
+        [upperStatus, notes || null, order.id],
+      );
+
+      await logOrderStatusChange({
+        orderId: order.id,
+        orderRef: order.order_ref,
+        statusType: "order_lifecycle",
+        oldValue: order.status,
+        newValue: upperStatus,
+        changedBy: req.user.email || "Admin",
+        notes: notes || `Lifecycle updated to ${upperStatus}`,
+      });
+
+      // If cancelled, release reserved stock
+      if (upperStatus === "CANCELLED") {
+        const items = await query("SELECT product_id, qty FROM order_items WHERE order_id = ?", [
+          order.id,
+        ]);
+        for (const item of items) {
+          await query("UPDATE products SET stock = stock + ? WHERE id = ?", [
+            item.qty,
+            item.product_id,
+          ]);
+        }
+      }
+
+      // Send customer notification for major status updates
+      if (
+        order.shipping_email &&
+        ["PROCESSING", "PACKED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"].includes(upperStatus)
+      ) {
+        sendNotificationEmail({
+          to: order.shipping_email,
+          subject: `Order Status Update: ${upperStatus} — ${order.order_ref}`,
+          data: {
+            "Order Reference": order.order_ref,
+            "New Status": upperStatus,
+            Notes: notes || "Your order has progressed to the next fulfillment phase.",
+            Timestamp: new Date().toLocaleString(),
+          },
+        }).catch(() => {});
+      }
+
+      res.json({ ok: true, status: upperStatus });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 /* 9. ADMIN — DELETE ORDER */
 app.delete("/api/admin/orders/:ref", authMiddleware, adminMiddleware, async (req, res, next) => {
@@ -1471,17 +1742,31 @@ app.delete("/api/admin/orders/:ref", authMiddleware, adminMiddleware, async (req
     const rawRef = req.params.ref;
     const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
     const rows = await query(
-      "SELECT id FROM orders WHERE order_ref = ? OR order_ref = ?",
-      [rawRef, refWithPrefix]
+      "SELECT id, order_ref, status, payment_status FROM orders WHERE order_ref = ? OR order_ref = ?",
+      [rawRef, refWithPrefix],
     );
     if (rows.length === 0) {
       return res.status(404).json({ error: "Order not found" });
     }
-    const orderId = rows[0].id;
-    await query("DELETE FROM order_status_history WHERE order_id = ?", [orderId]);
-    await query("DELETE FROM order_items WHERE order_id = ?", [orderId]);
-    await query("DELETE FROM orders WHERE id = ?", [orderId]);
-    res.json({ ok: true, message: `Order ${rawRef} deleted successfully` });
+    const order = rows[0];
+
+    // Safely restore reserved inventory if order was active
+    if (order.status !== "CANCELLED" && order.payment_status !== "PAYMENT_REJECTED") {
+      const items = await query("SELECT product_id, qty FROM order_items WHERE order_id = ?", [
+        order.id,
+      ]);
+      for (const item of items) {
+        await query("UPDATE products SET stock = stock + ? WHERE id = ?", [
+          item.qty,
+          item.product_id,
+        ]);
+      }
+    }
+
+    await query("DELETE FROM order_status_history WHERE order_id = ?", [order.id]);
+    await query("DELETE FROM order_items WHERE order_id = ?", [order.id]);
+    await query("DELETE FROM orders WHERE id = ?", [order.id]);
+    res.json({ ok: true, message: `Order ${rawRef} deleted successfully and inventory restored` });
   } catch (err) {
     next(err);
   }
@@ -1504,7 +1789,14 @@ app.post("/api/upload", authMiddleware, adminMiddleware, async (req, res, next) 
 
     if (matches && matches.length === 3) {
       const type = matches[1];
-      detectedExt = type.includes("jpeg") || type.includes("jpg") ? ".jpg" : type.includes("webp") ? ".webp" : type.includes("svg") ? ".svg" : ".png";
+      detectedExt =
+        type.includes("jpeg") || type.includes("jpg")
+          ? ".jpg"
+          : type.includes("webp")
+            ? ".webp"
+            : type.includes("svg")
+              ? ".svg"
+              : ".png";
       buffer = Buffer.from(matches[2], "base64");
     } else {
       buffer = Buffer.from(imageBase64.replace(/^data:image\/\w+;base64,/, ""), "base64");
@@ -1575,10 +1867,19 @@ app.post("/api/admin/products", authMiddleware, adminMiddleware, async (req, res
     const prodId = id || `sku-${Date.now().toString(36)}`;
     const galleryList = Array.isArray(images)
       ? images
-      : (typeof images === "string" ? safeParseJson(images, []) : (image ? [image] : []));
-    const finalImages = galleryList.length > 0
-      ? (image && !galleryList.includes(image) ? [image, ...galleryList] : galleryList)
-      : (image ? [image] : []);
+      : typeof images === "string"
+        ? safeParseJson(images, [])
+        : image
+          ? [image]
+          : [];
+    const finalImages =
+      galleryList.length > 0
+        ? image && !galleryList.includes(image)
+          ? [image, ...galleryList]
+          : galleryList
+        : image
+          ? [image]
+          : [];
 
     await query(
       `INSERT INTO products (id, name, category, subcategory, brand, tagline, description, price, mrp, image, images, features, specs, stock, rating, badges)
@@ -1600,7 +1901,7 @@ app.post("/api/admin/products", authMiddleware, adminMiddleware, async (req, res
         Number(stock) || 0,
         Number(rating) || 4.8,
         JSON.stringify(badges || []),
-      ]
+      ],
     );
     res.status(201).json({ ok: true, id: prodId });
   } catch (err) {
@@ -1631,7 +1932,9 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
   } = req.body ?? {};
 
   try {
-    const existing = await query("SELECT id, image, images FROM products WHERE id = ?", [req.params.id]);
+    const existing = await query("SELECT id, image, images FROM products WHERE id = ?", [
+      req.params.id,
+    ]);
     if (existing.length === 0) {
       return res.status(404).json({ error: "Product not found" });
     }
@@ -1640,11 +1943,18 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
     if (images !== undefined) {
       const parsedImages = Array.isArray(images)
         ? images
-        : (typeof images === "string" ? safeParseJson(images, []) : []);
+        : typeof images === "string"
+          ? safeParseJson(images, [])
+          : [];
       const primaryImg = image !== undefined ? image : existing[0].image;
-      const finalGallery = parsedImages.length > 0
-        ? (primaryImg && !parsedImages.includes(primaryImg) ? [primaryImg, ...parsedImages] : parsedImages)
-        : (primaryImg ? [primaryImg] : []);
+      const finalGallery =
+        parsedImages.length > 0
+          ? primaryImg && !parsedImages.includes(primaryImg)
+            ? [primaryImg, ...parsedImages]
+            : parsedImages
+          : primaryImg
+            ? [primaryImg]
+            : [];
       serializedImages = JSON.stringify(finalGallery);
     }
 
@@ -1683,7 +1993,7 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
         rating != null ? Number(rating) : null,
         badges !== undefined ? (badges ? JSON.stringify(badges) : JSON.stringify([])) : null,
         req.params.id,
-      ]
+      ],
     );
     res.json({ ok: true });
   } catch (err) {
@@ -1698,6 +2008,16 @@ app.delete("/api/admin/products/:id", authMiddleware, adminMiddleware, async (re
     if (existing.length === 0) {
       return res.status(404).json({ error: "Product not found" });
     }
+    const orderItems = await query(
+      "SELECT COUNT(*) AS count FROM order_items WHERE product_id = ?",
+      [req.params.id],
+    );
+    if (orderItems[0]?.count > 0) {
+      return res.status(400).json({
+        error:
+          "Cannot delete product linked to existing customer orders. Please set stock to 0 instead to deactivate it.",
+      });
+    }
     await query("DELETE FROM products WHERE id = ?", [req.params.id]);
     res.json({ ok: true, message: `Product ${req.params.id} deleted` });
   } catch (err) {
@@ -1705,16 +2025,21 @@ app.delete("/api/admin/products/:id", authMiddleware, adminMiddleware, async (re
   }
 });
 
-app.patch("/api/admin/products/:id/stock", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const { stock } = req.body ?? {};
-  if (stock == null) return res.status(400).json({ error: "stock is required" });
-  try {
-    await query("UPDATE products SET stock = ? WHERE id = ?", [Number(stock), req.params.id]);
-    res.json({ ok: true, stock: Number(stock) });
-  } catch (err) {
-    next(err);
-  }
-});
+app.patch(
+  "/api/admin/products/:id/stock",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res, next) => {
+    const { stock } = req.body ?? {};
+    if (stock == null) return res.status(400).json({ error: "stock is required" });
+    try {
+      await query("UPDATE products SET stock = ? WHERE id = ?", [Number(stock), req.params.id]);
+      res.json({ ok: true, stock: Number(stock) });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 /* ═══════════════════════════════════════════════════════════════════ */
 /* ADMIN — Customers                                                  */
@@ -1779,7 +2104,15 @@ app.post("/api/admin/coupons", authMiddleware, adminMiddleware, async (req, res,
     const id = `CPN-${code.toUpperCase()}`;
     await query(
       "INSERT INTO coupons (id, code, discount_type, discount_value, min_spend, usage_limit, expiry_date) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [id, code.toUpperCase(), discountType.toLowerCase(), discountValue, minSpend || 0, usageLimit || 100, expiryDate || null],
+      [
+        id,
+        code.toUpperCase(),
+        discountType.toLowerCase(),
+        discountValue,
+        minSpend || 0,
+        usageLimit || 100,
+        expiryDate || null,
+      ],
     );
     res.status(201).json({ ok: true, id });
   } catch (err) {
@@ -1794,13 +2127,23 @@ app.post("/api/admin/coupons", authMiddleware, adminMiddleware, async (req, res,
 /* ADMIN — Coupons UPDATE / DELETE                                     */
 /* ═══════════════════════════════════════════════════════════════════ */
 app.put("/api/admin/coupons/:id", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const { code, discountType, discountValue, minSpend, usageLimit, expiryDate, status } = req.body ?? {};
+  const { code, discountType, discountValue, minSpend, usageLimit, expiryDate, status } =
+    req.body ?? {};
   try {
     const existing = await query("SELECT id FROM coupons WHERE id = ?", [req.params.id]);
     if (existing.length === 0) return res.status(404).json({ error: "Coupon not found" });
     await query(
       "UPDATE coupons SET code=COALESCE(?,code), discount_type=COALESCE(?,discount_type), discount_value=COALESCE(?,discount_value), min_spend=COALESCE(?,min_spend), usage_limit=COALESCE(?,usage_limit), expiry_date=COALESCE(?,expiry_date), status=COALESCE(?,status) WHERE id=?",
-      [code?.toUpperCase(), discountType?.toLowerCase(), discountValue, minSpend, usageLimit, expiryDate, status?.toLowerCase(), req.params.id],
+      [
+        code?.toUpperCase(),
+        discountType?.toLowerCase(),
+        discountValue,
+        minSpend,
+        usageLimit,
+        expiryDate,
+        status?.toLowerCase(),
+        req.params.id,
+      ],
     );
     res.json({ ok: true });
   } catch (err) {
@@ -1850,7 +2193,15 @@ app.post("/api/admin/partners", authMiddleware, adminMiddleware, async (req, res
     const partnerId = id || `PRT-${Date.now().toString(36).toUpperCase()}`;
     await query(
       "INSERT INTO partners (id, name, category, partner_since, status, logo_url, notes) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [partnerId, name, category, partnerSince || "", status?.includes("active") ? "active" : "pending", logoUrl || null, notes || null],
+      [
+        partnerId,
+        name,
+        category,
+        partnerSince || "",
+        status?.includes("active") ? "active" : "pending",
+        logoUrl || null,
+        notes || null,
+      ],
     );
     res.status(201).json({ ok: true, id: partnerId });
   } catch (err) {
@@ -1868,7 +2219,15 @@ app.put("/api/admin/partners/:id", authMiddleware, adminMiddleware, async (req, 
     if (existing.length === 0) return res.status(404).json({ error: "Partner not found" });
     await query(
       "UPDATE partners SET name=COALESCE(?,name), category=COALESCE(?,category), partner_since=COALESCE(?,partner_since), status=COALESCE(?,status), logo_url=COALESCE(?,logo_url), notes=COALESCE(?,notes) WHERE id=?",
-      [name, category, partnerSince, status?.includes("active") ? "active" : "pending", logoUrl, notes, req.params.id],
+      [
+        name,
+        category,
+        partnerSince,
+        status?.includes("active") ? "active" : "pending",
+        logoUrl,
+        notes,
+        req.params.id,
+      ],
     );
     res.json({ ok: true });
   } catch (err) {
@@ -1909,7 +2268,8 @@ app.get("/api/admin/banners", authMiddleware, adminMiddleware, async (_req, res,
 });
 
 app.post("/api/admin/banners", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const { id, title, subtitle, ctaText, ctaLink, image, tagBadge, displayOrder, status } = req.body ?? {};
+  const { id, title, subtitle, ctaText, ctaLink, image, tagBadge, displayOrder, status } =
+    req.body ?? {};
   if (!title) {
     return res.status(400).json({ error: "title is required" });
   }
@@ -1917,7 +2277,17 @@ app.post("/api/admin/banners", authMiddleware, adminMiddleware, async (req, res,
     const bannerId = id || `BAN-${Date.now().toString(36).toUpperCase()}`;
     await query(
       "INSERT INTO banners (id, title, subtitle, cta_text, cta_link, image, tag_badge, display_order, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [bannerId, title, subtitle || null, ctaText || null, ctaLink || null, image || null, tagBadge || null, displayOrder || 0, status?.toLowerCase() === "active" ? "active" : "draft"],
+      [
+        bannerId,
+        title,
+        subtitle || null,
+        ctaText || null,
+        ctaLink || null,
+        image || null,
+        tagBadge || null,
+        displayOrder || 0,
+        status?.toLowerCase() === "active" ? "active" : "draft",
+      ],
     );
     res.status(201).json({ ok: true, id: bannerId });
   } catch (err) {
@@ -1929,13 +2299,24 @@ app.post("/api/admin/banners", authMiddleware, adminMiddleware, async (req, res,
 });
 
 app.put("/api/admin/banners/:id", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const { title, subtitle, ctaText, ctaLink, image, tagBadge, displayOrder, status } = req.body ?? {};
+  const { title, subtitle, ctaText, ctaLink, image, tagBadge, displayOrder, status } =
+    req.body ?? {};
   try {
     const existing = await query("SELECT id FROM banners WHERE id = ?", [req.params.id]);
     if (existing.length === 0) return res.status(404).json({ error: "Banner not found" });
     await query(
       "UPDATE banners SET title=COALESCE(?,title), subtitle=COALESCE(?,subtitle), cta_text=COALESCE(?,cta_text), cta_link=COALESCE(?,cta_link), image=COALESCE(?,image), tag_badge=COALESCE(?,tag_badge), display_order=COALESCE(?,display_order), status=COALESCE(?,status) WHERE id=?",
-      [title, subtitle, ctaText, ctaLink, image, tagBadge, displayOrder, status?.toLowerCase(), req.params.id],
+      [
+        title,
+        subtitle,
+        ctaText,
+        ctaLink,
+        image,
+        tagBadge,
+        displayOrder,
+        status?.toLowerCase(),
+        req.params.id,
+      ],
     );
     res.json({ ok: true });
   } catch (err) {
@@ -1959,11 +2340,19 @@ app.get("/api/admin/stats", authMiddleware, adminMiddleware, async (_req, res, n
   try {
     const [productCount] = await query("SELECT COUNT(*) AS cnt FROM products");
     const [orderCount] = await query("SELECT COUNT(*) AS cnt FROM orders");
-    const [customerCount] = await query("SELECT COUNT(*) AS cnt FROM users WHERE role = 'customer'");
-    const [revenueSum] = await query("SELECT COALESCE(SUM(grand_total), 0) AS total FROM orders WHERE status != 'cancelled'");
-    const [pendingOrders] = await query("SELECT COUNT(*) AS cnt FROM orders WHERE status = 'pending'");
+    const [customerCount] = await query(
+      "SELECT COUNT(*) AS cnt FROM users WHERE role = 'customer'",
+    );
+    const [revenueSum] = await query(
+      "SELECT COALESCE(SUM(grand_total), 0) AS total FROM orders WHERE status != 'cancelled'",
+    );
+    const [pendingOrders] = await query(
+      "SELECT COUNT(*) AS cnt FROM orders WHERE status = 'pending'",
+    );
     const [lowStock] = await query("SELECT COUNT(*) AS cnt FROM products WHERE stock <= 10");
-    const categoryRows = await query("SELECT category, COUNT(*) AS cnt FROM products GROUP BY category ORDER BY cnt DESC");
+    const categoryRows = await query(
+      "SELECT category, COUNT(*) AS cnt FROM products GROUP BY category ORDER BY cnt DESC",
+    );
     const monthlyRows = await query(`
       SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, SUM(grand_total) AS revenue, COUNT(*) AS orders
       FROM orders WHERE status != 'cancelled'
@@ -1978,18 +2367,133 @@ app.get("/api/admin/stats", authMiddleware, adminMiddleware, async (_req, res, n
       pendingOrders: pendingOrders.cnt,
       lowStockItems: lowStock.cnt,
       categoryDistribution: categoryRows.map((r) => ({ name: r.category, value: r.cnt })),
-      monthlyTrend: monthlyRows.map((r) => ({ month: r.month, revenue: Number(r.revenue), orders: r.orders })),
+      monthlyTrend: monthlyRows.map((r) => ({
+        month: r.month,
+        revenue: Number(r.revenue),
+        orders: r.orders,
+      })),
     });
   } catch (err) {
     next(err);
   }
 });
 
-app.post("/api/admin/sync-catalog", async (req, res, next) => {
+/* ═══════════════════════════════════════════════════════════════════ */
+/* ADMIN — Inquiries & Subscribers                                     */
+/* ═══════════════════════════════════════════════════════════════════ */
+app.get("/api/admin/inquiries", authMiddleware, adminMiddleware, async (_req, res, next) => {
+  try {
+    const contactMessages = await query(
+      "SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT 100",
+    );
+    const subscribers = await query(
+      "SELECT * FROM newsletter_subscribers ORDER BY created_at DESC LIMIT 100",
+    );
+    res.json({
+      ok: true,
+      contactMessages: contactMessages.map((m) => ({
+        id: m.id,
+        name: m.name,
+        email: m.email,
+        phone: m.phone || "",
+        company: m.company || "",
+        inquiryType: m.inquiry_type || "General",
+        systemSize: m.system_size || "",
+        district: m.district || "",
+        message: m.message,
+        createdAt: m.created_at,
+      })),
+      subscribers: subscribers.map((s) => ({
+        id: s.id,
+        email: s.email,
+        createdAt: s.created_at,
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post("/api/admin/sync-catalog", authMiddleware, adminMiddleware, async (req, res, next) => {
   try {
     await setup();
     const rows = await query("SELECT COUNT(*) as count FROM products");
     res.json({ ok: true, count: rows[0].count });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* PUBLIC — Contact & Newsletter                                       */
+/* ═══════════════════════════════════════════════════════════════════ */
+app.post("/api/contact", contactLimiter, async (req, res, next) => {
+  const { name, email, phone, company, inquiryType, systemSize, district, message } =
+    req.body ?? {};
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: "Name, email, and message are required" });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: "Invalid email address format" });
+  }
+
+  try {
+    const result = await query(
+      `INSERT INTO contact_messages (name, email, phone, company, inquiry_type, system_size, district, message)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        String(name).slice(0, 120),
+        String(email).slice(0, 190),
+        phone ? String(phone).slice(0, 30) : null,
+        company ? String(company).slice(0, 120) : null,
+        inquiryType ? String(inquiryType).slice(0, 60) : null,
+        systemSize ? String(systemSize).slice(0, 60) : null,
+        district ? String(district).slice(0, 120) : null,
+        String(message).slice(0, 5000),
+      ],
+    );
+
+    // Non-blocking FormSubmit email notification to admin
+    sendNotificationEmail({
+      to: ADMIN_NOTIFICATION_EMAIL,
+      subject: `New Omsun Contact Inquiry — ${name} (${inquiryType || "General"})`,
+      data: {
+        "Sender Name": name,
+        "Email Address": email,
+        "Phone Number": phone || "N/A",
+        "Company / Organization": company || "N/A",
+        "Inquiry Category": inquiryType || "General",
+        "Estimated Solar System Size": systemSize || "N/A",
+        "District / Location": district || "N/A",
+        "Message Content": message,
+        "Received At": new Date().toLocaleString(),
+      },
+    }).catch(() => {});
+
+    res
+      .status(201)
+      .json({
+        ok: true,
+        id: result.insertId,
+        message: "Thank you for reaching out. We will get back to you shortly.",
+      });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post("/api/newsletter", newsletterLimiter, async (req, res, next) => {
+  const { email } = req.body ?? {};
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: "Valid email address is required" });
+  }
+
+  try {
+    await query(
+      "INSERT INTO newsletter_subscribers (email) VALUES (?) ON DUPLICATE KEY UPDATE created_at = created_at",
+      [String(email).toLowerCase().slice(0, 190)],
+    );
+    res.json({ ok: true, message: "Thank you for subscribing to OMSUN Nepal updates!" });
   } catch (err) {
     next(err);
   }

@@ -72,10 +72,23 @@ class ApiClient {
     }>("/api/auth/me");
   }
 
-  async updateProfile(body: { fullName?: string; phone?: string; company?: string; avatar?: string | null }) {
+  async updateProfile(body: {
+    fullName?: string;
+    phone?: string;
+    company?: string;
+    avatar?: string | null;
+  }) {
     return this.request<{
       ok: boolean;
-      user: { id: string; name: string; email: string; phone: string; company: string; role: string; avatar?: string | null };
+      user: {
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+        company: string;
+        role: string;
+        avatar?: string | null;
+      };
     }>("/api/auth/profile", {
       method: "PUT",
       body: JSON.stringify(body),
@@ -149,7 +162,7 @@ class ApiClient {
       phone?: string;
       type?: string;
       isDefault?: boolean;
-    }
+    },
   ) {
     return this.request<{ ok: boolean; message: string }>(`/api/user/addresses/${id}`, {
       method: "PUT",
@@ -179,7 +192,14 @@ class ApiClient {
   /* ── Orders ── */
   async createOrder(body: {
     items: { productId: string; quantity: number }[];
-    shipping: { name: string; phone: string; email?: string; address: string; city: string; notes?: string };
+    shipping: {
+      name: string;
+      phone: string;
+      email?: string;
+      address: string;
+      city: string;
+      notes?: string;
+    };
     paymentMethod: string;
     paymentReceipt?: string | null;
     couponCode?: string;
@@ -208,7 +228,7 @@ class ApiClient {
 
   async submitPaymentProof(
     orderRef: string,
-    body: { receiptBase64: string; transactionRef?: string | undefined }
+    body: { receiptBase64: string; transactionRef?: string | undefined },
   ) {
     return this.request<{
       ok: boolean;
@@ -232,7 +252,7 @@ class ApiClient {
 
   async adminVerifyPayment(
     orderRef: string,
-    body: { approve: boolean; rejectionReason?: string | undefined; notes?: string | undefined }
+    body: { approve: boolean; rejectionReason?: string | undefined; notes?: string | undefined },
   ) {
     return this.request<{
       ok: boolean;
@@ -256,12 +276,15 @@ class ApiClient {
       trackingNumber?: string | undefined;
       deliveryNotes?: string | undefined;
       estimatedDelivery?: string | undefined;
-    }
+    },
   ) {
-    return this.request<{ ok: boolean; message: string }>(`/api/admin/orders/${orderRef}/delivery`, {
-      method: "PUT",
-      body: JSON.stringify(body),
-    });
+    return this.request<{ ok: boolean; message: string }>(
+      `/api/admin/orders/${orderRef}/delivery`,
+      {
+        method: "PUT",
+        body: JSON.stringify(body),
+      },
+    );
   }
 
   async adminUpdateOrderStatus(orderRef: string, status: string, notes?: string | undefined) {
@@ -297,7 +320,10 @@ class ApiClient {
   }
 
   /* ── Admin Media Upload ── */
-  async uploadImage(fileOrBase64: File | string, fileName?: string): Promise<{ ok: boolean; url: string; fileName: string }> {
+  async uploadImage(
+    fileOrBase64: File | string,
+    fileName?: string,
+  ): Promise<{ ok: boolean; url: string; fileName: string }> {
     let base64String: string;
     let name = fileName || "image.png";
 
@@ -354,10 +380,13 @@ class ApiClient {
   }
 
   async verifyAdminOrderPayment(ref: string, approve: boolean) {
-    return this.request<{ ok: boolean; status: string; message?: string }>(`/api/admin/orders/${ref}/verify-payment`, {
-      method: "PUT",
-      body: JSON.stringify({ approve }),
-    });
+    return this.request<{ ok: boolean; status: string; message?: string }>(
+      `/api/admin/orders/${ref}/verify-payment`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ approve }),
+      },
+    );
   }
 
   async deleteAdminOrder(ref: string) {
@@ -495,6 +524,11 @@ class ApiClient {
   /* ── Stats ── */
   async getAdminStats() {
     return this.request<AdminStatsRow>("/api/admin/stats");
+  }
+
+  /* ── Inquiries & Subscribers ── */
+  async getAdminInquiries() {
+    return this.request<AdminInquiriesResponse>("/api/admin/inquiries");
   }
 
   /* ── Stock Update ── */
@@ -743,6 +777,31 @@ export interface AdminStatsRow {
   lowStockItems: number;
   categoryDistribution: { name: string; value: number }[];
   monthlyTrend: { month: string; revenue: number; orders: number }[];
+}
+
+export interface ContactMessageRow {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  inquiryType: string;
+  systemSize: string;
+  district: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface NewsletterSubscriberRow {
+  id: number;
+  email: string;
+  createdAt: string;
+}
+
+export interface AdminInquiriesResponse {
+  ok: boolean;
+  contactMessages: ContactMessageRow[];
+  subscribers: NewsletterSubscriberRow[];
 }
 
 export const api = new ApiClient();
