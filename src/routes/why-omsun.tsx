@@ -69,7 +69,7 @@ const reasons = [
   {
     icon: Heart,
     title: "Customer-Focused Service",
-    desc: "We prioritize your satisfaction at every step — from initial consultation to installation, maintenance, and ongoing support.",
+    desc: "We prioritize your satisfaction at every step â€” from initial consultation to installation, maintenance, and ongoing support.",
   },
   {
     icon: Headphones,
@@ -118,9 +118,9 @@ function AboutPage() {
               </p>
               <div className="mt-10 inline-flex flex-wrap items-center gap-4 rounded-2xl border border-white/15 bg-white/5 px-6 py-4 backdrop-blur-md text-white text-xs font-bold uppercase tracking-widest">
                 <span className="text-[#03C987]">Reliable Power</span>
-                <span className="text-white/30">•</span>
+                <span className="text-white/30">â€”</span>
                 <span className="text-[#03C987]">Trusted Solutions</span>
-                <span className="text-white/30">•</span>
+                <span className="text-white/30">â€”</span>
                 <span className="text-[#03C987]">Nationwide Service</span>
               </div>
             </Reveal>
@@ -177,7 +177,7 @@ function AboutPage() {
                         Serving Nepal Since Day One
                       </div>
                       <div className="text-sm font-semibold">
-                        Online Platform & Offline Store — Nationwide
+                        Online Platform & Offline Store â€” Nationwide
                       </div>
                     </div>
                   </div>
@@ -244,7 +244,7 @@ function AboutPage() {
               </h2>
               <p className="mt-3 text-sm text-muted-foreground font-medium">
                 From everyday household requirements to demanding commercial and institutional
-                applications — we have you covered.
+                applications â€” we have you covered.
               </p>
             </Reveal>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -329,7 +329,7 @@ function AboutPage() {
                 Solutions You Can Depend On
               </h2>
               <p className="mt-3 text-sm text-muted-foreground font-medium">
-                Today and for the future — OMSUN Nepal Private Limited is committed to powering your needs.
+                Today and for the future â€” OMSUN Nepal Private Limited is committed to powering your needs.
               </p>
             </Reveal>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -360,7 +360,7 @@ function AboutPage() {
                   </h2>
                   <p className="mt-4 max-w-xl mx-auto text-sm text-emerald-100/80 leading-relaxed font-medium">
                     Browse our complete range of UPS, Inverters, Stabilizers, Batteries, and Solar
-                    Products — or reach out to our team for expert guidance.
+                    Products â€” or reach out to our team for expert guidance.
                   </p>
                   <div className="mt-8 flex flex-wrap justify-center gap-4">
                     <Button
