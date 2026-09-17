@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SolarSolutionsRouteImport } from './routes/solar-solutions'
@@ -45,6 +46,11 @@ const AuthRoute = AuthRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsRoute = ProjectsRouteImport.update({
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
   '/projects': typeof ProjectsRoute
   '/shop': typeof ShopRoute
   '/solar-solutions': typeof SolarSolutionsRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
   '/projects': typeof ProjectsRoute
   '/shop': typeof ShopRoute
   '/solar-solutions': typeof SolarSolutionsRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/_protected': typeof ProtectedRouteWithChildren
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
   '/projects': typeof ProjectsRoute
   '/shop': typeof ShopRoute
   '/solar-solutions': typeof SolarSolutionsRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/contact'
+    | '/faq'
     | '/projects'
     | '/shop'
     | '/solar-solutions'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/contact'
+    | '/faq'
     | '/projects'
     | '/shop'
     | '/solar-solutions'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/_protected'
     | '/auth'
     | '/contact'
+    | '/faq'
     | '/projects'
     | '/shop'
     | '/solar-solutions'
@@ -191,6 +203,7 @@ export interface RootRouteChildren {
   ProtectedRoute: typeof ProtectedRouteWithChildren
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
+  FaqRoute: typeof FaqRoute
   ProjectsRoute: typeof ProjectsRoute
   ShopRoute: typeof ShopRoute
   SolarSolutionsRoute: typeof SolarSolutionsRoute
@@ -234,6 +247,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects': {
@@ -332,6 +352,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProtectedRoute: ProtectedRouteWithChildren,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
+  FaqRoute: FaqRoute,
   ProjectsRoute: ProjectsRoute,
   ShopRoute: ShopRoute,
   SolarSolutionsRoute: SolarSolutionsRoute,

@@ -21,14 +21,15 @@ import omsunLogo from "@/assets/Omsun Nepal logo-WA0006.webp";
 
 const columns = [
   {
-    title: "Product Verticals",
+    title: "Products",
     items: [
-      { label: "Solar Panels", to: "/shop" },
-      { label: "Hybrid Inverters", to: "/shop" },
-      { label: "Energy Storage", to: "/shop" },
-      { label: "Cables & Wiring", to: "/shop" },
-      { label: "Solar Lighting", to: "/shop" },
-      { label: "Switchgear & Panels", to: "/shop" },
+      { label: "UPS Systems", to: "/shop" },
+      { label: "Inverters", to: "/shop" },
+      { label: "Batteries", to: "/shop" },
+      { label: "Voltage Stabilizers", to: "/shop" },
+      { label: "Solar Products", to: "/shop" },
+      { label: "Power Backup Solutions", to: "/shop" },
+      { label: "Electrical Products", to: "/shop" },
     ],
   },
   {
@@ -42,12 +43,12 @@ const columns = [
     ],
   },
   {
-    title: "Company & Trust",
+    title: "Quick Links",
     items: [
-      { label: "Why OMSUN", to: "/why-omsun" },
+      { label: "About Us", to: "/why-omsun" },
       { label: "Contact Us", to: "/contact" },
-      { label: "Case Studies & Projects", to: "/projects" },
-      { label: "Central Kathmandu Hub", to: "/contact" },
+      { label: "FAQ", to: "/faq" },
+      { label: "Projects", to: "/projects" },
       { label: "Warranty & Support", to: "/contact" },
     ],
   },
@@ -66,7 +67,7 @@ export function Footer() {
           <div className="max-w-xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-xs font-bold text-[#03C987] mb-3">
               <Zap className="size-3.5 text-[#03C987]" />
-              <span>Renewable Energy Updates in Nepal</span>
+              <span>Reliable Power. Smarter Energy. Better Solutions.</span>
             </div>
             <h3 className="font-display text-2xl sm:text-3xl font-extrabold text-white">
               Stay Informed on Solar Pricing & Tech
@@ -126,9 +127,12 @@ export function Footer() {
             </Link>
 
             <p className="text-xs font-semibold text-[#173226]/90 leading-relaxed max-w-md">
-              OMSUN Nepal Pvt. Ltd. is a premier EPC contractor, importer, and distributor of Tier-1
-              solar panels, hybrid inverters, LiFePO4 batteries, copper cables, and switchgear in
-              Nepal.
+              OMSUN Nepal Private Limited delivers reliable power backup solutions, including UPS,
+              Inverters, Stabilizers, and Solar Products, serving customers across Nepal through
+              both its online platform and offline store.
+            </p>
+            <p className="text-[11px] font-bold text-[#173226]/70 tracking-wide uppercase">
+              Reliable Power · Trusted Solutions · Nationwide Service
             </p>
 
             <ul className="space-y-3 text-xs text-[#173226] font-bold">
@@ -136,7 +140,7 @@ export function Footer() {
                 <span className="grid size-8 place-items-center rounded-lg bg-[#173226] text-white border border-[#173226] shrink-0 shadow-xs">
                   <MapPin className="size-4 text-[#43B987]" />
                 </span>
-                <span>Teku Central Hub, Kathmandu, Nepal</span>
+                <span>Bhotebahal Marg-11, Kathmandu, Nepal (Showroom)</span>
               </li>
 
               <li className="flex items-center gap-3">
@@ -144,9 +148,9 @@ export function Footer() {
                   <Phone className="size-4 text-[#43B987]" />
                 </span>
                 <div className="flex flex-col">
-                  <span>+977 1 5320 118 / +977 9801 234 567</span>
+                  <span>+977-9801828498 / +977-9841403747</span>
                   <span className="text-[10px] text-[#173226]/80 font-medium">
-                    Mon–Fri: 9:00 AM – 6:00 PM
+                    +977-9841285760 / 01-53114114
                   </span>
                 </div>
               </li>
@@ -155,7 +159,7 @@ export function Footer() {
                 <span className="grid size-8 place-items-center rounded-lg bg-[#173226] text-white border border-[#173226] shrink-0 shadow-xs">
                   <Mail className="size-4 text-[#43B987]" />
                 </span>
-                <span>info@omsunnepal.com / sales@omsunnepal.com</span>
+                <span>nepalomsun@gmail.com</span>
               </li>
             </ul>
 

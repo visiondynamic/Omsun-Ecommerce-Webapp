@@ -74,7 +74,7 @@ const links = [
     hasMenu: true,
   },
   {
-    label: "Why OMSUN",
+    label: "About Us",
     to: "/why-omsun",
     color: "#3BB273",
     glow: "rgba(59,178,115,0.4)",

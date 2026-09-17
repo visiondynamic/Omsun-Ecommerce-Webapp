@@ -50,17 +50,17 @@ const branchLocations = [
   {
     id: "kathmandu",
     city: "Kathmandu (Central HQ)",
-    name: "Teku Solar & Electrical Hub",
-    address: "Teku Main Ring Road Corridor, Ward 12, Kathmandu 44600, Nepal",
-    landmark: "50m South of Teku Bridge, Opposite Electric Substation",
-    phone: "+977 1 5320 118",
-    hotline: "+977 9801 234 567",
-    email: "info@omsunnepal.com",
+    name: "OMSUN Nepal Pvt. Ltd. – Regd. Office",
+    address: "Budhanilkantha-8, Kathmandu, Nepal",
+    landmark: "Showroom: Bhotebahal Marg-11, Kathmandu, Nepal",
+    phone: "+977-01-53114114",
+    hotline: "+977-9801828498",
+    email: "nepalomsun@gmail.com",
     hours: "Mon – Fri: 9:00 AM – 6:00 PM | Sat: 10:00 AM – 4:00 PM",
     isHQ: true,
-    mapUrl: "https://maps.google.com/?q=Teku+Kathmandu+Nepal",
-    embedCoords: "27.6978° N, 85.3045° E",
-    embedUrl: "https://maps.google.com/maps?q=27.6978,85.3045&z=15&output=embed",
+    mapUrl: "https://maps.google.com/?q=Budhanilkantha+Kathmandu+Nepal",
+    embedCoords: "27.7667° N, 85.3567° E",
+    embedUrl: "https://maps.google.com/maps?q=27.7667,85.3567&z=15&output=embed",
   },
   {
     id: "pokhara",
@@ -249,16 +249,16 @@ function ContactPage() {
             <Reveal className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#03C987] mb-6">
                 <Headphones className="size-4" />
-                <span>Nepal Solar & Engineering Support</span>
+                <span>Power & Energy Solutions Nepal</span>
               </div>
 
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
-                Let's Power Your Next Solar Project in Nepal
-              </h1>
+                <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+                  Let's Find the Right Power Solution for You
+                </h1>
 
-              <p className="mt-5 text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl">
-                Have questions about custom solar sizing, NEA net-metering, equipment supply, or
-                warranty support? Contact our Kathmandu engineering team or regional hubs.
+              <p className="mt-5 text-base sm:text-lg text-slate-300 leading-relaxed font-medium">
+                Have a question about UPS systems, inverters, stabilizers, batteries, solar
+                products, or need a quote? Our team is ready to help you find the right solution.
               </p>
 
               {/* Fast Action Stats Strip */}
@@ -304,10 +304,12 @@ function ContactPage() {
               </div>
               <h3 className="text-base font-extrabold text-white">Central Hub (Kathmandu)</h3>
               <p className="mt-1.5 text-xs text-slate-300 leading-relaxed font-medium">
-                Teku Main Ring Road Corridor, Ward 12, Kathmandu, Nepal
+                Regd. Office: Budhanilkantha-8, Kathmandu, Nepal
+                <br />
+                Showroom: Bhotebahal Marg-11, Kathmandu, Nepal
               </p>
               <a
-                href="https://maps.google.com/?q=Teku+Kathmandu+Nepal"
+                href="https://maps.google.com/?q=Budhanilkantha+Kathmandu+Nepal"
                 target="_blank"
                 rel="noreferrer"
                 className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#03C987] hover:underline"
@@ -324,12 +326,14 @@ function ContactPage() {
               </div>
               <h3 className="text-base font-extrabold text-white">Direct Phone & WhatsApp</h3>
               <p className="mt-1.5 text-xs text-slate-300 leading-relaxed font-medium">
-                Landline: +977 1 5320 118
+                Landline: +977-01-53114114
                 <br />
-                Hotline / WhatsApp: +977 9801 234 567
+                Mobile / WhatsApp: +977-9801828498
+                <br />
+                +977-9841403747 / +977-9841285760
               </p>
               <a
-                href="https://wa.me/9779801234567"
+                href="https://wa.me/9779801828498"
                 target="_blank"
                 rel="noreferrer"
                 className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#03C987] hover:underline"
@@ -346,12 +350,10 @@ function ContactPage() {
               </div>
               <h3 className="text-base font-extrabold text-white">Email Engineering</h3>
               <p className="mt-1.5 text-xs text-slate-300 leading-relaxed font-medium">
-                General: info@omsunnepal.com
-                <br />
-                Commercial Sales: sales@omsunnepal.com
+                Official Email: nepalomsun@gmail.com
               </p>
               <a
-                href="mailto:info@omsunnepal.com"
+                href="mailto:nepalomsun@gmail.com"
                 className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#03C987] hover:underline"
               >
                 <span>Send Direct Email</span>
@@ -523,11 +525,13 @@ function ContactPage() {
                               onChange={handleInputChange}
                               className="h-12 w-full rounded-xl border border-white/15 bg-[#041a12] px-3.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#03C987]"
                             >
-                              <option value="residential">Residential Solar</option>
-                              <option value="commercial">Commercial & Industrial EPC</option>
-                              <option value="offgrid">Off-Grid Himalayan System</option>
-                              <option value="wholesale">Wholesale / Distributor Supply</option>
-                              <option value="service">Maintenance & Technical Support</option>
+                              <option value="ups">UPS System</option>
+                              <option value="inverter">Inverter</option>
+                              <option value="battery">Battery</option>
+                              <option value="stabilizer">Voltage Stabilizer</option>
+                              <option value="solar">Solar Products</option>
+                              <option value="powerbackup">Power Backup Solution</option>
+                              <option value="other">Other / General Inquiry</option>
                             </select>
                           </div>
 
@@ -578,7 +582,7 @@ function ContactPage() {
                             value={formData.message}
                             onChange={handleInputChange}
                             rows={4}
-                            placeholder="Tell us about your rooftop type, current monthly electricity bill, grid connection type, or specific solar module/inverter preferences..."
+                            placeholder="Tell us your power requirement — e.g. UPS for office, inverter capacity needed, solar system size, backup hours required, or any other details..."
                             required
                             className="rounded-xl border-white/15 bg-black/40 text-xs text-white placeholder:text-slate-500 focus-visible:ring-[#03C987] resize-none"
                           />
@@ -686,17 +690,17 @@ function ContactPage() {
                     </p>
                     <div className="mt-4 flex flex-wrap items-center gap-3">
                       <a
-                        href="tel:+97715320118"
+                        href="tel:+97701531144114"
                         className="inline-flex items-center gap-2 rounded-xl bg-[#03C987] px-4 py-2.5 text-xs font-extrabold text-[#041a12] hover:bg-white transition-colors"
                       >
                         <Phone className="size-3.5" />
-                        <span>+977 1 5320 118</span>
+                        <span>+977-01-53114114</span>
                       </a>
                       <a
-                        href="tel:+9779801234567"
+                        href="tel:+9779801828498"
                         className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-bold text-white hover:bg-white/20 transition-colors"
                       >
-                        <span>+977 9801 234 567</span>
+                        <span>+977-9801828498</span>
                       </a>
                     </div>
                   </div>

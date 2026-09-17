@@ -40,17 +40,17 @@ import stabilizerImg from "@/assets/products/omsun-mter-10kva.webp";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "OMSUN Nepal — Solar, Electrical & Renewable Energy Solutions" },
+      { title: "OMSUN Nepal — Reliable Power & Energy Solutions" },
       {
         name: "description",
         content:
-          "OMSUN Nepal Pvt. Ltd. supplies premium solar panels, inverters, storage, cables, lighting and industrial switchgear — engineered for clean, reliable power across Nepal.",
+          "OMSUN Nepal Private Limited provides reliable UPS systems, inverters, voltage stabilizers, batteries, solar products, and power backup solutions for homes, businesses, and institutions across Nepal.",
       },
-      { property: "og:title", content: "OMSUN Nepal — Clean Energy, Engineered" },
+      { property: "og:title", content: "OMSUN Nepal — Reliable Power. Smarter Energy. Better Solutions." },
       {
         property: "og:description",
         content:
-          "Premium solar, electrical and renewable energy products with nationwide installation and support.",
+          "Dependable UPS, Inverters, Stabilizers, Batteries, and Solar Products — serving customers across Nepal with professional guidance and customer-focused support.",
       },
     ],
   }),
@@ -169,10 +169,10 @@ function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 text-center">
               {[
-                { value: "18 MW+", label: "Installed Capacity", sub: "Utility & Commercial Solar" },
-                { value: "4,200+", label: "Projects Completed", sub: "Across All 7 Provinces" },
-                { value: "77", label: "Districts Covered", sub: "Terai to High Himalaya" },
-                { value: "24/7", label: "Engineer Support", sub: "Nationwide Warranty" },
+                { value: "Nepal-Wide", label: "Service Coverage", sub: "Online & Offline Store" },
+                { value: "Multi-Brand", label: "Product Range", sub: "UPS · Inverter · Solar · More" },
+                { value: "Expert", label: "Product Guidance", sub: "Before & After Purchase" },
+                { value: "Dependable", label: "Customer Support", sub: "Long-Term Relationships" },
               ].map((stat) => (
                 <div key={stat.label} className="flex flex-col items-center justify-center p-2">
                   <div className="font-display text-2xl sm:text-4xl font-extrabold text-[#173226] tracking-tight">
@@ -378,9 +378,9 @@ function Home() {
 
                     <div className="mt-8 space-y-3 border-t border-[#03C987]/30 pt-6">
                       {[
-                        "100% Certified Tier-1 Equipment",
-                        "48-Hour Kathmandu Warehouse Dispatch",
-                        "Full Nepal Net-Metering Paperwork Support",
+                        "Quality Products for Every Power Requirement",
+                        "Professional Guidance Before & After Purchase",
+                        "Long-Term Customer Support Nationwide",
                       ].map((h) => (
                         <div
                           key={h}
@@ -418,38 +418,48 @@ function Home() {
           <div className="mx-auto max-w-7xl px-6">
             <Reveal className="text-center max-w-2xl mx-auto mb-14">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white bg-[#0A2E20] px-4 py-1.5 rounded-full border border-[#0A2E20] shadow-md">
-                The Engineering Advantage
+                Why Choose OMSUN?
               </span>
               <h2 className="mt-4 font-display text-4xl font-extrabold sm:text-5xl text-[#0A2E20]">
-                Why Engineers Specify OMSUN
+                Power Solutions You Can Depend On
               </h2>
+              <p className="mt-3 text-sm text-[#0A2E20]/80 font-medium">
+                At OMSUN Nepal, we help customers choose practical solutions based on their power
+                requirements, usage, budget, and application.
+              </p>
             </Reveal>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
               {[
                 {
-                  title: "Certified Supply Chain",
-                  metric: "100% Tier-1",
-                  desc: "Every module and inverter is sourced from Tier-1 IEC/TÜV certified manufacturers.",
+                  title: "Quality Products",
+                  metric: "Dependable",
+                  desc: "We focus on providing dependable products suitable for different power and energy requirements.",
                   icon: ShieldCheck,
                 },
                 {
-                  title: "In-House EPC Team",
-                  metric: "Licensed Engineers",
-                  desc: "Certified electrical engineers for shadow modeling, cable sizing, and NEA net-metering.",
+                  title: "Professional Guidance",
+                  metric: "Expert Team",
+                  desc: "Our team helps customers understand their requirements and identify suitable solutions.",
                   icon: Wrench,
                 },
                 {
-                  title: "Performance Guarantee",
-                  metric: "25-Yr Output",
-                  desc: "25-year linear output warranty on panels, 5-year full warranty on inverters and storage.",
+                  title: "Customer-Focused",
+                  metric: "Lasting Support",
+                  desc: "We aim to build lasting relationships through responsive communication and after-sales support.",
                   icon: Sparkles,
                 },
                 {
-                  title: "Stocked in Nepal",
-                  metric: "48-Hr Dispatch",
-                  desc: "Kathmandu central warehouse keeps high-velocity SKUs ready for 48-hour dispatch.",
+                  title: "Solutions for Every Need",
+                  metric: "All Applications",
+                  desc: "From residential requirements to commercial applications, we provide solutions for different power needs.",
                   icon: Zap,
+                },
+                {
+                  title: "Competitive Value",
+                  metric: "Right Balance",
+                  desc: "We aim to deliver the right balance of product quality, performance, and value for money.",
+                  icon: CheckCircle2,
                 },
               ].map((item, i) => (
                 <Reveal key={item.title} delay={Math.min(i * 30, 90)}>
@@ -463,7 +473,7 @@ function Home() {
                           {item.metric}
                         </span>
                       </div>
-                      <h3 className="font-display text-xl font-bold text-[#0A2E20] group-hover:text-[#0A2E20] transition-colors">
+                      <h3 className="font-display text-xl font-bold text-[#0A2E20]">
                         {item.title}
                       </h3>
                       <p className="mt-2 text-xs font-medium text-[#475569] leading-relaxed">
@@ -535,17 +545,17 @@ function Home() {
 
               <div className="relative z-10">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#0A2E20] bg-[#0A2E20] px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-white mb-6 shadow-md">
-                  <Sun className="size-4 text-[#03C987]" />
-                  <span>Free Technical Consultation</span>
+                  <Zap className="size-4 text-[#03C987]" />
+                  <span>Need the Right Power Solution?</span>
                 </div>
 
                 <h2 className="font-display text-3xl sm:text-5xl font-extrabold text-[#0A2E20] max-w-3xl mx-auto leading-tight">
-                  Ready to Power Your Property with Clean Energy?
+                  Ready to Power Your Home or Business?
                 </h2>
 
                 <p className="mt-4 max-w-xl mx-auto text-sm text-[#0A2E20]/90 font-medium leading-relaxed">
-                  Get a free technical site survey, 3D shadow analysis, and financial payback
-                  proposal from OMSUN's licensed engineering team in Nepal.
+                  Tell us about your power requirements and our team can help you identify
+                  the right UPS, inverter, stabilizer, battery, or solar solution for your needs.
                 </p>
 
                 <div className="mt-8 flex flex-wrap justify-center items-center gap-4">
@@ -553,14 +563,14 @@ function Home() {
                     asChild
                     className="h-13 rounded-full bg-[#0A2E20] text-white font-bold px-8 text-sm shadow-xl hover:bg-[#061F15] transition-all duration-300 hover:scale-105"
                   >
-                    <Link to="/solar-solutions">Request Free Site Survey</Link>
+                    <Link to="/contact">Get a Quote</Link>
                   </Button>
                   <Button
                     asChild
                     variant="outline"
                     className="h-13 rounded-full border-2 border-[#0A2E20] bg-[#0A2E20]/10 text-[#0A2E20] font-bold px-8 text-sm hover:bg-[#0A2E20] hover:text-white transition-all duration-300"
                   >
-                    <Link to="/shop">Browse Products</Link>
+                    <Link to="/shop">Explore Products</Link>
                   </Button>
                 </div>
               </div>
