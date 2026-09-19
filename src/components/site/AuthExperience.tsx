@@ -230,9 +230,9 @@ export default function AuthExperience() {
             {/* Stats */}
             <div className="auth-panel-stats">
               {[
-                { icon: Zap, val: "18 MW+", sub: "Installed" },
-                { icon: BatteryCharging, val: "4,200+", sub: "Projects" },
-                { icon: ShieldCheck, val: "25 yr", sub: "Warranty" },
+                { icon: Zap, val: "Tier-1", sub: "Hardware" },
+                { icon: BatteryCharging, val: "Nationwide", sub: "Delivery" },
+                { icon: ShieldCheck, val: "Official", sub: "Warranty" },
               ].map((s) => (
                 <div key={s.sub} className="auth-stat">
                   <s.icon className="size-4 text-amber-300 mb-1" />

@@ -13,6 +13,7 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const candidateUploads = [
+  path.resolve(__dirname, "../uploads"),
   path.resolve(__dirname, "../../public/uploads"),
   path.resolve(__dirname, "../public/uploads"),
   path.resolve(process.cwd(), "public/uploads"),

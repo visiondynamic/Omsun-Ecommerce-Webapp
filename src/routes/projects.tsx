@@ -34,7 +34,7 @@ export const Route = createFileRoute("/projects")({
       {
         name: "description",
         content:
-          "Explore 4,200+ completed solar EPC and electrical projects across Nepal — industrial rooftops, Himalayan off-grid microgrids, commercial complexes, and municipal lighting.",
+          "Explore completed solar EPC and electrical engineering projects across Nepal — industrial rooftops, Himalayan off-grid microgrids, commercial complexes, and municipal lighting.",
       },
     ],
   }),
@@ -210,28 +210,11 @@ function ProjectsPage() {
               </h1>
 
               <p className="mt-5 text-lg text-emerald-100/80 leading-relaxed font-normal">
-                Over 18 MW+ of solar capacity installed across 4,200+ projects in all 77 districts.
-                From Himalayan lodge microgrids to mega industrial factories in Biratnagar.
+                Explore our portfolio of solar, backup power, and energy engineering installations
+                across Nepal — from Himalayan lodge microgrids to mega industrial factories in
+                Biratnagar.
               </p>
             </Reveal>
-
-            {/* Quick Metrics Bar */}
-            <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 border-t border-white/10 pt-8">
-              {[
-                { v: "18 MW+", l: "Solar Power Installed" },
-                { v: "4,200+", l: "Projects Executed" },
-                { v: "77", l: "Districts Covered" },
-                { v: "99.8%", l: "System Uptime Rate" },
-              ].map((m) => (
-                <div
-                  key={m.l}
-                  className="p-4 rounded-2xl bg-white/5 border border-white/10 text-white"
-                >
-                  <div className="font-display text-3xl font-extrabold text-emerald-400">{m.v}</div>
-                  <div className="mt-1 text-xs text-white/60 font-medium">{m.l}</div>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
 

@@ -766,7 +766,7 @@ export function Navbar() {
                       <div>
                         <div className="inline-flex items-center gap-2 rounded-full border border-teal-400/30 bg-teal-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-teal-300">
                           <Zap className="size-3.5" />
-                          <span>18 MW+ Installed Capacity</span>
+                          <span>Turnkey Energy Solutions</span>
                         </div>
 
                         <h3 className="mt-3 font-display text-xl font-bold text-white tracking-tight leading-snug">
@@ -774,7 +774,7 @@ export function Navbar() {
                         </h3>
 
                         <p className="mt-2.5 text-xs text-white/60 leading-relaxed">
-                          Over 4,200+ completed installations across all 77 districts — from
+                          Completed energy and solar installations across Nepal — from
                           industrial factories in Biratnagar to high-altitude lodge microgrids in
                           Khumbu.
                         </p>
@@ -904,7 +904,7 @@ export function Navbar() {
                   </span>
                   {[
                     "Servo Stabilizer",
-                    "Green Volt",
+                    "Greenn Volt",
                     "Oil Cooled",
                     "Online LF UPS",
                     "Power-One",

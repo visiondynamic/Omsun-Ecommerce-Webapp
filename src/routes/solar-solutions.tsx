@@ -386,10 +386,10 @@ function SolarSolutionsPage() {
     selectedVerticalCategory === "All"
       ? solarVerticals
       : solarVerticals.filter(
-          (v) =>
-            v.category.toLowerCase().includes(selectedVerticalCategory.toLowerCase()) ||
-            v.title.toLowerCase().includes(selectedVerticalCategory.toLowerCase()),
-        );
+        (v) =>
+          v.category.toLowerCase().includes(selectedVerticalCategory.toLowerCase()) ||
+          v.title.toLowerCase().includes(selectedVerticalCategory.toLowerCase()),
+      );
 
   return (
     <div className="min-h-dvh overflow-x-clip bg-background text-foreground">
@@ -518,8 +518,8 @@ function SolarSolutionsPage() {
             {/* Quick Metrics Bar */}
             <div className="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-4 border-t border-white/15 pt-8">
               {[
-                { label: "Total Solar Capacity", val: "4.2 MW+", sub: "Installed across Nepal" },
-                { label: "Completed Projects", val: "4,200+", sub: "Homes, Factories & Resorts" },
+                { label: "Engineering Quality", val: "Tier-1", sub: "Approved PV & Inverters" },
+                { label: "Turnkey Installations", val: "Commercial & Home", sub: "Rooftop & Ground-Mounted" },
                 {
                   label: "Max Bill Savings",
                   val: "Up to 74%",
@@ -609,11 +609,10 @@ function SolarSolutionsPage() {
                           item.id as "residential" | "commercial" | "industrial" | "offgrid",
                         )
                       }
-                      className={`flex flex-col items-center justify-center p-3.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
-                        sector === item.id
+                      className={`flex flex-col items-center justify-center p-3.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${sector === item.id
                           ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-sm"
                           : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-muted-foreground hover:bg-slate-100 dark:hover:bg-white/10"
-                      }`}
+                        }`}
                     >
                       <item.icon className="size-5 mb-1.5" />
                       <span>{item.label}</span>
@@ -636,11 +635,10 @@ function SolarSolutionsPage() {
                     <button
                       key={b.id}
                       onClick={() => setBackupType(b.id as "ongrid" | "hybrid" | "offgrid")}
-                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                        backupType === b.id
+                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${backupType === b.id
                           ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-sm"
                           : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-muted-foreground hover:bg-slate-100 dark:hover:bg-white/10"
-                      }`}
+                        }`}
                     >
                       <div className="text-xs font-bold">{b.title}</div>
                       <div className="text-[10px] opacity-80 mt-0.5">{b.sub}</div>
@@ -780,11 +778,10 @@ function SolarSolutionsPage() {
                 <button
                   key={cat}
                   onClick={() => setSelectedVerticalCategory(cat)}
-                  className={`px-5 py-2.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
-                    selectedVerticalCategory === cat
+                  className={`px-5 py-2.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${selectedVerticalCategory === cat
                       ? "bg-[#0A2E20] text-white shadow-lg shadow-[#0A2E20]/30 scale-105"
                       : "bg-white/25 text-[#0A2E20] hover:bg-white/40 border border-[#0A2E20]/20"
-                  }`}
+                    }`}
                 >
                   {cat}
                 </button>
@@ -1129,11 +1126,10 @@ function SolarSolutionsPage() {
                     setFaqTab(t);
                     setOpenFaqIndex(0);
                   }}
-                  className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    faqTab === t
+                  className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${faqTab === t
                       ? "bg-emerald-500 text-black font-extrabold shadow-md scale-105"
                       : "bg-slate-200 dark:bg-white/10 text-muted-foreground hover:bg-slate-300 dark:hover:bg-white/20"
-                  }`}
+                    }`}
                 >
                   {t}
                 </button>

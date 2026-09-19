@@ -164,32 +164,6 @@ function Home() {
         {/* HERO — Animated Slider (DARK HERO) */}
         <HeroSlider />
 
-        {/* STATS & IMPACT STRIP (LIGHT GLASS LEAF GREEN + SKY BLUE GRADIENT BAR ⚡) */}
-        <section className="border-y border-[#43B987]/30 bg-gradient-to-r from-[#E5F7EF] via-[#F2FBF6] to-[#EFF8FF] py-8 text-[#173226] shadow-xs relative z-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 text-center">
-              {[
-                { value: "Nepal-Wide", label: "Service Coverage", sub: "Online & Offline Store" },
-                { value: "Multi-Brand", label: "Product Range", sub: "UPS · Inverter · Solar · More" },
-                { value: "Expert", label: "Product Guidance", sub: "Before & After Purchase" },
-                { value: "Dependable", label: "Customer Support", sub: "Long-Term Relationships" },
-              ].map((stat) => (
-                <div key={stat.label} className="flex flex-col items-center justify-center p-2">
-                  <div className="font-display text-2xl sm:text-4xl font-extrabold text-[#173226] tracking-tight">
-                    {stat.value}
-                  </div>
-                  <div className="mt-1 text-xs font-bold uppercase tracking-wider text-[#43B987]">
-                    {stat.label}
-                  </div>
-                  <div className="mt-0.5 text-[11px] font-medium text-[#475569] hidden sm:block">
-                    {stat.sub}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* TRUSTED BRANDS (SECTION 2 — LEAF GREEN + SKY BLUE BLEND 🌿💧) */}
         <section className="border-y border-[#43B987]/30 bg-gradient-to-r from-[#E2F6ED] via-[#EBF8F2] to-[#EBF5FF] py-10">
           <p className="mb-6 text-center text-xs font-bold uppercase tracking-[0.24em] text-[#43B987]">

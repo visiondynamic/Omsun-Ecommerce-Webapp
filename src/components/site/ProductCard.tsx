@@ -106,7 +106,7 @@ export function ProductCard({
                   "rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider font-mono shadow-2xs",
                   product.brand === "OMSUN"
                     ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50"
-                    : product.brand === "Green Volt"
+                    : product.brand === "Greenn Volt" || product.brand === "Green Volt"
                     ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/80 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-700/50"
                     : "bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300 dark:border-blue-700/50",
                 )}

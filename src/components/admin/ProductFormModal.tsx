@@ -38,7 +38,7 @@ export function ProductFormModal({
   initialSubcategory,
   onSaveProduct,
 }: ProductFormModalProps) {
-  const [formData, setFormData] = useState<Partial<Product> & { description?: string; badgesString?: string }>(() => {
+  const [formData, setFormData] = useState<Partial<Product> & { description?: string | undefined; badgesString?: string | undefined }>(() => {
     const initCat = initialCategory && CATEGORIES.includes(initialCategory) ? initialCategory : (CATEGORIES[0] || "Stabilizer");
     const initTax = PRODUCT_TAXONOMY.find((t) => t.name === initCat);
     const initSub = initialSubcategory || (initTax?.subcategories[0] || "");
@@ -504,7 +504,7 @@ export function ProductFormModal({
                     }}
                     className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold cursor-pointer border border-emerald-200"
                   >
-                    Green Volt AVR
+                    Greenn Volt AVR
                   </button>
                   <button
                     type="button"

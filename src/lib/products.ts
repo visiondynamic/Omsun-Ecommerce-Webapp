@@ -60,6 +60,7 @@ export type Product = {
   rating: number;
   efficient?: boolean | undefined;
   specs: { label: string; value: string }[];
+  description?: string | undefined;
 };
 
 export interface CategoryStructure {
@@ -120,7 +121,7 @@ export const PRODUCT_TAXONOMY: CategoryStructure[] = [
 
 export const CATEGORIES = PRODUCT_TAXONOMY.map((c) => c.name);
 
-export const BRANDS = ["OMSUN", "Green Volt", "Power-One", "SineWave", "Voltura"];
+export const BRANDS = ["OMSUN", "Greenn Volt", "Power-One", "SineWave", "Voltura"];
 
 // Fallback mock data used when API is unavailable (SSR, offline, etc.)
 const fallbackImageMap: Record<string, string> = {
@@ -404,26 +405,34 @@ export const fallbackProducts: Product[] = [
   },
 
   // ══════════════════════════════════════════════════════════════════════════════
-  // GROUP 3: Green Volt Single Phase Relay Based Stabiliser / AVR
+  // ══════════════════════════════════════════════════════════════════════════════
+  // GROUP 3: Greenn Volt Single Phase Relay Based Stabiliser / AVR
   // ══════════════════════════════════════════════════════════════════════════════
   {
     id: "green-volt-1kva",
-    name: "Green Volt 1KVA Relay Based Stabiliser / AVR",
+    name: "Greenn Volt 1KVA Relay Based Stabiliser / AVR",
     tagline: "1 kVA ultra-compact automatic voltage regulator with zero-cross relay switching",
+    description:
+      "GREENNV VOLT is a trusted brand in digital voltage stabilizers for air conditioners, refrigerators, and home & office equipment. Its stabilizers are designed to help protect appliances from voltage fluctuations commonly experienced in Nepal.",
     category: "Stabilizer",
     subcategory: "Relay Based Stabilizer / AVR",
-    brand: "Green Volt",
+    brand: "Greenn Volt",
     price: 9900,
     compareAt: 11200,
     image: greenVolt1kvaImg,
-    badges: ["Green Volt", "Budget AVR", "1 Year Warranty"],
+    badges: ["Greenn Volt", "Budget AVR", "1 Year Warranty"],
     stock: 30,
     rating: 4.7,
     efficient: true,
     specs: [
-      { label: "Brand", value: "Green Volt" },
+      { label: "Brand", value: "Greenn Volt" },
       { label: "Capacity", value: "1 kVA / 1000 VA" },
+      { label: "Phase", value: "Single Phase" },
+      { label: "Applications", value: "Home & Office" },
+      { label: "Origin", value: "Made in India" },
       { label: "Technology", value: "Microcontroller Relay Switching" },
+      { label: "Zero-Crossing Tech", value: "Supported" },
+      { label: "Smart Protection", value: "Overload, Short Circuit & High/Low Cut-off" },
       { label: "Input Voltage Range", value: "140V – 280V AC" },
       { label: "Output Voltage", value: "220V AC ±5%" },
       { label: "Warranty", value: "1 Year Full Warranty" },
@@ -431,21 +440,28 @@ export const fallbackProducts: Product[] = [
   },
   {
     id: "green-volt-2kva",
-    name: "Green Volt 2KVA Relay Based Stabiliser / AVR",
+    name: "Greenn Volt 2KVA Relay Based Stabiliser / AVR",
     tagline: "2 kVA fast response relay automatic voltage stabilizer for home appliances",
+    description:
+      "GREENNV VOLT is a trusted brand in digital voltage stabilizers for air conditioners, refrigerators, and home & office equipment. Its stabilizers are designed to help protect appliances from voltage fluctuations commonly experienced in Nepal.",
     category: "Stabilizer",
     subcategory: "Relay Based Stabilizer / AVR",
-    brand: "Green Volt",
+    brand: "Greenn Volt",
     price: 12200,
     compareAt: 13800,
     image: greenVolt2kvaImg,
-    badges: ["Green Volt", "Fast Switching", "1 Year Warranty"],
+    badges: ["Greenn Volt", "Fast Switching", "1 Year Warranty"],
     stock: 25,
     rating: 4.8,
     efficient: true,
     specs: [
-      { label: "Brand", value: "Green Volt" },
+      { label: "Brand", value: "Greenn Volt" },
       { label: "Capacity", value: "2 kVA / 2000 VA" },
+      { label: "Phase", value: "Single Phase" },
+      { label: "Applications", value: "Home & Office" },
+      { label: "Origin", value: "Made in India" },
+      { label: "Zero-Crossing Tech", value: "Supported" },
+      { label: "Smart Protection", value: "Overload, Short Circuit & High/Low Cut-off" },
       { label: "Input Voltage Range", value: "140V – 280V AC" },
       { label: "Output Voltage", value: "220V AC ±5%" },
       { label: "Warranty", value: "1 Year Full Warranty" },
@@ -453,34 +469,42 @@ export const fallbackProducts: Product[] = [
   },
   {
     id: "green-volt-4kva-110v",
-    name: "Green Volt 4KVA Relay Stabiliser (110V–280V)",
+    name: "Greenn Volt 4KVA Relay Stabiliser (110V–280V)",
     tagline: "4 kVA wide input range (110V-280V) stabilizer for air conditioners & pumps",
+    description:
+      "GREENNV VOLT is a trusted brand in digital voltage stabilizers for air conditioners, refrigerators, and home & office equipment. Its stabilizers are designed to help protect appliances from voltage fluctuations commonly experienced in Nepal.",
     category: "Stabilizer",
     subcategory: "Relay Based Stabilizer / AVR",
-    brand: "Green Volt",
+    brand: "Greenn Volt",
     price: 15000,
     compareAt: 17000,
     image: greenVolt4kva110vImg,
-    badges: ["Wide Range 110V-280V", "Green Volt", "1 Year Warranty"],
+    badges: ["Wide Range 110V-280V", "Greenn Volt", "1 Year Warranty"],
     stock: 20,
     rating: 4.9,
     efficient: true,
     specs: [
-      { label: "Brand", value: "Green Volt" },
+      { label: "Brand", value: "Greenn Volt" },
       { label: "Capacity", value: "4 kVA / 4000 VA" },
+      { label: "Phase", value: "Single Phase" },
+      { label: "Applications", value: "Home & Office" },
+      { label: "Origin", value: "Made in India" },
       { label: "Input Voltage Range", value: "110V – 280V AC (Wide Range)" },
       { label: "Output Voltage", value: "220V AC ±5%" },
       { label: "Application", value: "Up to 1.5 Ton AC, Water Pumps, Mains" },
+      { label: "Smart Protection", value: "Overload, Short Circuit & High/Low Cut-off" },
       { label: "Warranty", value: "1 Year Full Warranty" },
     ],
   },
   {
     id: "green-volt-4kva-90v",
-    name: "Green Volt 4KVA Ultra Wide Range Stabiliser (90V–280V)",
+    name: "Greenn Volt 4KVA Ultra Wide Range Stabiliser (90V–280V)",
     tagline: "4 kVA ultra wide input range (90V-280V) stabilizer for extreme low voltage",
+    description:
+      "GREENNV VOLT is a trusted brand in digital voltage stabilizers for air conditioners, refrigerators, and home & office equipment. Its stabilizers are designed to help protect appliances from voltage fluctuations commonly experienced in Nepal.",
     category: "Stabilizer",
     subcategory: "Relay Based Stabilizer / AVR",
-    brand: "Green Volt",
+    brand: "Greenn Volt",
     price: 19800,
     compareAt: 22000,
     image: greenVolt4kva90vImg,
@@ -489,20 +513,26 @@ export const fallbackProducts: Product[] = [
     rating: 4.9,
     efficient: true,
     specs: [
-      { label: "Brand", value: "Green Volt" },
+      { label: "Brand", value: "Greenn Volt" },
       { label: "Capacity", value: "4 kVA / 4000 VA" },
+      { label: "Phase", value: "Single Phase" },
+      { label: "Applications", value: "Home & Office" },
+      { label: "Origin", value: "Made in India" },
       { label: "Input Voltage Range", value: "90V – 280V AC (Ultra Wide Range)" },
       { label: "Output Voltage", value: "220V AC ±5%" },
+      { label: "Smart Protection", value: "Overload, Short Circuit & High/Low Cut-off" },
       { label: "Warranty", value: "1 Year Full Warranty" },
     ],
   },
   {
     id: "green-volt-4-2kva-90v",
-    name: "Green Volt 4.2KVA Ultra Wide Range Stabiliser (90V–280V)",
+    name: "Greenn Volt 4.2KVA Ultra Wide Range Stabiliser (90V–280V)",
     tagline: "4.2 kVA high-power low-voltage AVR with multi-relay step regulation",
+    description:
+      "GREENNV VOLT is a trusted brand in digital voltage stabilizers for air conditioners, refrigerators, and home & office equipment. Its stabilizers are designed to help protect appliances from voltage fluctuations commonly experienced in Nepal.",
     category: "Stabilizer",
     subcategory: "Relay Based Stabilizer / AVR",
-    brand: "Green Volt",
+    brand: "Greenn Volt",
     price: 20000,
     compareAt: 22500,
     image: greenVolt42kva90vImg,
@@ -511,20 +541,26 @@ export const fallbackProducts: Product[] = [
     rating: 4.9,
     efficient: true,
     specs: [
-      { label: "Brand", value: "Green Volt" },
+      { label: "Brand", value: "Greenn Volt" },
       { label: "Capacity", value: "4.2 kVA / 4200 VA" },
+      { label: "Phase", value: "Single Phase" },
+      { label: "Applications", value: "Home & Office" },
+      { label: "Origin", value: "Made in India" },
       { label: "Input Voltage Range", value: "90V – 280V AC" },
       { label: "Output Voltage", value: "220V AC ±5%" },
+      { label: "Smart Protection", value: "Overload, Short Circuit & High/Low Cut-off" },
       { label: "Warranty", value: "1 Year Full Warranty" },
     ],
   },
   {
     id: "green-volt-5kva-110v",
-    name: "Green Volt 5KVA Relay Stabiliser (110V–280V)",
+    name: "Greenn Volt 5KVA Relay Stabiliser (110V–280V)",
     tagline: "5 kVA mains automatic voltage stabilizer for homes, clinics & 2.0 Ton ACs",
+    description:
+      "GREENNV VOLT is a trusted brand in digital voltage stabilizers for air conditioners, refrigerators, and home & office equipment. Its stabilizers are designed to help protect appliances from voltage fluctuations commonly experienced in Nepal.",
     category: "Stabilizer",
     subcategory: "Relay Based Stabilizer / AVR",
-    brand: "Green Volt",
+    brand: "Greenn Volt",
     price: 16500,
     compareAt: 18500,
     image: greenVolt5kva110vImg,
@@ -533,21 +569,27 @@ export const fallbackProducts: Product[] = [
     rating: 4.8,
     efficient: true,
     specs: [
-      { label: "Brand", value: "Green Volt" },
+      { label: "Brand", value: "Greenn Volt" },
       { label: "Capacity", value: "5 kVA / 5000 VA" },
+      { label: "Phase", value: "Single Phase" },
+      { label: "Applications", value: "Home & Office" },
+      { label: "Origin", value: "Made in India" },
       { label: "Input Voltage Range", value: "110V – 280V AC" },
       { label: "Output Voltage", value: "220V AC ±5%" },
       { label: "Application", value: "Whole Home Mains, 2.0 Ton AC" },
+      { label: "Smart Protection", value: "Overload, Short Circuit & High/Low Cut-off" },
       { label: "Warranty", value: "1 Year Full Warranty" },
     ],
   },
   {
     id: "green-volt-5kva-90v",
-    name: "Green Volt 5KVA Ultra Wide Range Stabiliser (90V–280V)",
+    name: "Greenn Volt 5KVA Ultra Wide Range Stabiliser (90V–280V)",
     tagline: "5 kVA extreme low voltage 90V-280V mains stabilizer with copper transformer",
+    description:
+      "GREENNV VOLT is a trusted brand in digital voltage stabilizers for air conditioners, refrigerators, and home & office equipment. Its stabilizers are designed to help protect appliances from voltage fluctuations commonly experienced in Nepal.",
     category: "Stabilizer",
     subcategory: "Relay Based Stabilizer / AVR",
-    brand: "Green Volt",
+    brand: "Greenn Volt",
     price: 21000,
     compareAt: 23500,
     image: greenVolt5kva90vImg,
@@ -556,10 +598,14 @@ export const fallbackProducts: Product[] = [
     rating: 5.0,
     efficient: true,
     specs: [
-      { label: "Brand", value: "Green Volt" },
+      { label: "Brand", value: "Greenn Volt" },
       { label: "Capacity", value: "5 kVA / 5000 VA" },
+      { label: "Phase", value: "Single Phase" },
+      { label: "Applications", value: "Home & Office" },
+      { label: "Origin", value: "Made in India" },
       { label: "Input Voltage Range", value: "90V – 280V AC (Extreme Low)" },
       { label: "Output Voltage", value: "220V AC ±5%" },
+      { label: "Smart Protection", value: "Overload, Short Circuit & High/Low Cut-off" },
       { label: "Warranty", value: "1 Year Full Warranty" },
     ],
   },
@@ -589,6 +635,70 @@ export const fallbackProducts: Product[] = [
       { label: "Output Voltage", value: "400V AC ±1% (3-Phase Balanced)" },
       { label: "Efficiency", value: "> 98.5%" },
       { label: "Warranty", value: "1 Year Full Warranty (13% VAT Incl.)" },
+    ],
+  },
+  {
+    id: "omsun-oil-cooled-40kva",
+    name: "OMSUN 40 kVA Three-Phase Oil-Cooled Servo Voltage Stabilizer",
+    tagline: "40 kVA three-phase oil-cooled servo voltage stabilizer (Input 160V–460V AC)",
+    description:
+      "The OMSUN 40 kVA Three-Phase Oil-Cooled Servo Voltage Stabilizer is designed to regulate unstable electrical voltage and provide a controlled output supply for industrial and commercial equipment. Its servo-controlled voltage correction system helps reduce the effects of low-voltage, high-voltage and voltage fluctuations on connected equipment.",
+    category: "Stabilizer",
+    subcategory: "Oil Cooled Servo Stabilizer",
+    brand: "OMSUN",
+    price: 425000,
+    compareAt: 475000,
+    image: "/uploads/omsun-40kva-oil-cooled-servo.jpg",
+    images: ["/uploads/omsun-40kva-oil-cooled-servo.jpg"],
+    badges: ["40 kVA Oil Cooled", "160V–460V Wide Range", "3 Phase", "1 Year Warranty"],
+    stock: 5,
+    rating: 5.0,
+    efficient: true,
+    specs: [
+      { label: "Brand", value: "OMSUN" },
+      { label: "Capacity / Rating", value: "40 kVA" },
+      { label: "Phase", value: "3 Phase" },
+      { label: "Input Voltage", value: "160V – 460V AC" },
+      { label: "Output Voltage", value: "380V AC ±1%" },
+      { label: "Cooling Type", value: "Oil Cooled" },
+      { label: "Lead / Current", value: "140 AMP" },
+      { label: "Technology", value: "Servo-controlled automatic voltage regulation" },
+      { label: "Applications", value: "Industrial Machinery, CNC, Printing & Medical" },
+      { label: "Warranty", value: "1 Year Full Warranty" },
+    ],
+  },
+  {
+    id: "omsun-oil-cooled-40kva-260v",
+    name: "OMSUN 40 kVA Three-Phase Oil-Cooled Servo Voltage Stabilizer (260V–480V)",
+    tagline: "40 kVA three-phase oil-cooled servo stabilizer (Input 260V–480V AC, 100 AMP)",
+    description:
+      "The OMSUN 40 kVA Three-Phase Oil-Cooled Servo Voltage Stabilizer is designed to automatically regulate fluctuating electrical voltage and provide a stable output supply for industrial and commercial electrical systems. With an input voltage range of 260V–480V AC and regulated output of 380V AC ±1%, the stabilizer automatically responds to voltage fluctuations to support reliable operation of connected equipment. Its 40 kVA, three-phase, 100 AMP, oil-cooled configuration is suitable for demanding electrical environments.",
+    category: "Stabilizer",
+    subcategory: "Oil Cooled Servo Stabilizer",
+    brand: "OMSUN",
+    price: 395000,
+    compareAt: 445000,
+    image: "/uploads/omsun-40kva-oil-cooled-servo-blue.jpeg",
+    images: ["/uploads/omsun-40kva-oil-cooled-servo-blue.jpeg"],
+    badges: ["40 kVA Oil Cooled", "260V–480V AC", "100 AMP", "1 Year Warranty"],
+    stock: 5,
+    rating: 5.0,
+    efficient: true,
+    specs: [
+      { label: "Brand", value: "OMSUN" },
+      { label: "Product Type", value: "Servo Voltage Stabilizer" },
+      { label: "Capacity / Rating", value: "40 kVA" },
+      { label: "Phase", value: "3 Phase" },
+      { label: "Input Voltage", value: "260V – 480V AC" },
+      { label: "Output Voltage", value: "380V AC ±1%" },
+      { label: "Lead / Current", value: "100 AMP" },
+      { label: "Cooling Type", value: "Oil Cooled" },
+      { label: "Technology", value: "Servo-controlled automatic voltage regulation" },
+      {
+        label: "Applications",
+        value: "Factory, CNC Machines, Printing, Medical & Commercial Loads",
+      },
+      { label: "Warranty", value: "1 Year Full Warranty" },
     ],
   },
   {
@@ -977,6 +1087,7 @@ export function mapApiProductToProduct(apiProduct: {
   rating: number;
   badges: string[];
   specs: { label: string; value: string }[];
+  description?: string | null;
 }): Product {
   const resolvedImage = resolveDbImage(apiProduct.image, apiProduct.category, apiProduct.id);
   
@@ -1020,6 +1131,7 @@ export function mapApiProductToProduct(apiProduct: {
     rating: apiProduct.rating,
     efficient: apiProduct.rating >= 4.5,
     specs: apiProduct.specs || [],
+    description: apiProduct.description || undefined,
   };
   if (apiProduct.mrp != null) {
     base.compareAt = apiProduct.mrp;

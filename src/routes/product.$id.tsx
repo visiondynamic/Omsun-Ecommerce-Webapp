@@ -21,6 +21,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatNPR, fallbackProducts, mapApiProductToProduct, getProduct } from "@/lib/products";
 import type { Product } from "@/lib/products";
+import { GreenVoltTechnicalDetails } from "@/components/site/GreenVoltTechnicalDetails";
+import { OmsunServoTechnicalDetails } from "@/components/site/OmsunServoTechnicalDetails";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import heroProductBg from "@/assets/hero-product-bg.webp";
@@ -92,6 +94,16 @@ function ProductPage() {
       : rawGallery;
   const related = allProducts.filter((p) => p.id !== product.id).slice(0, 3);
   const out = product.stock === 0;
+  const isGreennVolt =
+    product.brand?.toLowerCase().includes("green volt") ||
+    product.brand?.toLowerCase().includes("greenn volt") ||
+    product.name.toLowerCase().includes("green volt") ||
+    product.name.toLowerCase().includes("greenn volt");
+  const isOmsunServo =
+    product.brand === "OMSUN" &&
+    (product.category === "Stabilizer" ||
+      product.subcategory?.toLowerCase().includes("servo") ||
+      product.name.toLowerCase().includes("servo"));
 
   const currentImage = gallery[active] || gallery[0] || product.image;
 
@@ -188,7 +200,7 @@ function ProductPage() {
                     Specifications
                   </TabsTrigger>
                   <TabsTrigger value="details" className="rounded-xl px-5">
-                    Technical details
+                    Product details
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="specs" className="mt-6">
@@ -202,18 +214,27 @@ function ProductPage() {
                   </dl>
                 </TabsContent>
                 <TabsContent value="details" className="mt-6">
-                  <div className="surface-card space-y-4 p-6 text-sm leading-relaxed text-muted-foreground">
-                    <p>
-                      {product.name} is supplied by OMSUN Nepal with full manufacturer
-                      documentation, test certificates and a serialised warranty card. Installation
-                      guidance is included with every order.
-                    </p>
-                    <p>
-                      Our engineering team can size, integrate and commission this product as part
-                      of a complete system — including load study, protection coordination and
-                      remote monitoring.
-                    </p>
-                  </div>
+                  {isGreennVolt ? (
+                    <GreenVoltTechnicalDetails product={product} />
+                  ) : isOmsunServo ? (
+                    <OmsunServoTechnicalDetails product={product} />
+                  ) : (
+                    <div className="surface-card space-y-4 p-6 text-sm leading-relaxed text-muted-foreground">
+                      {product.description && (
+                        <p className="font-medium text-foreground">{product.description}</p>
+                      )}
+                      <p>
+                        {product.name} is supplied by OMSUN Nepal with full manufacturer
+                        documentation, test certificates and a serialised warranty card. Installation
+                        guidance is included with every order.
+                      </p>
+                      <p>
+                        Our engineering team can size, integrate and commission this product as part
+                        of a complete system — including load study, protection coordination and
+                        remote monitoring.
+                      </p>
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </div>

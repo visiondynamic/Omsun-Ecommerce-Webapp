@@ -1365,7 +1365,7 @@ function AdminDashboardPage() {
                           <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
                             <span
                               className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded ${
-                                prod.brand === "Green Volt"
+                                prod.brand === "Greenn Volt" || prod.brand === "Green Volt"
                                   ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300"
                                   : prod.brand === "Power-One"
                                     ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
@@ -1495,7 +1495,7 @@ function AdminDashboardPage() {
                             <td className="p-4">
                               <span
                                 className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${
-                                  prod.brand === "Green Volt"
+                                  prod.brand === "Greenn Volt" || prod.brand === "Green Volt"
                                     ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300 border border-cyan-200"
                                     : prod.brand === "Power-One"
                                       ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200"

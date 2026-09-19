@@ -114,7 +114,7 @@ export function HeroSlider() {
       badgeIcon: <Globe className="size-3.5" />,
       headline: ["Lighting Up", "Every Corner"],
       accentWord: "of Nepal.",
-      sub: "18 MW+ installed capacity and 4,200+ active energy projects backed by zero-compromise warranty support.",
+      sub: "Reliable turnkey power and renewable energy installations across Nepal, backed by comprehensive warranty support.",
       cta: { label: "View Our Projects", to: "/projects" },
       ctaSecondary: {
         label: "Become a Distributor",
