@@ -52,12 +52,16 @@ export function ProductCard({
           {/* Top Badges (Left Stock Status, Right Discount Tag with Zero Overlap) */}
           <div className="absolute inset-x-2.5 top-2.5 z-10 flex items-start justify-between gap-1.5 pointer-events-none">
             {out ? (
-              <span className="rounded-md bg-slate-700/95 backdrop-blur-xs px-2 py-0.5 text-[8.5px] font-extrabold uppercase tracking-wider text-white shadow-xs">
+              <span className="rounded-md bg-rose-600/95 backdrop-blur-xs px-2 py-0.5 text-[8.5px] font-extrabold uppercase tracking-wider text-white shadow-xs whitespace-nowrap">
                 Out of Stock
               </span>
+            ) : product.stock <= 5 ? (
+              <span className="rounded-md bg-amber-600/95 backdrop-blur-xs px-2 py-0.5 text-[8.5px] font-extrabold uppercase tracking-wider text-white shadow-xs whitespace-nowrap">
+                Only {product.stock} Left!
+              </span>
             ) : (
-              <span className="rounded-md bg-emerald-600/95 backdrop-blur-xs px-2 py-0.5 text-[8.5px] font-extrabold uppercase tracking-wider text-white shadow-xs">
-                In Stock
+              <span className="rounded-md bg-emerald-600/95 backdrop-blur-xs px-2 py-0.5 text-[8.5px] font-extrabold uppercase tracking-wider text-white shadow-xs whitespace-nowrap">
+                {product.stock} In Stock
               </span>
             )}
 
@@ -157,13 +161,30 @@ export function ProductCard({
               </span>
             </div>
 
-            {/* Star Rating & Warranty Note */}
-            <div className="mt-1.5 flex items-center justify-between text-[10.5px] text-muted-foreground font-medium">
-              <span className="flex items-center gap-0.5 font-bold text-amber-400">
+            {/* Star Rating & Stock Availability */}
+            <div className="mt-2 flex items-center justify-between text-[10.5px]">
+              <span className="flex items-center gap-0.5 font-bold text-amber-500 dark:text-amber-400">
                 <Star className="size-3 fill-amber-400 text-amber-400" />
                 <span>{product.rating}</span>
               </span>
-              <span className="text-[10px] text-slate-500 font-medium">1 Year Warranty</span>
+              <span
+                className={cn(
+                  "text-[10px] font-bold px-1.5 py-0.5 rounded-md inline-flex items-center gap-1",
+                  out
+                    ? "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40"
+                    : product.stock <= 5
+                      ? "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40"
+                      : "text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40",
+                )}
+              >
+                <span
+                  className={cn(
+                    "size-1.5 rounded-full shrink-0",
+                    out ? "bg-rose-500" : product.stock <= 5 ? "bg-amber-500" : "bg-emerald-500",
+                  )}
+                />
+                {out ? "Out of Stock" : `${product.stock} units available`}
+              </span>
             </div>
           </div>
 
@@ -291,9 +312,27 @@ export function ProductCard({
               {/* Quantity Selector & Dual Actions */}
               <div className="mt-6 space-y-4">
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-white/70">
-                    Quantity:
-                  </span>
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-white/70 block">
+                      Quantity:
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[11px] font-extrabold mt-0.5 inline-block",
+                        out
+                          ? "text-rose-500"
+                          : product.stock <= 5
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-emerald-600 dark:text-emerald-400",
+                      )}
+                    >
+                      {out
+                        ? "Currently out of stock"
+                        : product.stock <= 5
+                          ? `Only ${product.stock} units remaining!`
+                          : `${product.stock} units available in stock`}
+                    </span>
+                  </div>
                   <div className="flex items-center rounded-xl border border-slate-300 dark:border-white/15 bg-slate-100 dark:bg-black/30 p-1">
                     <button
                       type="button"

@@ -267,15 +267,37 @@ function ProductPage() {
                     </span>
                   )}
                 </div>
-                <p
-                  className={cn(
-                    "mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold",
-                    out ? "bg-muted text-muted-foreground" : "bg-primary-soft text-primary",
-                  )}
-                >
-                  <Check className="size-3.5" />
-                  {out ? "Currently out of stock" : `${product.stock} units available`}
-                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold border",
+                      out
+                        ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                        : product.stock <= 5
+                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                          : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "size-2 rounded-full shrink-0",
+                        out
+                          ? "bg-rose-500"
+                          : product.stock <= 5
+                            ? "bg-amber-500 animate-pulse"
+                            : "bg-emerald-500",
+                      )}
+                    />
+                    {out
+                      ? "Currently Out of Stock"
+                      : product.stock <= 5
+                        ? `Hurry, only ${product.stock} units left in stock!`
+                        : `In Stock: ${product.stock} units available`}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                    • Kathmandu Central Warehouse
+                  </span>
+                </div>
 
                 <div className="mt-7 flex items-center gap-4">
                   <div className="flex items-center rounded-2xl border p-1">
@@ -293,8 +315,9 @@ function ProductPage() {
                       variant="ghost"
                       size="icon"
                       aria-label="Increase quantity"
-                      onClick={() => setQty((q) => q + 1)}
-                      className="min-h-11 min-w-11 rounded-xl"
+                      disabled={out || qty >= (product.stock || 1)}
+                      onClick={() => setQty((q) => Math.min(product.stock || 1, q + 1))}
+                      className="min-h-11 min-w-11 rounded-xl disabled:opacity-30"
                     >
                       <Plus className="size-4" />
                     </Button>
@@ -378,7 +401,21 @@ function ProductPage() {
         {/* ── MOBILE STICKY BOTTOM ACTION BAR (Daraz/Amazon Style) ── */}
         <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden border-t border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#071f17]/95 p-3 backdrop-blur-xl shadow-2xl flex items-center gap-2.5">
           <div className="min-w-0 flex-1">
-            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total Price</div>
+            <div className="flex items-center gap-1.5">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total</div>
+              <span
+                className={cn(
+                  "text-[9.5px] font-bold px-1.5 py-0.2 rounded",
+                  out
+                    ? "text-rose-600 bg-rose-500/10"
+                    : product.stock <= 5
+                      ? "text-amber-600 bg-amber-500/10"
+                      : "text-emerald-600 bg-emerald-500/10",
+                )}
+              >
+                {out ? "Out of Stock" : `${product.stock} left`}
+              </span>
+            </div>
             <div className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 font-mono truncate">
               {formatNPR(product.price * qty)}
             </div>

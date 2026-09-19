@@ -88,7 +88,14 @@ export function CartDrawer() {
 
                   {/* Quantity Controls */}
                   <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                    <span className="text-[11px] font-semibold text-white/60">Qty:</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-semibold text-white/60">Qty:</span>
+                      {product.stock !== undefined && (
+                        <span className="text-[9.5px] font-mono text-emerald-400/80">
+                          ({product.stock} in stock)
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center rounded-lg border border-white/15 bg-black/40 p-0.5">
                       <button
                         onClick={() => updateQuantity(product.id, quantity - 1)}
@@ -100,8 +107,9 @@ export function CartDrawer() {
                         {quantity}
                       </span>
                       <button
+                        disabled={quantity >= (product.stock || 99)}
                         onClick={() => updateQuantity(product.id, quantity + 1)}
-                        className="grid size-6 place-items-center text-white/70 hover:text-white hover:bg-white/10 rounded transition-colors"
+                        className="grid size-6 place-items-center text-white/70 hover:text-white hover:bg-white/10 rounded transition-colors disabled:opacity-20"
                       >
                         <Plus className="size-3" />
                       </button>
