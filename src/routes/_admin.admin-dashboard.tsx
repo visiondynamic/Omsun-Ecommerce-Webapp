@@ -1364,7 +1364,7 @@ function AdminDashboardPage() {
                           </div>
                           <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
                             <span
-                              className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded ${
+                              className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded whitespace-nowrap inline-flex items-center shrink-0 ${
                                 prod.brand === "Greenn Volt" || prod.brand === "Green Volt"
                                   ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300"
                                   : prod.brand === "Power-One"
@@ -1441,13 +1441,13 @@ function AdminDashboardPage() {
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="border-b border-[#E2EDE7] dark:border-white/10 bg-[#F2FBF4] dark:bg-white/5 font-extrabold uppercase text-slate-500">
-                        <th className="p-4">Product Details</th>
-                        <th className="p-4">Category & Subcategory</th>
-                        <th className="p-4">Brand</th>
-                        <th className="p-4">Selling Price</th>
-                        <th className="p-4">Stock Status</th>
-                        <th className="p-4">Rating</th>
-                        <th className="p-4 text-right">Actions</th>
+                        <th className="p-4 whitespace-nowrap">Product Details</th>
+                        <th className="p-4 whitespace-nowrap">Category & Subcategory</th>
+                        <th className="p-4 whitespace-nowrap">Brand</th>
+                        <th className="p-4 whitespace-nowrap">Selling Price</th>
+                        <th className="p-4 whitespace-nowrap">Stock Status</th>
+                        <th className="p-4 whitespace-nowrap">Rating</th>
+                        <th className="p-4 text-right whitespace-nowrap">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-white/5 font-medium">
@@ -1492,9 +1492,9 @@ function AdminDashboardPage() {
                                 </div>
                               )}
                             </td>
-                            <td className="p-4">
+                            <td className="p-4 whitespace-nowrap">
                               <span
-                                className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${
+                                className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md whitespace-nowrap inline-flex items-center shrink-0 ${
                                   prod.brand === "Greenn Volt" || prod.brand === "Green Volt"
                                     ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300 border border-cyan-200"
                                     : prod.brand === "Power-One"

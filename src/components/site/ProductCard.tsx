@@ -103,7 +103,7 @@ export function ProductCard({
             <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
               <span
                 className={cn(
-                  "rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider font-mono shadow-2xs",
+                  "rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider font-mono shadow-2xs whitespace-nowrap inline-flex items-center shrink-0",
                   product.brand === "OMSUN"
                     ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50"
                     : product.brand === "Greenn Volt" || product.brand === "Green Volt"
