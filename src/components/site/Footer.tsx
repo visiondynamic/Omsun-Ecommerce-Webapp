@@ -1,15 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  Award,
-  Building2,
   Facebook,
   Instagram,
   Linkedin,
   Mail,
   MapPin,
   Phone,
-  ShieldCheck,
   Youtube,
   Zap,
 } from "lucide-react";
@@ -211,27 +208,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* ── TRUST & CERTIFICATIONS STRIP ── */}
-        <div className="mt-14 border-t border-[#173226]/20 pt-8 flex flex-wrap items-center justify-between gap-6">
-          <div className="flex flex-wrap items-center gap-6 text-xs text-[#173226] font-bold">
-            <span className="flex items-center gap-1.5 text-[#173226]">
-              <ShieldCheck className="size-4 text-[#173226]" />
-              <span>NEA Net-Metering Certified</span>
-            </span>
-            <span className="flex items-center gap-1.5 text-[#173226]">
-              <Award className="size-4 text-[#173226]" />
-              <span>TÜV & IEC Certified Equipment</span>
-            </span>
-            <span className="flex items-center gap-1.5 text-[#173226]">
-              <Building2 className="size-4 text-[#173226]" />
-              <span>ISO 9001:2015 Quality System</span>
-            </span>
-          </div>
-
-          <div className="text-[11px] text-[#173226]/80 font-mono font-semibold">
-            Direct Warehouse Logistics: Kathmandu · Pokhara · Biratnagar · Butwal
-          </div>
-        </div>
       </div>
 
       {/* ── BOTTOM COPYRIGHT BAR ── */}
