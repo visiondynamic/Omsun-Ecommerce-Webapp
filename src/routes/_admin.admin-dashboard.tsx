@@ -3408,14 +3408,14 @@ function AdminDashboardPage() {
                     Manage executive profiles, designations, headshots, and display ordering on the homepage.
                   </p>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="relative">
+                <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:w-56 sm:flex-initial">
                     <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <Input
                       placeholder="Search member or role..."
                       value={teamSearchQuery}
                       onChange={(e) => setTeamSearchQuery(e.target.value)}
-                      className="pl-8 h-9 text-xs w-48 sm:w-56 rounded-xl border-slate-200 dark:border-white/10"
+                      className="pl-8 h-9 text-xs w-full rounded-xl border-slate-200 dark:border-white/10"
                     />
                   </div>
                   <Button
@@ -3423,7 +3423,7 @@ function AdminDashboardPage() {
                       setSelectedTeamMemberForEdit(null);
                       setIsTeamModalOpen(true);
                     }}
-                    className="h-9 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white text-xs font-extrabold gap-1.5 cursor-pointer hover:scale-105 transition-transform"
+                    className="h-9 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white text-xs font-extrabold gap-1.5 cursor-pointer hover:scale-105 transition-transform shrink-0"
                   >
                     <Plus className="size-4" /> Add Member
                   </Button>
@@ -4186,7 +4186,7 @@ function AdminDashboardPage() {
           if (!open) setMemberToDelete(null);
         }}
       >
-        <DialogContent className="max-w-md rounded-3xl p-6 bg-white dark:bg-[#0c1813] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white">
+        <DialogContent className="max-w-md w-[94vw] sm:w-full rounded-3xl p-5 sm:p-6 bg-white dark:bg-[#0c1813] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white">
           <DialogHeader>
             <DialogTitle className="text-lg font-display font-bold text-rose-600 flex items-center gap-2">
               <Trash2 className="size-5" />

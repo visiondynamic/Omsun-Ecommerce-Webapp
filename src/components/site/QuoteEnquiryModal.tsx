@@ -118,7 +118,7 @@ ${message}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border-slate-200 dark:border-white/15 bg-white dark:bg-[#061e16] p-6 sm:p-8 shadow-2xl text-foreground">
+      <DialogContent className="max-w-2xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto rounded-3xl border-slate-200 dark:border-white/15 bg-white dark:bg-[#061e16] p-4 sm:p-7 shadow-2xl text-foreground">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
             <span
@@ -133,7 +133,7 @@ ${message}`;
               <span>Official {product.brand} Product Quotation</span>
             </span>
           </div>
-          <DialogTitle className="font-display text-xl sm:text-2xl font-extrabold text-foreground">
+          <DialogTitle className="font-display text-lg sm:text-2xl font-extrabold text-foreground">
             Request a Quote for {product.model || product.name}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -346,7 +346,7 @@ ${message}`;
                 )}
               </Button>
 
-              <div className="flex items-center justify-between pt-2 text-[11px] text-muted-foreground border-t border-slate-200 dark:border-white/10">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2 text-[11px] text-muted-foreground border-t border-slate-200 dark:border-white/10 text-center sm:text-left">
                 <a
                   href={whatsappUrl}
                   target="_blank"

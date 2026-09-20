@@ -282,8 +282,8 @@ function ProductPage() {
           </div>
         </section>
 
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="grid gap-14 lg:grid-cols-[1.25fr_1fr]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="grid gap-8 lg:gap-14 lg:grid-cols-[1.25fr_1fr]">
             <div>
               <div className="overflow-hidden rounded-[2rem] border border-[#D8F2DF] dark:border-white/10 bg-white dark:bg-[#071f17] shadow-xl p-4 sm:p-6 flex items-center justify-center">
                 <img
@@ -338,7 +338,10 @@ function ProductPage() {
                 <TabsContent value="specs" className="mt-6">
                   <dl className="surface-card divide-y overflow-hidden rounded-2xl border border-slate-200/80 dark:border-white/10">
                     {combinedSpecs.map((s) => (
-                      <div key={s.label} className="grid grid-cols-2 gap-4 px-6 py-4 text-sm">
+                      <div
+                        key={s.label}
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm"
+                      >
                         <dt className="font-medium text-muted-foreground">{s.label}</dt>
                         <dd className="font-semibold text-foreground break-words">{s.value}</dd>
                       </div>

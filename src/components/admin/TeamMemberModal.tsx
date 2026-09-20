@@ -115,7 +115,7 @@ export function TeamMemberModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg rounded-2xl border border-white/10 bg-[#071F17] p-6 text-white shadow-2xl">
+      <DialogContent className="max-w-lg w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#071F17] p-4 sm:p-6 text-white shadow-2xl">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
@@ -123,7 +123,7 @@ export function TeamMemberModal({
               <span>{memberToEdit ? "Edit Team Member" : "Add Executive / Member"}</span>
             </span>
           </div>
-          <DialogTitle className="font-display text-xl font-bold text-white">
+          <DialogTitle className="font-display text-lg sm:text-xl font-bold text-white">
             {memberToEdit ? `Edit ${memberToEdit.name}` : "New Team Member"}
           </DialogTitle>
           <DialogDescription className="text-xs text-white/60">
@@ -133,9 +133,9 @@ export function TeamMemberModal({
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           {/* Profile Photo Upload & Preview */}
-          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+          <div className="rounded-xl border border-white/10 bg-black/20 p-3 sm:p-4">
             <Label className="text-xs font-bold text-white/80 block mb-2">Profile Photo</Label>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
               <div className="relative size-20 sm:size-24 rounded-2xl overflow-hidden border-2 border-emerald-500/40 bg-black/40 shrink-0 shadow-md">
                 {image ? (
                   <img
@@ -292,19 +292,19 @@ export function TeamMemberModal({
             />
           </div>
 
-          <DialogFooter className="mt-6 flex flex-row items-center justify-end gap-2 pt-2 border-t border-white/10">
+          <DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2 border-t border-white/10">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
-              className="h-10 px-4 rounded-xl border-white/20 text-xs font-semibold hover:bg-white/10"
+              className="h-10 px-4 rounded-xl border-white/20 text-xs font-semibold hover:bg-white/10 w-full sm:w-auto"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="h-10 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs shadow-lg hover:from-emerald-400 hover:to-teal-500 cursor-pointer"
+              className="h-10 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs shadow-lg hover:from-emerald-400 hover:to-teal-500 cursor-pointer w-full sm:w-auto"
             >
               {isSubmitting ? (
                 <>

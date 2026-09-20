@@ -401,20 +401,20 @@ function Shop() {
           </span>
         </div>
 
-        <header className="mt-4 flex flex-wrap items-end justify-between gap-6 border-b border-white/10 pb-6">
+        <header className="mt-4 flex flex-wrap items-end justify-between gap-4 sm:gap-6 border-b border-white/10 pb-6">
           <div>
-            <h1 className="font-display text-4xl font-extrabold sm:text-5xl tracking-tight">
+            <h1 className="font-display text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
               Solar & Electrical Hardware Catalog
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground font-medium max-w-2xl">
+            <p className="mt-2 text-xs sm:text-sm text-muted-foreground font-medium max-w-2xl">
               Showing {results.length} of {allProducts.length} certified products · Direct import
               with serialised 25-year performance warranties across Nepal.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <Select value={sort} onValueChange={setSort}>
-              <SelectTrigger className="h-11 w-48 rounded-xl border-slate-300 dark:border-white/15 bg-card text-xs font-semibold">
+              <SelectTrigger className="h-11 flex-1 sm:w-48 sm:flex-initial rounded-xl border-slate-300 dark:border-white/15 bg-card text-xs font-semibold">
                 <SelectValue placeholder="Sort Catalog" />
               </SelectTrigger>
               <SelectContent>

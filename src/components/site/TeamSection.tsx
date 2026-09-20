@@ -22,33 +22,33 @@ export function TeamSection() {
   if (activeMembers.length === 0) return null;
 
   return (
-    <section className="relative py-24 sm:py-28 bg-gradient-to-b from-[#F0FDF4] via-white to-[#F8FAFC] border-t border-emerald-900/5 overflow-hidden">
+    <section className="relative py-16 sm:py-24 lg:py-28 bg-gradient-to-b from-[#F0FDF4] via-white to-[#F8FAFC] border-t border-emerald-900/5 overflow-hidden">
       {/* Subtle Background Glows */}
       <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 size-[650px] rounded-full bg-emerald-400/10 blur-[130px]" />
       <div className="pointer-events-none absolute -bottom-24 right-10 size-[450px] rounded-full bg-teal-400/10 blur-[120px]" />
 
-      <div className="relative mx-auto max-w-7xl px-6">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         {/* Section Header */}
-        <Reveal className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 text-[#173226] border border-emerald-200/80 shadow-xs mb-4">
+        <Reveal className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-emerald-50 text-[#173226] border border-emerald-200/80 shadow-xs mb-3.5">
             <UserCheck className="size-3.5 text-[#38B46A]" />
-            <span className="text-xs font-extrabold uppercase tracking-[0.2em]">
+            <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.2em]">
               Executive Leadership
             </span>
           </div>
 
-          <h2 className="font-display text-3xl sm:text-5xl font-extrabold text-[#173226] tracking-tight">
+          <h2 className="font-display text-2xl sm:text-4xl lg:text-5xl font-extrabold text-[#173226] tracking-tight">
             Meet the Leaders Driving OMSUN
           </h2>
 
-          <p className="mt-4 text-sm sm:text-base text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
+          <p className="mt-3 sm:mt-4 text-xs sm:text-base text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
             Experienced engineering minds and corporate strategists dedicated to delivering
             dependable power infrastructure and sustainable renewable energy across Nepal.
           </p>
         </Reveal>
 
         {/* Team Cards Grid */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+        <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
           {activeMembers.map((member, i) => {
             const roleBadgeColor =
               member.position.toUpperCase().includes("CEO")
@@ -94,9 +94,9 @@ export function TeamSection() {
                   </div>
 
                   {/* Body Content */}
-                  <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-display text-xl sm:text-2xl font-extrabold text-[#173226] tracking-tight group-hover:text-[#38B46A] transition-colors">
+                      <h3 className="font-display text-lg sm:text-2xl font-extrabold text-[#173226] tracking-tight group-hover:text-[#38B46A] transition-colors">
                         {member.name}
                       </h3>
 

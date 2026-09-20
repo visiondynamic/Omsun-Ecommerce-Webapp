@@ -245,7 +245,10 @@ export function ProductCard({
                   )}
                 >
                   <MessageSquare className="size-3 mr-1 shrink-0" />
-                  <span className="truncate">Enquire Now</span>
+                  <span className="truncate">
+                    <span className="hidden sm:inline">Enquire Now</span>
+                    <span className="sm:hidden">Enquire</span>
+                  </span>
                 </Button>
               </div>
             ) : (
@@ -277,7 +280,7 @@ export function ProductCard({
 
       {/* ═══════════════ DARAZ-STYLE QUICK VIEW DIALOG MODAL ═══════════════ */}
       <Dialog open={quickViewOpen} onOpenChange={setQuickViewOpen}>
-        <DialogContent className="max-w-3xl overflow-hidden rounded-3xl border-slate-200 dark:border-white/15 bg-white dark:bg-[#061e16] p-0 shadow-2xl">
+        <DialogContent className="max-w-3xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto rounded-3xl border-slate-200 dark:border-white/15 bg-white dark:bg-[#061e16] p-0 shadow-2xl">
           <DialogHeader className="sr-only">
             <DialogTitle>{product.name} Quick View</DialogTitle>
           </DialogHeader>
