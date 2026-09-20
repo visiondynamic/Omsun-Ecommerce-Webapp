@@ -43,6 +43,7 @@ const columns = [
     title: "Quick Links",
     items: [
       { label: "About Us", to: "/why-omsun" },
+      { label: "Track Order & Invoice", to: "/track-order" },
       { label: "Contact Us", to: "/contact" },
       { label: "FAQ", to: "/faq" },
       { label: "Projects", to: "/projects" },

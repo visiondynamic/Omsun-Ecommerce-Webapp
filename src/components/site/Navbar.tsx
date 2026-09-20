@@ -440,7 +440,17 @@ export function Navbar() {
                         className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-200 hover:bg-white/10 cursor-pointer transition-colors"
                       >
                         <Package className="size-4 text-sky-400" />
-                        <span>My Orders & Tracking</span>
+                        <span>My Orders</span>
+                      </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/track-order"
+                        className="flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-200 hover:bg-white/10 cursor-pointer transition-colors"
+                      >
+                        <Truck className="size-4 text-emerald-400" />
+                        <span>Track Order & Invoice</span>
                       </Link>
                     </DropdownMenuItem>
 
@@ -1062,6 +1072,15 @@ export function Navbar() {
                 <ShoppingCart className="size-4" />
                 <span>View Shopping Cart ({totalItems})</span>
               </button>
+
+              <Link
+                to="/track-order"
+                onClick={() => setOpen(false)}
+                className="flex h-11 w-full mt-2 items-center justify-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 text-xs font-bold text-emerald-300 transition-all duration-200"
+              >
+                <Truck className="size-4" />
+                <span>Track Order & Tax Invoice</span>
+              </Link>
 
               {user ? (
                 <div className="space-y-2">

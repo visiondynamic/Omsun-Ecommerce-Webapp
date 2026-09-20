@@ -54,6 +54,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { TaxInvoiceModal } from "@/components/common/TaxInvoiceModal";
 
 interface OrderDetailsDrawerProps {
   order: AdminOrder | null;
@@ -84,6 +85,7 @@ export function OrderDetailsDrawer({
   );
   const [adminNotesInput, setAdminNotesInput] = useState("");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [taxInvoiceModalOpen, setTaxInvoiceModalOpen] = useState(false);
 
   // Lightbox Zoom State
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -685,11 +687,11 @@ export function OrderDetailsDrawer({
             {/* 6. BOTTOM ACTIONS */}
             <div className="flex flex-col sm:flex-row gap-2.5 pt-2 border-t border-slate-100 dark:border-white/10">
               <Button
-                onClick={() => window.print()}
+                onClick={() => setTaxInvoiceModalOpen(true)}
                 variant="outline"
-                className="flex-1 rounded-xl border-[#E2EDE7] font-bold text-xs gap-2 h-10 cursor-pointer"
+                className="flex-1 rounded-xl border-[#E2EDE7] font-bold text-xs gap-2 h-10 cursor-pointer hover:border-emerald-500 hover:text-emerald-600 transition-colors"
               >
-                <Printer className="size-4" /> Print Tax Invoice
+                <Printer className="size-4 text-emerald-600" /> View & Print Tax Invoice
               </Button>
 
               {onDeleteOrder && (
@@ -940,6 +942,13 @@ export function OrderDetailsDrawer({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Official IRD Nepal Tax Invoice (कर बीजक) Modal */}
+      <TaxInvoiceModal
+        isOpen={taxInvoiceModalOpen}
+        onClose={() => setTaxInvoiceModalOpen(false)}
+        order={order}
+      />
     </>
   );
 }

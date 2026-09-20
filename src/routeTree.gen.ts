@@ -18,6 +18,7 @@ import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SolarSolutionsRouteImport } from './routes/solar-solutions'
+import { Route as TrackOrderRouteImport } from './routes/track-order'
 import { Route as WhyOmsunRouteImport } from './routes/why-omsun'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin.admin-dashboard'
 import { Route as ProtectedCheckoutRouteImport } from './routes/_protected.checkout'
@@ -68,6 +69,11 @@ const SolarSolutionsRoute = SolarSolutionsRouteImport.update({
   path: '/solar-solutions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrackOrderRoute = TrackOrderRouteImport.update({
+  id: '/track-order',
+  path: '/track-order',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WhyOmsunRoute = WhyOmsunRouteImport.update({
   id: '/why-omsun',
   path: '/why-omsun',
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/projects': typeof ProjectsRoute
   '/shop': typeof ShopRoute
   '/solar-solutions': typeof SolarSolutionsRoute
+  '/track-order': typeof TrackOrderRoute
   '/why-omsun': typeof WhyOmsunRoute
   '/admin-dashboard': typeof AdminAdminDashboardRoute
   '/checkout': typeof ProtectedCheckoutRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsRoute
   '/shop': typeof ShopRoute
   '/solar-solutions': typeof SolarSolutionsRoute
+  '/track-order': typeof TrackOrderRoute
   '/why-omsun': typeof WhyOmsunRoute
   '/admin-dashboard': typeof AdminAdminDashboardRoute
   '/checkout': typeof ProtectedCheckoutRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/projects': typeof ProjectsRoute
   '/shop': typeof ShopRoute
   '/solar-solutions': typeof SolarSolutionsRoute
+  '/track-order': typeof TrackOrderRoute
   '/why-omsun': typeof WhyOmsunRoute
   '/_admin/admin-dashboard': typeof AdminAdminDashboardRoute
   '/_protected/checkout': typeof ProtectedCheckoutRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/shop'
     | '/solar-solutions'
+    | '/track-order'
     | '/why-omsun'
     | '/admin-dashboard'
     | '/checkout'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/shop'
     | '/solar-solutions'
+    | '/track-order'
     | '/why-omsun'
     | '/admin-dashboard'
     | '/checkout'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/shop'
     | '/solar-solutions'
+    | '/track-order'
     | '/why-omsun'
     | '/_admin/admin-dashboard'
     | '/_protected/checkout'
@@ -207,6 +219,7 @@ export interface RootRouteChildren {
   ProjectsRoute: typeof ProjectsRoute
   ShopRoute: typeof ShopRoute
   SolarSolutionsRoute: typeof SolarSolutionsRoute
+  TrackOrderRoute: typeof TrackOrderRoute
   WhyOmsunRoute: typeof WhyOmsunRoute
   OrderRefRoute: typeof OrderRefRoute
   ProductIdRoute: typeof ProductIdRoute
@@ -275,6 +288,13 @@ declare module '@tanstack/react-router' {
       path: '/solar-solutions'
       fullPath: '/solar-solutions'
       preLoaderRoute: typeof SolarSolutionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track-order': {
+      id: '/track-order'
+      path: '/track-order'
+      fullPath: '/track-order'
+      preLoaderRoute: typeof TrackOrderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/why-omsun': {
@@ -356,6 +376,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsRoute: ProjectsRoute,
   ShopRoute: ShopRoute,
   SolarSolutionsRoute: SolarSolutionsRoute,
+  TrackOrderRoute: TrackOrderRoute,
   WhyOmsunRoute: WhyOmsunRoute,
   OrderRefRoute: OrderRefRoute,
   ProductIdRoute: ProductIdRoute,

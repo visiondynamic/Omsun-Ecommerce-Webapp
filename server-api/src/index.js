@@ -800,6 +800,16 @@ async function logOrderStatusChange({
   }
 }
 
+function getOrderLookupClause(rawRef) {
+  const refStr = String(rawRef || "").trim();
+  const refWithPrefix = refStr.startsWith("OMS-") ? refStr : `OMS-${refStr}`;
+  const numId = !isNaN(Number(refStr)) ? Number(refStr) : -1;
+  return {
+    sql: "(order_ref = ? OR order_ref = ? OR id = ?)",
+    params: [refStr, refWithPrefix, numId],
+  };
+}
+
 /* 1. CREATE ORDER IMMEDIATELY (Before Payment) */
 app.post("/api/orders", orderLimiter, optionalAuthMiddleware, async (req, res, next) => {
   const body = req.body ?? {};
@@ -982,6 +992,27 @@ app.post("/api/orders", orderLimiter, optionalAuthMiddleware, async (req, res, n
       },
     }).catch(() => {});
 
+    // Send Customer Confirmation Email (Non-blocking)
+    if (shippingEmail) {
+      sendNotificationEmail({
+        to: shippingEmail,
+        subject: `Order Confirmed #${orderRef} — OMSUN Nepal`,
+        data: {
+          "Order Reference": orderRef,
+          "Customer Name": shipping.name,
+          "Shipping Destination": `${shipping.address}, ${shipping.city || "Kathmandu"}, Nepal`,
+          "Items Ordered": orderItems.map((i) => `${i.name} (Qty: ${i.qty})`).join(" | "),
+          "Subtotal": `NPR ${subtotal.toLocaleString()}`,
+          "Delivery Fee": shippingFee === 0 ? "FREE" : `NPR ${shippingFee.toLocaleString()}`,
+          "Total Payable": `NPR ${grandTotal.toLocaleString()}`,
+          "Payment Method": method.toUpperCase(),
+          "Payment Status": initialPaymentStatus,
+          "Live Tracking Link": `https://omsun.com.np/order/${orderRef}`,
+          "Support Contact": "+977-1-4589201 / +977-9801234567 | support@omsunnepal.com",
+        },
+      }).catch(() => {});
+    }
+
     res.status(201).json({
       ok: true,
       orderId,
@@ -1004,13 +1035,8 @@ app.post("/api/orders", orderLimiter, optionalAuthMiddleware, async (req, res, n
 app.get("/api/orders/:ref", optionalAuthMiddleware, async (req, res, next) => {
   try {
     await ensureFullOrderSchema();
-    const rawRef = req.params.ref;
-    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
-
-    const rows = await query("SELECT * FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1", [
-      rawRef,
-      refWithPrefix,
-    ]);
+    const lookup = getOrderLookupClause(req.params.ref);
+    const rows = await query(`SELECT * FROM orders WHERE ${lookup.sql} LIMIT 1`, lookup.params);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "Order not found" });
@@ -1089,12 +1115,10 @@ app.post(
 
     try {
       await ensureFullOrderSchema();
-      const rawRef = req.params.ref;
-      const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
-
+      const lookup = getOrderLookupClause(req.params.ref);
       const orderRows = await query(
-        "SELECT id, order_ref, shipping_name, shipping_phone, shipping_email, grand_total, payment_status FROM orders WHERE order_ref = ? OR order_ref = ?",
-        [rawRef, refWithPrefix],
+        `SELECT id, order_ref, shipping_name, shipping_phone, shipping_email, grand_total, payment_status FROM orders WHERE ${lookup.sql} LIMIT 1`,
+        lookup.params,
       );
 
       if (orderRows.length === 0) {
@@ -1177,6 +1201,23 @@ app.post(
           "Submission Timestamp": new Date().toLocaleString(),
         },
       }).catch(() => {});
+
+      // Send Customer Payment Slip Received Notification
+      if (order.shipping_email) {
+        sendNotificationEmail({
+          to: order.shipping_email,
+          subject: `Payment Slip Received — Order ${order.order_ref}`,
+          data: {
+            "Order Reference": order.order_ref,
+            "Customer Name": order.shipping_name,
+            "Payment Status": "Payment Proof Submitted (Under Verification)",
+            "Transaction Reference": cleanTxRef || "Attached screenshot",
+            "Next Steps":
+              "Our accounts team is reviewing your transaction slip. You will receive an official verification confirmation as soon as it is approved.",
+            "Live Tracking Link": `https://omsun.com.np/order/${order.order_ref}`,
+          },
+        }).catch(() => {});
+      }
 
       res.json({
         ok: true,
@@ -1409,13 +1450,8 @@ app.put(
 
     try {
       await ensureFullOrderSchema();
-      const rawRef = req.params.ref;
-      const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
-
-      const orderRows = await query(
-        "SELECT * FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
-        [rawRef, refWithPrefix],
-      );
+      const lookup = getOrderLookupClause(req.params.ref);
+      const orderRows = await query(`SELECT * FROM orders WHERE ${lookup.sql} LIMIT 1`, lookup.params);
 
       if (orderRows.length === 0) {
         return res.status(404).json({ error: "Order not found" });
@@ -1546,12 +1582,10 @@ app.put(
 
     try {
       await ensureFullOrderSchema();
-      const rawRef = req.params.ref;
-      const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
-
+      const lookup = getOrderLookupClause(req.params.ref);
       const orderRows = await query(
-        "SELECT id, order_ref, shipping_email, shipping_name FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
-        [rawRef, refWithPrefix],
+        `SELECT id, order_ref, shipping_email, shipping_name FROM orders WHERE ${lookup.sql} LIMIT 1`,
+        lookup.params,
       );
 
       if (orderRows.length === 0) {
@@ -1641,12 +1675,10 @@ app.put(
 
     try {
       await ensureFullOrderSchema();
-      const rawRef = req.params.ref;
-      const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
-
+      const lookup = getOrderLookupClause(req.params.ref);
       const orderRows = await query(
-        "SELECT id, order_ref, status, shipping_email, shipping_name FROM orders WHERE order_ref = ? OR order_ref = ? LIMIT 1",
-        [rawRef, refWithPrefix],
+        `SELECT id, order_ref, status, shipping_email, shipping_name FROM orders WHERE ${lookup.sql} LIMIT 1`,
+        lookup.params,
       );
 
       if (orderRows.length === 0) {
@@ -1712,11 +1744,10 @@ app.put(
 app.delete("/api/admin/orders/:ref", authMiddleware, adminMiddleware, async (req, res, next) => {
   try {
     await ensureFullOrderSchema();
-    const rawRef = req.params.ref;
-    const refWithPrefix = rawRef.startsWith("OMS-") ? rawRef : `OMS-${rawRef}`;
+    const lookup = getOrderLookupClause(req.params.ref);
     const rows = await query(
-      "SELECT id, order_ref, status, payment_status FROM orders WHERE order_ref = ? OR order_ref = ?",
-      [rawRef, refWithPrefix],
+      `SELECT id, order_ref, status, payment_status FROM orders WHERE ${lookup.sql}`,
+      lookup.params,
     );
     if (rows.length === 0) {
       return res.status(404).json({ error: "Order not found" });

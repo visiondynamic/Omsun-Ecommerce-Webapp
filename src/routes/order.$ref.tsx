@@ -33,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
+import { TaxInvoiceModal } from "@/components/common/TaxInvoiceModal";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/order/$ref")({
@@ -48,6 +49,7 @@ function OrderTrackingPage() {
   const [transactionRef, setTransactionRef] = useState<string>("");
   const [isSubmittingProof, setIsSubmittingProof] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
   // Fetch live order data
   const { data: order, isLoading, isError, refetch } = useQuery({
@@ -197,12 +199,12 @@ function OrderTrackingPage() {
           </Link>
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => window.print()}
+              onClick={() => setIsInvoiceModalOpen(true)}
               variant="outline"
               size="sm"
-              className="rounded-xl text-xs font-bold gap-1.5 h-8 border-slate-200 dark:border-white/10"
+              className="rounded-xl text-xs font-bold gap-1.5 h-8 border-slate-200 dark:border-white/10 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
             >
-              <Printer className="size-3.5" /> Print Order Invoice
+              <Printer className="size-3.5" /> View / Print Tax Invoice
             </Button>
           </div>
         </div>
@@ -824,6 +826,15 @@ function OrderTrackingPage() {
                     {formatNPR(order.grandTotal)}
                   </span>
                 </div>
+
+                <Button
+                  onClick={() => setIsInvoiceModalOpen(true)}
+                  variant="outline"
+                  className="w-full mt-3 rounded-xl text-xs font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 gap-1.5"
+                >
+                  <Printer className="size-3.5 text-emerald-600" />
+                  Official Nepal Tax Invoice (कर बीजक)
+                </Button>
               </div>
             </div>
 
@@ -864,6 +875,13 @@ function OrderTrackingPage() {
             </div>
           </div>
         </div>
+
+        {/* IRD Official Tax Invoice Modal */}
+        <TaxInvoiceModal
+          isOpen={isInvoiceModalOpen}
+          onClose={() => setIsInvoiceModalOpen(false)}
+          order={order}
+        />
       </main>
 
       <Footer />

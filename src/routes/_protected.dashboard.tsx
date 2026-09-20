@@ -56,6 +56,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import panel from "@/assets/p-panel.jpg";
+import { TaxInvoiceModal } from "@/components/common/TaxInvoiceModal";
 
 export const Route = createFileRoute("/_protected/dashboard")({
   component: DashboardPage,
@@ -1371,7 +1372,7 @@ function DashboardPage() {
                       </div>
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">PAN / VAT Number</span>
-                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300">609823412</span>
+                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300">606847291</span>
                       </div>
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Accepted Apps</span>
@@ -1388,7 +1389,7 @@ function DashboardPage() {
                     </p>
                     <Button
                       onClick={() => {
-                        navigator.clipboard.writeText("609823412");
+                        navigator.clipboard.writeText("606847291");
                         toast.success("OMSUN Fonepay PAN/Merchant ID copied!");
                       }}
                       variant="outline"
@@ -1582,6 +1583,15 @@ function DashboardPage() {
                                   <Link to="/order/$ref" params={{ ref: order.order_ref }}>
                                     Track Order & Pay &rarr;
                                   </Link>
+                                </Button>
+
+                                <Button
+                                  onClick={() => setSelectedInvoiceOrder(order)}
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-8 px-3 rounded-xl text-xs font-bold border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                                >
+                                  <FileText className="size-3.5 mr-1 text-emerald-600" /> Tax Invoice
                                 </Button>
 
                                 <Button
@@ -2009,70 +2019,12 @@ function DashboardPage() {
         </DialogContent>
       </Dialog>
 
-      {/* ── TAX INVOICE MODAL ── */}
-      <Dialog open={!!selectedInvoiceOrder} onOpenChange={(open) => !open && setSelectedInvoiceOrder(null)}>
-        <DialogContent className="max-w-xl w-[94vw] max-h-[88vh] overflow-y-auto p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0c241c] border-slate-200 dark:border-white/10 shadow-2xl">
-          <DialogHeader>
-            <DialogTitle className="font-bold text-base flex items-center justify-between">
-              <span>OMSUN Nepal VAT Invoice</span>
-              <Button
-                size="sm"
-                onClick={() => window.print()}
-                className="h-8 rounded-xl bg-emerald-600 text-white font-bold text-xs"
-              >
-                <Printer className="size-3.5 mr-1" /> Print Bill
-              </Button>
-            </DialogTitle>
-          </DialogHeader>
-
-          {selectedInvoiceOrder && (
-            <div className="space-y-3 pt-2 text-xs">
-              <div className="flex items-center justify-between border-b pb-2 flex-wrap gap-2">
-                <div>
-                  <h4 className="font-bold text-sm text-emerald-700">OMSUN NEPAL PVT. LTD.</h4>
-                  <p className="text-slate-400 text-[11px]">Kathmandu, Nepal • PAN/VAT: 609823412</p>
-                </div>
-                <div className="text-right font-mono">
-                  <div className="font-bold">#{selectedInvoiceOrder.order_ref}</div>
-                  <div className="text-slate-400 text-[11px]">{new Date(selectedInvoiceOrder.created_at).toLocaleDateString()}</div>
-                </div>
-              </div>
-
-              <div className="p-3 bg-slate-50 dark:bg-black/20 rounded-xl space-y-0.5">
-                <div>Billed To: <strong>{selectedInvoiceOrder.shipping_name}</strong></div>
-                <div>Address: {selectedInvoiceOrder.shipping_address}, {selectedInvoiceOrder.shipping_city}</div>
-                <div>Phone: {selectedInvoiceOrder.shipping_phone}</div>
-              </div>
-
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b text-slate-400 text-[11px]">
-                    <th className="py-1.5">Item Description</th>
-                    <th className="py-1.5 text-center">Qty</th>
-                    <th className="py-1.5 text-right">Price</th>
-                    <th className="py-1.5 text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {(selectedInvoiceOrder.items || []).map((item, idx) => (
-                    <tr key={idx}>
-                      <td className="py-1.5">{item.product_name}</td>
-                      <td className="py-1.5 text-center font-mono">{item.qty}</td>
-                      <td className="py-1.5 text-right font-mono">{formatNPR(item.unit_price)}</td>
-                      <td className="py-1.5 text-right font-bold font-mono">{formatNPR(item.unit_price * item.qty)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              <div className="border-t pt-2 flex justify-between items-center text-sm font-bold">
-                <span>Grand Total (13% VAT Incl.):</span>
-                <span className="text-emerald-600 font-mono text-base">{formatNPR(selectedInvoiceOrder.grand_total)}</span>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* ── OFFICIAL NEPAL TAX INVOICE (कर बीजक) MODAL ── */}
+      <TaxInvoiceModal
+        isOpen={!!selectedInvoiceOrder}
+        onClose={() => setSelectedInvoiceOrder(null)}
+        order={selectedInvoiceOrder}
+      />
     </div>
   );
 }
