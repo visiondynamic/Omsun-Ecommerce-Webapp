@@ -1,0 +1,31 @@
+import type { Product } from "@/lib/products";
+import smartenDataJson from "../../scripts/smarten-products.json";
+
+export const smartenFallbackProducts: Product[] = (smartenDataJson as any[]).map((p) => ({
+  id: p.id,
+  name: p.name,
+  slug: p.slug,
+  category: p.category,
+  subcategory: p.subcategory,
+  series: p.series,
+  model: p.model,
+  capacity: p.capacity,
+  brand: p.brand || "Smarten",
+  tagline: p.tagline || "",
+  description: p.description || "",
+  price: Number(p.price) || 0,
+  compareAt: p.compareAt ? Number(p.compareAt) : undefined,
+  image: p.image,
+  images: Array.isArray(p.images) ? p.images : (p.image ? [p.image] : []),
+  features: Array.isArray(p.features) ? p.features : [],
+  specs: Array.isArray(p.specs) ? p.specs : [],
+  specifications: typeof p.specifications === "object" ? p.specifications : {},
+  applications: Array.isArray(p.applications) ? p.applications : [],
+  warranty: p.warranty || "2 Years",
+  brochureUrl: p.brochureUrl || undefined,
+  sourceUrl: p.sourceUrl || undefined,
+  stock: Number(p.stock) || 20,
+  rating: Number(p.rating) || 4.9,
+  efficient: true,
+  badges: Array.isArray(p.badges) ? p.badges : ["Smarten Official"],
+}));

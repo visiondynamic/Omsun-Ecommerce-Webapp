@@ -4,10 +4,16 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Award,
   Check,
+  CheckCircle2,
+  Download,
+  ExternalLink,
+  FileDown,
+  FileText,
   Minus,
   Plus,
   ShieldCheck,
   ShoppingCart,
+  Sparkles,
   Star,
   Truck,
   Zap,
@@ -87,12 +93,34 @@ function ProductPage() {
   const rawGallery =
     product.images && product.images.length > 0
       ? product.images
-      : (product.image ? [product.image] : []);
+      : product.image
+        ? [product.image]
+        : [];
   const gallery =
     product.image && !rawGallery.includes(product.image)
       ? [product.image, ...rawGallery]
       : rawGallery;
-  const related = allProducts.filter((p) => p.id !== product.id).slice(0, 3);
+
+  // Filter out any SMF batteries strictly and sort by category/series relevance
+  const related = allProducts
+    .filter(
+      (p) =>
+        p.id !== product.id &&
+        p.category !== "SMF Battery" &&
+        !p.name.toLowerCase().includes("smf") &&
+        !p.subcategory?.toLowerCase().includes("smf"),
+    )
+    .sort((a, b) => {
+      if (a.category === product.category && b.category !== product.category) return -1;
+      if (b.category === product.category && a.category !== product.category) return 1;
+      if (product.series && a.series === product.series && b.series !== product.series) return -1;
+      if (product.series && b.series === product.series && a.series !== product.series) return 1;
+      if (a.brand === product.brand && b.brand !== product.brand) return -1;
+      if (b.brand === product.brand && a.brand !== product.brand) return 1;
+      return 0;
+    })
+    .slice(0, 3);
+
   const out = product.stock === 0;
   const isGreennVolt =
     product.brand?.toLowerCase().includes("green volt") ||
@@ -104,8 +132,28 @@ function ProductPage() {
     (product.category === "Stabilizer" ||
       product.subcategory?.toLowerCase().includes("servo") ||
       product.name.toLowerCase().includes("servo"));
+  const isSmarten = product.brand === "Smarten";
 
   const currentImage = gallery[active] || gallery[0] || product.image;
+
+  // Build unified specifications list
+  const specMap = new Map<string, string>();
+  if (product.specs) {
+    for (const s of product.specs) {
+      if (s.label && s.value) specMap.set(s.label.trim(), s.value.trim());
+    }
+  }
+  if (product.specifications) {
+    for (const [k, v] of Object.entries(product.specifications)) {
+      if (k && v && !specMap.has(k.trim())) {
+        specMap.set(k.trim(), String(v).trim());
+      }
+    }
+  }
+  const combinedSpecs = Array.from(specMap.entries()).map(([label, value]) => ({ label, value }));
+
+  const hasFeatures = Boolean(product.features && product.features.length > 0);
+  const hasApplications = Boolean(product.applications && product.applications.length > 0);
 
   return (
     <div className="min-h-dvh">
@@ -125,7 +173,7 @@ function ProductPage() {
           <div className="relative mx-auto max-w-7xl px-6">
             <nav
               aria-label="Breadcrumb"
-              className="text-xs font-medium text-emerald-300/80 mb-3 flex items-center gap-2"
+              className="text-xs font-medium text-emerald-300/80 mb-3 flex items-center gap-2 flex-wrap"
             >
               <Link to="/" className="hover:text-emerald-300 transition-colors">
                 Home
@@ -135,15 +183,57 @@ function ProductPage() {
                 Shop
               </Link>
               <span>/</span>
-              <span className="text-white font-semibold">{product.category}</span>
+              <Link
+                to="/shop"
+                search={{ category: product.category }}
+                className="hover:text-emerald-300 transition-colors font-semibold"
+              >
+                {product.category}
+              </Link>
+              {product.series && (
+                <>
+                  <span>/</span>
+                  <span className="text-emerald-200/90">{product.series}</span>
+                </>
+              )}
             </nav>
 
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#03C987] mb-2">
-                  <Zap className="size-3.5" />
-                  <span>{product.category}</span>
-                </span>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#03C987]">
+                    <Zap className="size-3.5" />
+                    <span>{product.category}</span>
+                  </span>
+                  {product.brand && (
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider border",
+                        isSmarten
+                          ? "border-amber-400/40 bg-amber-400/15 text-amber-300"
+                          : "border-sky-400/30 bg-sky-400/10 text-sky-300",
+                      )}
+                    >
+                      {product.brand}
+                    </span>
+                  )}
+                  {product.series && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                      {product.series}
+                    </span>
+                  )}
+                  {product.model && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-mono font-bold text-white/90">
+                      {product.model}
+                    </span>
+                  )}
+                  {product.capacity && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-teal-400/30 bg-teal-400/10 px-3 py-1 text-xs font-bold text-teal-300">
+                      {product.capacity}
+                    </span>
+                  )}
+                </div>
+
                 <h1 className="font-display text-3xl font-extrabold sm:text-4xl text-white">
                   {product.name}
                 </h1>
@@ -152,7 +242,18 @@ function ProductPage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                {product.brochureUrl && (
+                  <a
+                    href={product.brochureUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-red-500/40 bg-red-500/20 hover:bg-red-500/30 px-4 py-2.5 text-xs font-bold text-red-300 backdrop-blur-md transition-all shadow-lg hover:scale-105"
+                  >
+                    <FileDown className="size-4" />
+                    <span>Official Brochure (PDF)</span>
+                  </a>
+                )}
                 <span className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-5 py-2.5 text-base font-extrabold text-emerald-400 backdrop-blur-md">
                   {formatNPR(product.price)}
                 </span>
@@ -195,44 +296,123 @@ function ProductPage() {
               )}
 
               <Tabs defaultValue="specs" className="mt-12">
-                <TabsList className="h-12 rounded-2xl">
-                  <TabsTrigger value="specs" className="rounded-xl px-5">
+                <TabsList className="h-auto p-1.5 gap-1.5 flex flex-wrap rounded-2xl bg-muted/60">
+                  <TabsTrigger value="specs" className="rounded-xl px-4 py-2 text-xs sm:text-sm">
                     Specifications
                   </TabsTrigger>
-                  <TabsTrigger value="details" className="rounded-xl px-5">
-                    Product details
+                  {hasFeatures && (
+                    <TabsTrigger value="features" className="rounded-xl px-4 py-2 text-xs sm:text-sm">
+                      Features
+                    </TabsTrigger>
+                  )}
+                  {hasApplications && (
+                    <TabsTrigger value="applications" className="rounded-xl px-4 py-2 text-xs sm:text-sm">
+                      Applications
+                    </TabsTrigger>
+                  )}
+                  <TabsTrigger value="details" className="rounded-xl px-4 py-2 text-xs sm:text-sm">
+                    Product Overview
                   </TabsTrigger>
                 </TabsList>
+
                 <TabsContent value="specs" className="mt-6">
-                  <dl className="surface-card divide-y overflow-hidden">
-                    {product.specs.map((s) => (
+                  <dl className="surface-card divide-y overflow-hidden rounded-2xl border border-slate-200/80 dark:border-white/10">
+                    {combinedSpecs.map((s) => (
                       <div key={s.label} className="grid grid-cols-2 gap-4 px-6 py-4 text-sm">
                         <dt className="font-medium text-muted-foreground">{s.label}</dt>
-                        <dd className="font-semibold">{s.value}</dd>
+                        <dd className="font-semibold text-foreground break-words">{s.value}</dd>
                       </div>
                     ))}
                   </dl>
                 </TabsContent>
+
+                {hasFeatures && (
+                  <TabsContent value="features" className="mt-6">
+                    <div className="surface-card rounded-2xl border border-slate-200/80 dark:border-white/10 p-6 sm:p-7">
+                      <h3 className="font-display text-lg font-bold mb-5 flex items-center gap-2 text-foreground">
+                        <Sparkles className="size-5 text-emerald-500" />
+                        Key Features & Engineered Advantages
+                      </h3>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {product.features?.map((feature, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-start gap-3 rounded-xl border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] p-3.5"
+                          >
+                            <CheckCircle2 className="size-4.5 shrink-0 text-emerald-500 mt-0.5" />
+                            <span className="text-xs sm:text-sm font-medium text-foreground/90 leading-snug">
+                              {feature}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+                )}
+
+                {hasApplications && (
+                  <TabsContent value="applications" className="mt-6">
+                    <div className="surface-card rounded-2xl border border-slate-200/80 dark:border-white/10 p-6 sm:p-7">
+                      <h3 className="font-display text-lg font-bold mb-5 flex items-center gap-2 text-foreground">
+                        <Zap className="size-5 text-amber-500" />
+                        Recommended Applications & Suitable Equipment
+                      </h3>
+                      <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                        {product.applications?.map((app, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-2.5 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-500/10 px-4 py-3 text-xs sm:text-sm font-semibold text-foreground"
+                          >
+                            <div className="size-2 rounded-full bg-amber-500 shrink-0" />
+                            <span>{app}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+                )}
+
                 <TabsContent value="details" className="mt-6">
                   {isGreennVolt ? (
                     <GreenVoltTechnicalDetails product={product} />
                   ) : isOmsunServo ? (
                     <OmsunServoTechnicalDetails product={product} />
                   ) : (
-                    <div className="surface-card space-y-4 p-6 text-sm leading-relaxed text-muted-foreground">
+                    <div className="surface-card space-y-4 p-6 sm:p-7 rounded-2xl border border-slate-200/80 dark:border-white/10 text-sm leading-relaxed text-muted-foreground">
                       {product.description && (
-                        <p className="font-medium text-foreground">{product.description}</p>
+                        <p className="font-medium text-foreground text-base leading-relaxed">
+                          {product.description}
+                        </p>
                       )}
                       <p>
                         {product.name} is supplied by OMSUN Nepal with full manufacturer
-                        documentation, test certificates and a serialised warranty card. Installation
-                        guidance is included with every order.
+                        documentation, factory quality verification, and a serialised warranty card.
+                        Professional installation guidance and engineering consultation are included.
                       </p>
                       <p>
-                        Our engineering team can size, integrate and commission this product as part
-                        of a complete system — including load study, protection coordination and
-                        remote monitoring.
+                        Our engineering team can size, integrate, and commission this product as part
+                        of a complete energy ecosystem — including load analysis, battery bank
+                        balancing, surge protection, and remote solar monitoring.
                       </p>
+
+                      {product.brochureUrl && (
+                        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
+                          <div>
+                            <h4 className="font-bold text-foreground">Official Product Documentation</h4>
+                            <p className="text-xs text-muted-foreground">
+                              Download official Smarten specifications sheet and manufacturer brochure
+                            </p>
+                          </div>
+                          <a
+                            href={product.brochureUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 px-4 py-2.5 text-xs font-bold transition-all"
+                          >
+                            <FileDown className="size-4" /> Download PDF Brochure
+                          </a>
+                        </div>
+                      )}
                     </div>
                   )}
                 </TabsContent>
@@ -241,13 +421,40 @@ function ProductPage() {
 
             {/* Sticky purchase panel */}
             <div className="lg:sticky lg:top-28 lg:h-fit">
-              <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                {product.brand} · {product.category}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                  {product.brand} · {product.category}
+                </span>
+                {product.series && (
+                  <span className="text-xs font-bold text-amber-500 dark:text-amber-400">
+                    · {product.series}
+                  </span>
+                )}
+              </div>
+
               <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight">
                 {product.name}
               </h1>
               <p className="mt-4 text-muted-foreground">{product.tagline}</p>
+
+              {/* Series, Model, Capacity Badges */}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {product.series && (
+                  <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                    Series: {product.series}
+                  </span>
+                )}
+                {product.model && (
+                  <span className="rounded-md border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/10 px-2.5 py-0.5 text-xs font-mono font-semibold text-foreground">
+                    Model: {product.model}
+                  </span>
+                )}
+                {product.capacity && (
+                  <span className="rounded-md border border-teal-500/30 bg-teal-500/10 px-2.5 py-0.5 text-xs font-semibold text-teal-600 dark:text-teal-400">
+                    {product.capacity}
+                  </span>
+                )}
+              </div>
 
               <div className="mt-5 flex items-center gap-3 text-sm">
                 <span className="inline-flex items-center gap-1 font-bold">
@@ -256,7 +463,7 @@ function ProductPage() {
                 <span className="text-muted-foreground">· 128 verified reviews</span>
               </div>
 
-              <div className="surface-card mt-8 p-7">
+              <div className="surface-card mt-8 p-7 rounded-2xl border border-slate-200/80 dark:border-white/10">
                 <div className="flex items-end gap-3">
                   <span className="font-display text-4xl font-extrabold">
                     {formatNPR(product.price)}
@@ -345,6 +552,7 @@ function ProductPage() {
                     <Zap className="size-4 mr-1.5" /> Buy Now
                   </Button>
                 </div>
+
                 <Button
                   variant="outline"
                   className="mt-3 h-14 w-full rounded-2xl border-2 text-base font-semibold"
@@ -352,6 +560,18 @@ function ProductPage() {
                 >
                   Request a bulk quote
                 </Button>
+
+                {product.brochureUrl && (
+                  <a
+                    href={product.brochureUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 flex items-center justify-center gap-2 h-12 w-full rounded-2xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs sm:text-sm font-bold transition-all"
+                  >
+                    <FileDown className="size-4" />
+                    <span>Download Official Brochure (PDF)</span>
+                  </a>
+                )}
               </div>
 
               <ul className="mt-6 grid gap-4">
@@ -360,7 +580,8 @@ function ProductPage() {
                     icon: ShieldCheck,
                     t: "Warranty included",
                     d:
-                      product.specs.find((s) => s.label === "Warranty")?.value ??
+                      product.warranty ??
+                      product.specs.find((s) => s.label.toLowerCase().includes("warranty"))?.value ??
                       "Manufacturer warranty",
                   },
                   {

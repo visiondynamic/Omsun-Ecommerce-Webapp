@@ -568,7 +568,7 @@ app.delete("/api/user/addresses/:id", authMiddleware, async (req, res, next) => 
 app.get("/api/products", async (_req, res, next) => {
   try {
     const rows = await query(
-      "SELECT id, name, category, subcategory, brand, tagline, price, mrp, image, images, stock, rating, badges FROM products ORDER BY name",
+      "SELECT id, name, category, subcategory, series, model, capacity, brand, tagline, description, price, mrp, image, images, stock, rating, badges, warranty, brochure_url, source_url FROM products ORDER BY name",
     );
     const products = rows.map((r) => ({
       ...r,
@@ -600,6 +600,8 @@ app.get("/api/products/:id", async (req, res, next) => {
       badges: typeof p.badges === "string" ? JSON.parse(p.badges) : p.badges || [],
       features: typeof p.features === "string" ? JSON.parse(p.features) : p.features || [],
       specs: typeof p.specs === "string" ? JSON.parse(p.specs) : p.specs || [],
+      applications: typeof p.applications === "string" ? JSON.parse(p.applications) : p.applications || [],
+      specifications: typeof p.specifications === "string" ? JSON.parse(p.specifications) : p.specifications || {},
     });
   } catch (err) {
     next(err);

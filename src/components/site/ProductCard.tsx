@@ -81,7 +81,7 @@ export function ProductCard({
               decoding="async"
               width={400}
               height={400}
-              className="aspect-square w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+              className="aspect-square w-full object-contain p-2 transition-transform duration-300 ease-out group-hover:scale-105"
             />
           </Link>
 
@@ -100,15 +100,17 @@ export function ProductCard({
           </div>
         </div>
 
-        {/* ── CARD CONTENT ── */}
-        <div className="flex flex-1 flex-col justify-between gap-2 p-1.5 pt-2.5">
+        {/* ── CARD BODY ── */}
+        <div className="flex flex-1 flex-col justify-between pt-3">
           <div>
-            {/* Brand & Subcategory Pills */}
+            {/* Brand & Subcategory / Series Pills */}
             <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
               <span
                 className={cn(
                   "rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider font-mono shadow-2xs whitespace-nowrap inline-flex items-center shrink-0",
-                  product.brand === "OMSUN"
+                  product.brand === "Smarten"
+                    ? "bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700/50"
+                    : product.brand === "OMSUN"
                     ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50"
                     : product.brand === "Greenn Volt" || product.brand === "Green Volt"
                     ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/80 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-700/50"
@@ -118,7 +120,7 @@ export function ProductCard({
                 {product.brand}
               </span>
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                {product.subcategory || product.category}
+                {product.series || product.subcategory || product.category}
               </span>
             </div>
 

@@ -152,7 +152,13 @@ function Home() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const allProducts = apiProducts ?? fallbackProducts;
+  const rawProducts = apiProducts ?? fallbackProducts;
+  const allProducts = rawProducts.filter(
+    (p) =>
+      p.category !== "SMF Battery" &&
+      !p.name.toLowerCase().includes("smf") &&
+      !p.subcategory?.toLowerCase().includes("smf"),
+  );
   const featured = allProducts.slice(0, 4);
   const bestSellers = allProducts.filter((p) => p.badges.some((b) => b.toLowerCase().includes("best") || b.toLowerCase().includes("top") || b.toLowerCase().includes("rated"))).slice(0, 4);
   const displayBestSellers = bestSellers.length > 0 ? bestSellers : allProducts.slice(4, 8);

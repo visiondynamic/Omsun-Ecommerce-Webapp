@@ -52,25 +52,30 @@ export async function setup() {
   await conn.query(schemaSql);
   console.log("✓ Database tables verified/created successfully!");
 
-  // Ensure subcategory and images columns exist
-  try {
-    const [cols] = await conn.query("SHOW COLUMNS FROM products LIKE 'subcategory'");
-    if (cols.length === 0) {
-      console.log("Adding 'subcategory' column to products table...");
-      await conn.query("ALTER TABLE products ADD COLUMN subcategory VARCHAR(120) NULL AFTER category");
-    }
-  } catch (err) {
-    console.log("Note on subcategory column check:", err.message);
-  }
+  // Ensure subcategory, images, and extended product columns exist
+  const extendedCols = [
+    { name: "subcategory", type: "VARCHAR(120) NULL" },
+    { name: "images", type: "LONGTEXT NULL" },
+    { name: "series", type: "VARCHAR(120) NULL" },
+    { name: "model", type: "VARCHAR(120) NULL" },
+    { name: "capacity", type: "VARCHAR(120) NULL" },
+    { name: "warranty", type: "VARCHAR(120) NULL" },
+    { name: "brochure_url", type: "VARCHAR(500) NULL" },
+    { name: "source_url", type: "VARCHAR(500) NULL" },
+    { name: "applications", type: "JSON NULL" },
+    { name: "specifications", type: "JSON NULL" },
+  ];
 
-  try {
-    const [imgCols] = await conn.query("SHOW COLUMNS FROM products LIKE 'images'");
-    if (imgCols.length === 0) {
-      console.log("Adding 'images' column to products table...");
-      await conn.query("ALTER TABLE products ADD COLUMN images LONGTEXT NULL AFTER image");
+  for (const col of extendedCols) {
+    try {
+      const [cols] = await conn.query(`SHOW COLUMNS FROM products LIKE '${col.name}'`);
+      if (cols.length === 0) {
+        console.log(`Adding '${col.name}' column to products table...`);
+        await conn.query(`ALTER TABLE products ADD COLUMN ${col.name} ${col.type}`);
+      }
+    } catch (err) {
+      console.log(`Note on ${col.name} column check:`, err.message);
     }
-  } catch (err) {
-    console.log("Note on images column check:", err.message);
   }
 
   // 1. Sync & Seed official products catalog from catalog-data.json
@@ -94,10 +99,20 @@ export async function setup() {
     const badgesStr = p.badges
       ? (typeof p.badges === "string" ? p.badges : JSON.stringify(p.badges))
       : "[]";
+    const appStr = p.applications
+      ? (typeof p.applications === "string" ? p.applications : JSON.stringify(p.applications))
+      : "[]";
+    const specificationsStr = p.specifications
+      ? (typeof p.specifications === "string" ? p.specifications : JSON.stringify(p.specifications))
+      : "{}";
 
     await conn.query(
-      `INSERT INTO products (id, name, category, subcategory, brand, tagline, description, price, mrp, image, images, features, specs, stock, rating, badges)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO products (
+         id, name, category, subcategory, brand, tagline, description, price, mrp, 
+         image, images, features, specs, stock, rating, badges, 
+         series, model, capacity, warranty, brochure_url, source_url, applications, specifications
+       )
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE 
          name = VALUES(name), 
          category = VALUES(category), 
@@ -113,7 +128,15 @@ export async function setup() {
          specs = VALUES(specs), 
          stock = VALUES(stock), 
          rating = VALUES(rating), 
-         badges = VALUES(badges)`,
+         badges = VALUES(badges),
+         series = VALUES(series),
+         model = VALUES(model),
+         capacity = VALUES(capacity),
+         warranty = VALUES(warranty),
+         brochure_url = VALUES(brochure_url),
+         source_url = VALUES(source_url),
+         applications = VALUES(applications),
+         specifications = VALUES(specifications)`,
       [
         p.id,
         p.name,
@@ -131,6 +154,14 @@ export async function setup() {
         Number(p.stock) || 0,
         Number(p.rating) || 4.8,
         badgesStr,
+        p.series || null,
+        p.model || null,
+        p.capacity || null,
+        p.warranty || null,
+        p.brochure_url || null,
+        p.source_url || null,
+        appStr,
+        specificationsStr,
       ],
     );
   }

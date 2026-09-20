@@ -197,16 +197,26 @@ export function Navbar() {
     setPillStyle((s) => ({ ...s, opacity: 0 }));
   }
 
-  /* Filter products for instant search modal */
+  /* Filter products for instant search modal (Strictly exclude SMF batteries) */
+  const validProducts = allProducts.filter(
+    (p) =>
+      p.category !== "SMF Battery" &&
+      !p.name.toLowerCase().includes("smf") &&
+      !p.subcategory?.toLowerCase().includes("smf"),
+  );
+
   const filteredProducts = searchQuery.trim()
-    ? allProducts.filter(
+    ? validProducts.filter(
         (p) =>
           p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (p.series && p.series.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (p.model && p.model.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (p.capacity && p.capacity.toLowerCase().includes(searchQuery.toLowerCase())) ||
           p.tagline.toLowerCase().includes(searchQuery.toLowerCase()),
       )
-    : allProducts.slice(0, 4);
+    : validProducts.slice(0, 4);
 
   return (
     <>
@@ -903,12 +913,12 @@ export function Navbar() {
                     Quick Search:
                   </span>
                   {[
+                    "Smarten",
+                    "Home UPS",
+                    "Solar PCU",
+                    "Tubular Battery",
                     "Servo Stabilizer",
                     "Greenn Volt",
-                    "Oil Cooled",
-                    "Online LF UPS",
-                    "Power-One",
-                    "3-Phase",
                     "Solar",
                   ].map((tag) => (
                     <button

@@ -44,12 +44,18 @@ export {
   greenVolt5kva90vImg,
 };
 
+import { smartenFallbackProducts } from "@/lib/smartenData";
+
 export type Product = {
   id: string;
   name: string;
+  slug?: string | undefined;
   tagline: string;
   category: string;
   subcategory?: string | undefined;
+  series?: string | undefined;
+  model?: string | undefined;
+  capacity?: string | undefined;
   brand: string;
   price: number;
   compareAt?: number | undefined;
@@ -60,6 +66,13 @@ export type Product = {
   rating: number;
   efficient?: boolean | undefined;
   specs: { label: string; value: string }[];
+  specifications?: Record<string, string> | undefined;
+  features?: string[] | undefined;
+  applications?: string[] | undefined;
+  warranty?: string | undefined;
+  brochureUrl?: string | undefined;
+  datasheetUrl?: string | undefined;
+  sourceUrl?: string | undefined;
   description?: string | undefined;
 };
 
@@ -72,6 +85,73 @@ export interface CategoryStructure {
 }
 
 export const PRODUCT_TAXONOMY: CategoryStructure[] = [
+  {
+    name: "Home UPS",
+    slug: "home-ups",
+    skuPrefix: "HUP",
+    description: "Pure sine wave home inverters, low-voltage 90V charging systems, and integrated Lithium-Ion UPS units by Smarten.",
+    subcategories: [
+      "Pure Sine Wave Inverter",
+      "Home Inverter",
+      "Lithium Integrated UPS",
+      "Bravo Series",
+      "Nova Series",
+      "EverOn Series",
+    ],
+  },
+  {
+    name: "Solar PCU",
+    slug: "solar-pcu",
+    skuPrefix: "PCU",
+    description: "High-yield MPPT and PWM solar hybrid power conditioning units with intelligent solar-battery-grid priority routing.",
+    subcategories: [
+      "MPPT Solar PCU",
+      "PWM Solar PCU",
+      "Superb Series",
+      "Saver Series",
+      "Shine Series",
+      "Boom Series",
+    ],
+  },
+  {
+    name: "Solar Charge Controllers",
+    slug: "solar-charge-controllers",
+    skuPrefix: "SCC",
+    description: "Ultra-fast MPPT and PWM solar charge controllers and automated PV changers to upgrade any existing inverter to solar.",
+    subcategories: [
+      "MPPT Solar Charge Controller",
+      "PWM Solar Charge Controller",
+      "DC Solar Controller",
+      "PV Changer",
+      "Prime Series",
+      "Savior Series",
+      "Tejas Series",
+    ],
+  },
+  {
+    name: "Tubular Batteries",
+    slug: "tubular-batteries",
+    skuPrefix: "TUB",
+    description: "Heavy-duty C10 solar and C20 inverter tall tubular batteries with 100-bar spine casting for maximum cycle life (strictly non-SMF).",
+    subcategories: [
+      "Tall Tubular Battery",
+      "Solar Tubular Battery",
+      "Bravo Series",
+      "Saver Series",
+      "Boom Series",
+    ],
+  },
+  {
+    name: "Solar Panels",
+    slug: "solar-panels",
+    skuPrefix: "PNL",
+    description: "High-efficiency N-Type TOPCon bifacial, half-cut mono PERC, and heavy polycrystalline solar photovoltaic modules.",
+    subcategories: [
+      "Monocrystalline",
+      "Polycrystalline",
+      "Bifacial TOPCon",
+    ],
+  },
   {
     name: "Stabilizer",
     slug: "stabilizer",
@@ -97,20 +177,6 @@ export const PRODUCT_TAXONOMY: CategoryStructure[] = [
     ],
   },
   {
-    name: "Solar",
-    slug: "solar",
-    skuPrefix: "SLR",
-    description: "Tier-1 solar PV modules, hybrid inverters and complete grid-tied net-meter renewable systems.",
-    subcategories: ["Hybrid Solar", "Solar Panels", "Solar Inverters"],
-  },
-  {
-    name: "Battery",
-    slug: "battery",
-    skuPrefix: "BAT",
-    description: "High-cycle deep storage batteries, modular LiFePO₄ powerwalls and tubular backup storage.",
-    subcategories: ["LiFePO4 Storage", "Tubular Battery"],
-  },
-  {
     name: "Security",
     slug: "security",
     skuPrefix: "SEC",
@@ -121,7 +187,7 @@ export const PRODUCT_TAXONOMY: CategoryStructure[] = [
 
 export const CATEGORIES = PRODUCT_TAXONOMY.map((c) => c.name);
 
-export const BRANDS = ["OMSUN", "Greenn Volt", "Power-One", "SineWave", "Voltura"];
+export const BRANDS = ["Smarten", "OMSUN", "Power-One", "Greenn Volt", "SineWave", "Voltura"];
 
 // Fallback mock data used when API is unavailable (SSR, offline, etc.)
 const fallbackImageMap: Record<string, string> = {
@@ -135,7 +201,7 @@ const fallbackImageMap: Record<string, string> = {
   "Panels & Switchgear": panelboard,
 };
 
-export const fallbackProducts: Product[] = [
+const baseFallbackProducts: Product[] = [
   // ══════════════════════════════════════════════════════════════════════════════
   // GROUP 1: OMSUN Servo Motor Voltage Stabilizer (Single Phase)
   // ══════════════════════════════════════════════════════════════════════════════
@@ -1032,6 +1098,11 @@ export const fallbackProducts: Product[] = [
   },
 ];
 
+export const fallbackProducts: Product[] = [
+  ...baseFallbackProducts,
+  ...smartenFallbackProducts,
+];
+
 const API_BASE =
   (typeof import.meta !== "undefined" && import.meta.env?.["VITE_API_URL"]) ||
   "http://localhost:4000";
@@ -1075,8 +1146,12 @@ export function resolveDbImage(
 export function mapApiProductToProduct(apiProduct: {
   id: string;
   name: string;
+  slug?: string | null;
   category: string;
   subcategory?: string | null;
+  series?: string | null;
+  model?: string | null;
+  capacity?: string | null;
   brand: string;
   tagline: string | null;
   price: number;
@@ -1086,7 +1161,17 @@ export function mapApiProductToProduct(apiProduct: {
   stock: number;
   rating: number;
   badges: string[];
-  specs: { label: string; value: string }[];
+  specs?: { label: string; value: string }[] | string | null;
+  specifications?: Record<string, string> | string | null;
+  features?: string[] | string | null;
+  applications?: string[] | string | null;
+  warranty?: string | null;
+  brochure_url?: string | null;
+  brochureUrl?: string | null;
+  datasheet_url?: string | null;
+  datasheetUrl?: string | null;
+  source_url?: string | null;
+  sourceUrl?: string | null;
   description?: string | null;
 }): Product {
   const resolvedImage = resolveDbImage(apiProduct.image, apiProduct.category, apiProduct.id);
@@ -1115,22 +1200,47 @@ export function mapApiProductToProduct(apiProduct: {
     }
   }
 
+  const parseJsonField = <T>(val: any, fallback: T): T => {
+    if (!val) return fallback;
+    if (typeof val === "string") {
+      try { return JSON.parse(val); } catch { return fallback; }
+    }
+    return val as T;
+  };
+
+  const parsedSpecs = parseJsonField(apiProduct.specs, []);
+  const parsedSpecsObj = parseJsonField(apiProduct.specifications, {});
+  const parsedFeatures = parseJsonField(apiProduct.features, []);
+  const parsedApps = parseJsonField(apiProduct.applications, []);
+  const parsedBadges = parseJsonField(apiProduct.badges, []);
+
   const base: Product = {
     id: apiProduct.id,
     name: apiProduct.name,
+    slug: apiProduct.slug || undefined,
     tagline: apiProduct.tagline || "",
     category: apiProduct.category,
     subcategory: apiProduct.subcategory || undefined,
+    series: apiProduct.series || undefined,
+    model: apiProduct.model || undefined,
+    capacity: apiProduct.capacity || undefined,
     brand: apiProduct.brand,
     price: apiProduct.price,
     compareAt: undefined,
     image: resolvedImage,
     images: resolvedImages,
-    badges: apiProduct.badges || [],
+    badges: parsedBadges,
     stock: apiProduct.stock,
     rating: apiProduct.rating,
     efficient: apiProduct.rating >= 4.5,
-    specs: apiProduct.specs || [],
+    specs: Array.isArray(parsedSpecs) ? parsedSpecs : [],
+    specifications: typeof parsedSpecsObj === "object" && !Array.isArray(parsedSpecsObj) ? parsedSpecsObj : undefined,
+    features: Array.isArray(parsedFeatures) ? parsedFeatures : undefined,
+    applications: Array.isArray(parsedApps) ? parsedApps : undefined,
+    warranty: apiProduct.warranty || undefined,
+    brochureUrl: apiProduct.brochureUrl || apiProduct.brochure_url || undefined,
+    datasheetUrl: apiProduct.datasheetUrl || apiProduct.datasheet_url || undefined,
+    sourceUrl: apiProduct.sourceUrl || apiProduct.source_url || undefined,
     description: apiProduct.description || undefined,
   };
   if (apiProduct.mrp != null) {
@@ -1145,4 +1255,5 @@ export const getProduct = (id: string) => fallbackProducts.find((p) => p.id === 
 
 // Alias used by components that import `products` directly (SSR-safe fallback)
 export const products = fallbackProducts;
+
 

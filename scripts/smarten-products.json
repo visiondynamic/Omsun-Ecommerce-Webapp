@@ -1,0 +1,2842 @@
+[
+  {
+    "id": "smarten-bravo-900va",
+    "name": "Smarten Bravo 900VA Pure Sine Wave Home UPS",
+    "slug": "smarten-bravo-900va-pure-sine-wave-home-ups",
+    "category": "Home UPS",
+    "subcategory": "Pure Sine Wave Inverter",
+    "series": "Bravo Series",
+    "model": "Bravo 900",
+    "capacity": "900 VA / 12V",
+    "brand": "Smarten",
+    "tagline": "Advanced DSP pure sine wave inverter with smart 90V low-voltage charging.",
+    "description": "The Smarten BRAVO 900VA operates seamlessly on mains and charges batteries even with extreme low mains voltage down to 90V. Equipped with advanced DSP technology, it delivers pure sine wave power to protect delicate appliances like TVs, computers, and medical equipment during power cuts.",
+    "features": [
+      "Pure Sine Wave output protecting sensitive home electronics",
+      "Advanced DSP control technology for rapid processing",
+      "Smart charging operational from 90V low mains input",
+      "Fast changeover time under 10ms (suitable for computers & UPS load)",
+      "User-friendly graphical LCD interface displaying load and battery level",
+      "Inbuilt independent battery recovery charger for deep-discharged batteries",
+      "Bypass mains switch allowing direct utility power without battery",
+      "Comprehensive protection against short circuit, overload, reverse polarity, and over temperature"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "900 VA"
+      },
+      {
+        "label": "Nominal Battery Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Output Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Technology",
+        "value": "DSP Microcontroller Based"
+      },
+      {
+        "label": "Mains Charging Range",
+        "value": "90V – 280V AC"
+      },
+      {
+        "label": "Transfer Time",
+        "value": "< 10 milliseconds"
+      },
+      {
+        "label": "Battery Compatibility",
+        "value": "Tubular, Flat Plate, Local (LA/TUB)"
+      },
+      {
+        "label": "Display",
+        "value": "LCD Graphical Multi-Information Display"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "900 VA",
+      "Battery Voltage": "12 VDC (1 Battery)",
+      "Output Waveform": "Pure Sine Wave",
+      "Input Voltage Window": "90V - 280V AC",
+      "Changeover Time": "< 10 ms",
+      "Efficiency": "> 88%",
+      "Display Type": "LCD Multi-function display",
+      "Protections": "Short circuit, Overload, Reverse polarity, Deep discharge"
+    },
+    "applications": [
+      "Home Lighting & Fans",
+      "LED TV & Sound Systems",
+      "Laptops & Wi-Fi Routers",
+      "Desktop PC & POS"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/bravo-900.webp",
+    "images": [
+      "/images/products/smarten/bravo-900.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/Bravo_Pure_Sine_Wave_Home_UPS_850VA-10KVA.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/bravo-series/",
+    "price": 18500,
+    "compareAt": 21500,
+    "stock": 24,
+    "rating": 4.9,
+    "badges": [
+      "Smarten Official",
+      "Pure Sine Wave",
+      "2 Yrs Warranty"
+    ]
+  },
+  {
+    "id": "smarten-bravo-1100va",
+    "name": "Smarten Bravo 1100VA Pure Sine Wave Home UPS",
+    "slug": "smarten-bravo-1100va-pure-sine-wave-home-ups",
+    "category": "Home UPS",
+    "subcategory": "Pure Sine Wave Inverter",
+    "series": "Bravo Series",
+    "model": "Bravo 1100",
+    "capacity": "1100 VA / 12V",
+    "brand": "Smarten",
+    "tagline": "Heavy-duty pure sine wave UPS for modern households with deep recovery charging.",
+    "description": "The Bravo 1100VA delivers clean, distortion-free pure sine wave AC power designed for modern homes and workstations. With heavy copper transformer design and ultra-fast UPS changeover, it runs refrigeration, fans, lighting, and computing hardware without reset.",
+    "features": [
+      "Pure Sine Wave output for noiseless fan operation and cool running appliances",
+      "High-speed DSP controller with smart battery life enhancer logic",
+      "Wide input voltage charging from 90V AC",
+      "Smart UPS mode with under 10ms transfer time",
+      "Graphic LCD panel with status diagnostics",
+      "Automatic battery equalization and float charging",
+      "Full safety suite with electronic circuit breaker"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "1100 VA"
+      },
+      {
+        "label": "Nominal Battery Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Output Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Input Voltage Window",
+        "value": "90V – 280V AC"
+      },
+      {
+        "label": "Transfer Time",
+        "value": "< 10 ms"
+      },
+      {
+        "label": "Battery Supported",
+        "value": "Lead Acid Tubular / Flat Plate"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "1100 VA",
+      "Battery Voltage": "12 VDC (1 Battery)",
+      "Output Waveform": "Pure Sine Wave",
+      "Charging Range": "90V - 280V AC",
+      "Changeover Time": "< 10 ms",
+      "Display": "Graphical Multi-Functional LCD",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Residential Homes",
+      "Medical Clinics",
+      "Small Offices",
+      "CCTV & Wi-Fi Nodes"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/bravo-1100.webp",
+    "images": [
+      "/images/products/smarten/bravo-1100.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/Bravo_Pure_Sine_Wave_Home_UPS_850VA-10KVA.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/bravo-series/",
+    "price": 21500,
+    "compareAt": 24500,
+    "stock": 18,
+    "rating": 4.8,
+    "badges": [
+      "Smarten Official",
+      "High Capacity",
+      "Pure Sine Wave"
+    ]
+  },
+  {
+    "id": "smarten-bravo-1700va",
+    "name": "Smarten Bravo 1700VA 24V Pure Sine Wave Inverter",
+    "slug": "smarten-bravo-1700va-24v-pure-sine-wave-inverter",
+    "category": "Home UPS",
+    "subcategory": "Pure Sine Wave Inverter",
+    "series": "Bravo Series",
+    "model": "Bravo 1700",
+    "capacity": "1700 VA / 24V",
+    "brand": "Smarten",
+    "tagline": "24V dual-battery pure sine wave inverter for higher continuous inductive loads.",
+    "description": "Built with an efficient 24V architecture, the Bravo 1700VA is engineered for larger homes requiring prolonged backup and high surge capacity. It easily handles laser printers, mixer grinders, refrigerator compressors, and multimedia rigs.",
+    "features": [
+      "Dual 24V battery architecture for higher efficiency and lower cable currents",
+      "Advanced DSP signal processing",
+      "Sub-10ms changeover avoiding computer reboot during outages",
+      "Charges battery bank at voltages as low as 90V",
+      "Independent multi-stage charging extending tubular battery lifespan",
+      "Bypass switch for zero-downtime maintenance"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "1700 VA / 1360W"
+      },
+      {
+        "label": "Battery Bank",
+        "value": "24 VDC (2 x 12V Batteries)"
+      },
+      {
+        "label": "Output Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Mains Operating Range",
+        "value": "90V – 280V AC"
+      },
+      {
+        "label": "Transfer Time",
+        "value": "< 10 ms"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "1700 VA",
+      "Rated Power": "1360 Watts",
+      "Battery System": "24 VDC (2 Batteries in series)",
+      "Output Waveform": "Pure Sine Wave",
+      "Mains Input Range": "90V - 280V AC",
+      "Changeover Time": "< 10 ms",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Multi-Storey Homes",
+      "Grocery Stores",
+      "Dental & Medical Equipment",
+      "High-End Workstations"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/bravo-1700.webp",
+    "images": [
+      "/images/products/smarten/bravo-1700.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/Bravo_Pure_Sine_Wave_Home_UPS_850VA-10KVA.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/bravo-series/",
+    "price": 29500,
+    "compareAt": 33000,
+    "stock": 15,
+    "rating": 4.9,
+    "badges": [
+      "24V Architecture",
+      "Pure Sine Wave",
+      "Heavy Duty"
+    ]
+  },
+  {
+    "id": "smarten-bravo-2500va",
+    "name": "Smarten Bravo 2.5kVA 24V Pure Sine Wave Inverter",
+    "slug": "smarten-bravo-2-5kva-24v-pure-sine-wave-inverter",
+    "category": "Home UPS",
+    "subcategory": "Pure Sine Wave Inverter",
+    "series": "Bravo Series",
+    "model": "Bravo 2.5KVA",
+    "capacity": "2500 VA / 24V",
+    "brand": "Smarten",
+    "tagline": "Commercial grade 2.5kVA backup power for luxury residences and corporate hubs.",
+    "description": "The Bravo 2.5kVA 24V Pure Sine Wave Inverter features an oversized copper wound transformer, delivering unmatched surge tolerance for motors, compressors, and sensitive IT servers. Its intelligent cooling system ensures quiet, sustained operation under heavy load.",
+    "features": [
+      "2500 VA robust continuous capacity",
+      "Dual battery 24V configuration with smart balancing charge",
+      "Graphic LCD monitoring battery percentage, charging current, and mains status",
+      "Operates seamlessly with unconditioned generator power (WUPS mode)",
+      "Over-temperature and reverse polarity protection with thermal alarms"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "2500 VA / 2000W"
+      },
+      {
+        "label": "Battery Voltage",
+        "value": "24 VDC (2 Batteries)"
+      },
+      {
+        "label": "Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Mains Window",
+        "value": "90V – 280V AC"
+      },
+      {
+        "label": "Switchover",
+        "value": "< 10 ms"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Capacity": "2.5 kVA",
+      "Battery Voltage": "24 VDC",
+      "Waveform": "Pure Sine Wave",
+      "Input AC Range": "90V - 280V AC",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Executive Residences",
+      "Commercial Offices",
+      "Retail Outlets",
+      "Diagnostics & Labs"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/bravo-2500.webp",
+    "images": [
+      "/images/products/smarten/bravo-2500.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/Bravo_Pure_Sine_Wave_Home_UPS_850VA-10KVA.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/bravo-series/",
+    "price": 44000,
+    "compareAt": 49500,
+    "stock": 10,
+    "rating": 4.9,
+    "badges": [
+      "2.5 kVA",
+      "Pure Sine Wave",
+      "Commercial Grade"
+    ]
+  },
+  {
+    "id": "smarten-bravo-3500va",
+    "name": "Smarten Bravo 3.5kVA 48V Pure Sine Wave Home UPS",
+    "slug": "smarten-bravo-3-5kva-48v-pure-sine-wave-home-ups",
+    "category": "Home UPS",
+    "subcategory": "Pure Sine Wave Inverter",
+    "series": "Bravo Series",
+    "model": "Bravo 3500",
+    "capacity": "3500 VA / 48V",
+    "brand": "Smarten",
+    "tagline": "48V 4-battery enterprise home UPS for complete villa and office backup.",
+    "description": "The Bravo 3.5kVA operates on a high-efficiency 48V DC bus utilizing four 12V tubular batteries. Providing stable 230V sine wave power, it supports air conditioners (inverter grade), water pumps, deep freezers, and full domestic power grids.",
+    "features": [
+      "48V DC system minimizes heat loss and enables prolonged continuous operation",
+      "Pure Sine Wave with THD < 3% for medical-grade power quality",
+      "Smart micro-stepping battery charging with equalization",
+      "Heavy duty industrial grade transformer inside",
+      "Full bypass switch and comprehensive fault telemetry"
+    ],
+    "specs": [
+      {
+        "label": "Capacity",
+        "value": "3500 VA / 2800W"
+      },
+      {
+        "label": "Battery System",
+        "value": "48 VDC (4 x 12V Batteries)"
+      },
+      {
+        "label": "Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Mains Range",
+        "value": "90V – 280V AC"
+      },
+      {
+        "label": "Transfer Time",
+        "value": "< 10 ms"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Capacity": "3.5 kVA",
+      "Battery Voltage": "48 VDC",
+      "Waveform": "Pure Sine Wave",
+      "Input AC Range": "90V - 280V AC",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Luxury Villas",
+      "Restaurants & Cafes",
+      "Corporate Branch Offices",
+      "Inverter ACs & Pumps"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/bravo-3500.webp",
+    "images": [
+      "/images/products/smarten/bravo-3500.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/Bravo_Pure_Sine_Wave_Home_UPS_850VA-10KVA.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/bravo-series/",
+    "price": 62000,
+    "compareAt": 69000,
+    "stock": 8,
+    "rating": 5,
+    "badges": [
+      "3.5 kVA",
+      "48V Bus",
+      "Villa Grade"
+    ]
+  },
+  {
+    "id": "smarten-bravo-5k-6k",
+    "name": "Smarten Bravo 5kVA & 6kVA Pure Sine Wave Inverter",
+    "slug": "smarten-bravo-5kva-6kva-pure-sine-wave-inverter",
+    "category": "Home UPS",
+    "subcategory": "Pure Sine Wave Inverter",
+    "series": "Bravo Series",
+    "model": "Bravo 5K / 6K",
+    "capacity": "5 kVA – 6 kVA (48V / 96V)",
+    "brand": "Smarten",
+    "tagline": "Industrial-grade high power pure sine wave inverter for institutions and estates.",
+    "description": "Designed for heavy institutional and residential loads, the Bravo 5K/6K series features dual cooling fans, galvanic isolation transformer topology, and intelligent load prioritization. Capable of driving high-draw inductive motors and complex HVAC systems with ease.",
+    "features": [
+      "Industrial high-capacity pure sine wave inverter",
+      "Available in 48V (4-battery) and 96V (8-battery) configurations",
+      "Heavy duty copper wound toroidal transformer for exceptional surge currents",
+      "Digital LCD console with real-time fault history and load metering",
+      "Bypass switch and external generator compatibility"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "5000 VA / 6000 VA"
+      },
+      {
+        "label": "Battery Voltage",
+        "value": "48 VDC / 96 VDC"
+      },
+      {
+        "label": "Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Transfer Time",
+        "value": "< 10 ms"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "5000 VA / 6000 VA",
+      "Battery Voltage": "48V / 96V DC",
+      "Waveform": "Pure Sine Wave",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Commercial Buildings",
+      "Hospitals & Nursing Homes",
+      "Petrol Pumps",
+      "Data Rooms"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/bravo-5k-6k.webp",
+    "images": [
+      "/images/products/smarten/bravo-5k-6k.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/Bravo_Pure_Sine_Wave_Home_UPS_850VA-10KVA.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/bravo-series/",
+    "price": 98000,
+    "compareAt": 110000,
+    "stock": 5,
+    "rating": 4.9,
+    "badges": [
+      "5kVA - 6kVA",
+      "Industrial Grade",
+      "Pure Sine Wave"
+    ]
+  },
+  {
+    "id": "smarten-bravo-7k5-10k",
+    "name": "Smarten Bravo 7.5kVA & 10kVA Pure Sine Wave Inverter",
+    "slug": "smarten-bravo-7-5kva-10kva-pure-sine-wave-inverter",
+    "category": "Home UPS",
+    "subcategory": "Pure Sine Wave Inverter",
+    "series": "Bravo Series",
+    "model": "Bravo 7.5K / 10K",
+    "capacity": "7.5 kVA – 10 kVA (96V / 120V)",
+    "brand": "Smarten",
+    "tagline": "Flagship 10kVA pure sine wave powerhouse for mission-critical uninterrupted power.",
+    "description": "The Bravo 7.5kVA & 10kVA flagship inverters are engineered for continuous 24/7 commercial, industrial, and institutional applications. With high DC bus voltage (96V/120V), these systems deliver maximum electrical efficiency and supreme power density for hospitals, resorts, and industrial facilities.",
+    "features": [
+      "Massive 10kVA maximum power delivery with pure sine wave output",
+      "High voltage 96V / 120V DC system for peak conversion efficiency",
+      "Built-in galvanic isolation and zero-neutral disturbance",
+      "Full digital LCD diagnostics with temperature and current telemetry",
+      "Generator synchronized auto-charging mode"
+    ],
+    "specs": [
+      {
+        "label": "Capacity",
+        "value": "7.5 kVA / 10 kVA"
+      },
+      {
+        "label": "Battery Voltage",
+        "value": "96 VDC / 120 VDC"
+      },
+      {
+        "label": "Output Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Mains Input Range",
+        "value": "90V – 280V AC"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "7.5 kVA - 10 kVA",
+      "Battery Voltage": "96V / 120V DC",
+      "Waveform": "Pure Sine Wave",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Hotels & Resorts",
+      "Hospitals & ICU Units",
+      "Industrial Plants",
+      "Educational Campuses"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/bravo-7k5-10k.webp",
+    "images": [
+      "/images/products/smarten/bravo-7k5-10k.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/Bravo_Pure_Sine_Wave_Home_UPS_850VA-10KVA.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/bravo-series/",
+    "price": 155000,
+    "compareAt": 175000,
+    "stock": 4,
+    "rating": 5,
+    "badges": [
+      "10 kVA Flagship",
+      "High Voltage Bus",
+      "Commercial Power"
+    ]
+  },
+  {
+    "id": "smarten-nova-700va",
+    "name": "Smarten Nova 700VA Home UPS",
+    "slug": "smarten-nova-700va-home-ups",
+    "category": "Home UPS",
+    "subcategory": "Home Inverter",
+    "series": "Nova Series",
+    "model": "Nova 700",
+    "capacity": "700 VA / 12V",
+    "brand": "Smarten",
+    "tagline": "Compact, budget-friendly Home UPS with reliable performance and smart charging.",
+    "description": "The Smarten Nova 700VA Home UPS is an efficient and durable power backup solution designed for budget-conscious families. It charges reliably even in low voltage conditions down to 90V and provides noiseless operation for fans, lights, and personal devices.",
+    "features": [
+      "Advanced micro-controller based design",
+      "Reliable low voltage charging starting from 90V AC",
+      "Intuitive LED/LCD status indicators",
+      "Overload, short circuit, and battery deep-discharge protection",
+      "Compatible with tubular and flat-plate batteries"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "700 VA"
+      },
+      {
+        "label": "Battery Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Charging Window",
+        "value": "90V – 280V AC"
+      },
+      {
+        "label": "Technology",
+        "value": "Microcontroller DSP"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Capacity": "700 VA",
+      "Battery Voltage": "12 VDC (1 Battery)",
+      "Mains Input Window": "90V - 280V AC",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Studio Apartments",
+      "Basic Domestic Lighting & Fans",
+      "Shop Counters"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/nova-700.webp",
+    "images": [
+      "/images/products/smarten/nova-700.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/NOVA-series-Home-UPS.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/nova-series/",
+    "price": 14500,
+    "compareAt": 16500,
+    "stock": 20,
+    "rating": 4.7,
+    "badges": [
+      "Nova Series",
+      "Low Voltage 90V",
+      "Affordable"
+    ]
+  },
+  {
+    "id": "smarten-nova-900va",
+    "name": "Smarten Nova 900VA Home UPS",
+    "slug": "smarten-nova-900va-home-ups",
+    "category": "Home UPS",
+    "subcategory": "Home Inverter",
+    "series": "Nova Series",
+    "model": "Nova 900",
+    "capacity": "900 VA / 12V",
+    "brand": "Smarten",
+    "tagline": "Balanced domestic inverter with intelligent battery management.",
+    "description": "The Smarten Nova 900VA provides dependable power backup for 2-3 bedroom homes. Featuring Smarten's smart multi-stage charging algorithms, it extends battery operating life and prevents plate degradation.",
+    "features": [
+      "900 VA rated output capacity",
+      "Smart micro-controller controlled power path",
+      "Rapid automatic changeover to battery backup during outages",
+      "Supports 12V tall tubular battery banks",
+      "Electronic overload trip with auto-reset attempt"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "900 VA"
+      },
+      {
+        "label": "Nominal Battery",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Input Window",
+        "value": "90V – 280V AC"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Capacity": "900 VA",
+      "Battery Voltage": "12 VDC",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Family Apartments",
+      "Retail Stores",
+      "Study Rooms & Wi-Fi Stations"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/nova-900.webp",
+    "images": [
+      "/images/products/smarten/nova-900.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/NOVA-series-Home-UPS.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/nova-series/",
+    "price": 17000,
+    "compareAt": 19500,
+    "stock": 22,
+    "rating": 4.8,
+    "badges": [
+      "Nova Series",
+      "Smart Charging",
+      "Reliable"
+    ]
+  },
+  {
+    "id": "smarten-nova-1100va",
+    "name": "Smarten Nova 1100VA Home UPS",
+    "slug": "smarten-nova-1100va-home-ups",
+    "category": "Home UPS",
+    "subcategory": "Home Inverter",
+    "series": "Nova Series",
+    "model": "Nova 1100",
+    "capacity": "1100 VA / 12V",
+    "brand": "Smarten",
+    "tagline": "High capacity single-battery Home UPS for heavy domestic loads.",
+    "description": "The Nova 1100VA is the top-tier model in the Nova lineup, providing 1100 VA on a single 12V battery system. Engineered for families needing to power higher loads like mixers, water coolers, and multiple LED entertainment setups.",
+    "features": [
+      "1100 VA maximum load capacity on 12V battery",
+      "Charges in low voltage down to 90V",
+      "Smooth waveform operation for reduced hum",
+      "Overload, short-circuit, and battery thermal protection",
+      "Bypass switch included"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "1100 VA"
+      },
+      {
+        "label": "Battery Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Mains Voltage",
+        "value": "90V – 280V AC"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Capacity": "1100 VA",
+      "Battery Voltage": "12 VDC",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Homes & Flats",
+      "Small Businesses",
+      "Classrooms"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/nova-1100.webp",
+    "images": [
+      "/images/products/smarten/nova-1100.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/NOVA-series-Home-UPS.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/nova-series/",
+    "price": 19800,
+    "compareAt": 22500,
+    "stock": 16,
+    "rating": 4.8,
+    "badges": [
+      "Nova Series",
+      "1100 VA",
+      "2 Yrs Warranty"
+    ]
+  },
+  {
+    "id": "smarten-everon-1500va",
+    "name": "Smarten EverOn 1500 Home UPS (Inbuilt Lithium-Ion Battery)",
+    "slug": "smarten-everon-1500-home-ups-inbuilt-lithium-ion-battery",
+    "category": "Home UPS",
+    "subcategory": "Lithium Integrated UPS",
+    "series": "EverOn Series",
+    "model": "EverOn 1500",
+    "capacity": "1500 VA (Inbuilt Li-Ion)",
+    "brand": "Smarten",
+    "tagline": "Next-generation sleek Home UPS with built-in zero-maintenance Lithium-Ion battery.",
+    "description": "The Smarten EverOn 1500 revolutionizes home backup by integrating high-density Lithium-Ion storage inside an ultra-slim, wall-mountable designer chassis. Say goodbye to heavy acid batteries, water-topping, and fumes—EverOn offers ultra-fast 2-3 hour charging and over 10 years battery life.",
+    "features": [
+      "Inbuilt high-safety Lithium-Ion (LiFePO4) battery pack",
+      "Ultra-compact, modern aesthetic design suitable for living rooms and office walls",
+      "Zero maintenance required — no acid fumes, water topping, or terminal corrosion",
+      "Super-fast charging: 0 to 100% in under 3 hours",
+      "Pure Sine Wave output for silence and electronics safety",
+      "BMS (Battery Management System) with real-time cell balancing and thermal security"
+    ],
+    "specs": [
+      {
+        "label": "Inverter Capacity",
+        "value": "1500 VA / 1200W"
+      },
+      {
+        "label": "Battery Type",
+        "value": "Integrated Lithium-Ion"
+      },
+      {
+        "label": "Charging Time",
+        "value": "2 – 3 Hours (Fast Charge)"
+      },
+      {
+        "label": "Battery Lifespan",
+        "value": "3000+ Cycles (10+ Years)"
+      },
+      {
+        "label": "Output Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Warranty",
+        "value": "3 Years Comprehensive Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "1500 VA",
+      "Battery Type": "Inbuilt Li-Ion",
+      "Charge Time": "2-3 Hours",
+      "Waveform": "Pure Sine Wave",
+      "Cycle Life": "> 3000 Cycles",
+      "Warranty": "3 Years"
+    },
+    "applications": [
+      "Modern Luxury Apartments",
+      "Designer Living Rooms",
+      "High-End IT Setups",
+      "Boutique Clinics"
+    ],
+    "warranty": "3 Years Comprehensive Manufacturer Warranty",
+    "image": "/images/products/smarten/everon-1500.webp",
+    "images": [
+      "/images/products/smarten/everon-1500.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/EverOn_Home_UPS_Inbuilt_LiIon_Battery.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/more/catalogue/",
+    "price": 68000,
+    "compareAt": 78000,
+    "stock": 8,
+    "rating": 5,
+    "badges": [
+      "Inbuilt Lithium",
+      "Fast Charge 2Hr",
+      "Zero Maintenance"
+    ]
+  },
+  {
+    "id": "smarten-everon-2500va",
+    "name": "Smarten EverOn 2500 Home UPS (Inbuilt Lithium-Ion Battery)",
+    "slug": "smarten-everon-2500-home-ups-inbuilt-lithium-ion-battery",
+    "category": "Home UPS",
+    "subcategory": "Lithium Integrated UPS",
+    "series": "EverOn Series",
+    "model": "EverOn 2500",
+    "capacity": "2500 VA (Inbuilt Li-Ion)",
+    "brand": "Smarten",
+    "tagline": "Premium 2.5kVA all-in-one Lithium Home UPS powerhouse for complete smart homes.",
+    "description": "The EverOn 2500 delivers 2500 VA of pure sine wave power paired with an internal high-capacity Lithium-Ion battery module. Designed for villas, corporate suites, and premium residences demanding whisper-quiet, clean, and completely fume-free power storage.",
+    "features": [
+      "Heavy duty 2500 VA / 2000W output power",
+      "Built-in Grade-A Lithium-Ion cells with smart active cell balancing",
+      "Zero maintenance and space-saving wall-mount form factor",
+      "Charges 3x faster than lead-acid batteries",
+      "Pure Sine Wave with THD < 2.5%",
+      "Touch control digital display with real-time state of charge (SOC)"
+    ],
+    "specs": [
+      {
+        "label": "Inverter Capacity",
+        "value": "2500 VA / 2000W"
+      },
+      {
+        "label": "Battery Type",
+        "value": "Integrated High Capacity Lithium-Ion"
+      },
+      {
+        "label": "Charging Speed",
+        "value": "Full charge in 2.5 – 3.5 Hours"
+      },
+      {
+        "label": "Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Warranty",
+        "value": "3 Years Comprehensive Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "2500 VA",
+      "Battery Type": "Inbuilt Lithium-Ion",
+      "Charge Time": "2.5-3.5 Hours",
+      "Waveform": "Pure Sine Wave",
+      "Warranty": "3 Years"
+    },
+    "applications": [
+      "Smart Homes & Villas",
+      "Executive Offices",
+      "High-End Audio/Video Studios",
+      "Sensitive Medical Equipment"
+    ],
+    "warranty": "3 Years Comprehensive Manufacturer Warranty",
+    "image": "/images/products/smarten/everon-2500.webp",
+    "images": [
+      "/images/products/smarten/everon-2500.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/EverOn_Home_UPS_Inbuilt_LiIon_Battery.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/more/catalogue/",
+    "price": 95000,
+    "compareAt": 110000,
+    "stock": 6,
+    "rating": 5,
+    "badges": [
+      "2.5 kVA Lithium",
+      "All-in-One",
+      "3 Yrs Warranty"
+    ]
+  },
+  {
+    "id": "smarten-saver-700va",
+    "name": "Smarten Saver 700VA Solar PCU (PWM Based)",
+    "slug": "smarten-saver-700va-solar-pcu-pwm-based",
+    "category": "Solar PCU",
+    "subcategory": "PWM Solar PCU",
+    "series": "Saver Series",
+    "model": "Saver 700",
+    "capacity": "700 VA / 12V (400W Solar)",
+    "brand": "Smarten",
+    "tagline": "Intelligent solar PCU with priority solar power utilization and multi-color LCD.",
+    "description": "The Smarten Saver 700VA Solar PCU combines an inverter, solar charge controller, and intelligent power management in a single unit. It automatically utilizes 100% available solar energy first, cutting grid electricity consumption to the minimum.",
+    "features": [
+      "Pure Sine Wave output for quiet appliance running",
+      "Intelligent priority: Solar -> Battery -> Grid",
+      "Integrated high-efficiency PWM solar charge controller",
+      "Dual multi-color LCD display showing solar wattage, battery volts, and grid savings",
+      "Low voltage charging from 90V mains",
+      "Independent battery recovery circuit"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "700 VA"
+      },
+      {
+        "label": "Battery System",
+        "value": "12 VDC (1 Battery)"
+      },
+      {
+        "label": "Max Solar Panel Input",
+        "value": "400 Watts (Voc 15V – 25V)"
+      },
+      {
+        "label": "Solar Controller",
+        "value": "PWM High Efficiency"
+      },
+      {
+        "label": "Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "700 VA",
+      "Battery Voltage": "12 VDC",
+      "Max Solar Input": "400W",
+      "Controller Type": "PWM",
+      "Waveform": "Pure Sine Wave",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Solar Home Lighting",
+      "Small Rural Residencies",
+      "Village Solar Kits"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/saver-700.webp",
+    "images": [
+      "/images/products/smarten/saver-700.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Saver_Solar_PCU_900VA-12V_to_3.5KVA-48V.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/saver-series/",
+    "price": 21000,
+    "compareAt": 24000,
+    "stock": 14,
+    "rating": 4.8,
+    "badges": [
+      "Saver PWM",
+      "Solar Priority",
+      "2 Yrs Warranty"
+    ]
+  },
+  {
+    "id": "smarten-saver-1100va",
+    "name": "Smarten Saver 1100VA Solar PCU (PWM Based)",
+    "slug": "smarten-saver-1100va-solar-pcu-pwm-based",
+    "category": "Solar PCU",
+    "subcategory": "PWM Solar PCU",
+    "series": "Saver Series",
+    "model": "Saver 1100",
+    "capacity": "1100 VA / 12V (600W Solar)",
+    "brand": "Smarten",
+    "tagline": "Best-selling 12V domestic hybrid solar PCU with multi-color informative LCD.",
+    "description": "The Saver 1100VA Solar PCU supports up to 600W of solar PV modules on a single 12V battery. Its advanced DSP core monitors solar harvest continuously, automatically maximizing solar power self-consumption while keeping the battery primed for night backup.",
+    "features": [
+      "Pure Sine wave power output with DSP precision",
+      "Supports up to 600W solar panel arrays",
+      "Multi-color LCD displaying real-time PV generation, battery voltage, and load percentage",
+      "Prioritizes Solar -> Battery -> Mains to drastically reduce electric bills",
+      "Overload auto-reset and full electronic safety protection"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "1100 VA"
+      },
+      {
+        "label": "Battery System",
+        "value": "12 VDC (1 Battery)"
+      },
+      {
+        "label": "Max Solar Panel Input",
+        "value": "600 Watts (Voc 15V – 25V)"
+      },
+      {
+        "label": "Charge Controller",
+        "value": "PWM 35A"
+      },
+      {
+        "label": "Output Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "1100 VA",
+      "Battery Voltage": "12 VDC",
+      "Max Solar Input": "600W",
+      "Charge Controller": "PWM 35A",
+      "Output Waveform": "Pure Sine Wave",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Domestic Solar Systems",
+      "Farmhouses",
+      "Small Offices",
+      "Telecomm Hubs"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/saver-1100.webp",
+    "images": [
+      "/images/products/smarten/saver-1100.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Saver_Solar_PCU_900VA-12V_to_3.5KVA-48V.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/saver-series/",
+    "price": 26500,
+    "compareAt": 29500,
+    "stock": 20,
+    "rating": 4.9,
+    "badges": [
+      "Best Seller",
+      "Saver PWM",
+      "600W Solar"
+    ]
+  },
+  {
+    "id": "smarten-saver-2500va",
+    "name": "Smarten Saver 2500VA 24V Solar PCU",
+    "slug": "smarten-saver-2500va-24v-solar-pcu",
+    "category": "Solar PCU",
+    "subcategory": "PWM Solar PCU",
+    "series": "Saver Series",
+    "model": "Saver 2500",
+    "capacity": "2500 VA / 24V (1500W Solar)",
+    "brand": "Smarten",
+    "tagline": "24V heavy-duty dual-battery solar PCU supporting up to 1500W of solar panels.",
+    "description": "The Saver 2500VA operates on a 24V battery bank, supporting up to 1500W of solar PV modules. Its high-capacity PWM controller channels solar energy directly to run household loads and recharge the battery bank simultaneously during sunny hours.",
+    "features": [
+      "2500 VA heavy power capability with pure sine wave output",
+      "Accommodates up to 1500 Watts of solar panels",
+      "Color LCD screen with animated solar generation status",
+      "Smart solar sharing: solar powers daytime loads and charges battery",
+      "Grid bypass and deep discharge protection"
+    ],
+    "specs": [
+      {
+        "label": "Capacity",
+        "value": "2500 VA / 2000W"
+      },
+      {
+        "label": "Battery Bank",
+        "value": "24 VDC (2 x 12V Batteries)"
+      },
+      {
+        "label": "Max Solar Panel",
+        "value": "1500 Watts (Voc 35V – 50V)"
+      },
+      {
+        "label": "Solar Controller",
+        "value": "PWM 50A"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "2.5 kVA",
+      "Battery Voltage": "24 VDC",
+      "Max Solar Input": "1500W",
+      "Solar Controller": "PWM 50A",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Medium Sized Homes",
+      "Bakeries & Dairy Shops",
+      "Schools & Computer Labs",
+      "Rural Health Centers"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/saver-2500.webp",
+    "images": [
+      "/images/products/smarten/saver-2500.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Saver_Solar_PCU_900VA-12V_to_3.5KVA-48V.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/saver-series/",
+    "price": 49500,
+    "compareAt": 56000,
+    "stock": 12,
+    "rating": 4.9,
+    "badges": [
+      "2.5 kVA",
+      "1500W Solar",
+      "Saver Series"
+    ]
+  },
+  {
+    "id": "smarten-saver-3500va",
+    "name": "Smarten Saver 3.5kVA 48V Solar PCU",
+    "slug": "smarten-saver-3-5kva-48v-solar-pcu",
+    "category": "Solar PCU",
+    "subcategory": "PWM Solar PCU",
+    "series": "Saver Series",
+    "model": "Saver 3500",
+    "capacity": "3500 VA / 48V (2000W Solar)",
+    "brand": "Smarten",
+    "tagline": "48V 4-battery solar hybrid system for commercial loads and residential villas.",
+    "description": "Operating on a 48V bus, the Saver 3.5kVA Solar PCU handles up to 2000W of solar panel inputs. It is ideal for running air conditioners, washing machines, pumps, and office electronics while maximizing clean solar generation.",
+    "features": [
+      "48V DC bus reduces electrical heat loss and wire gauges",
+      "Supports 2000W solar panel array",
+      "Advanced solar tracking and sharing algorithm",
+      "Multi-color graphic LCD telemetry",
+      "Dual fans for thermal endurance"
+    ],
+    "specs": [
+      {
+        "label": "Capacity",
+        "value": "3500 VA / 2800W"
+      },
+      {
+        "label": "Battery Bank",
+        "value": "48 VDC (4 x 12V Batteries)"
+      },
+      {
+        "label": "Max Solar Panel Input",
+        "value": "2000 Watts"
+      },
+      {
+        "label": "Controller",
+        "value": "PWM 50A"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Capacity": "3.5 kVA",
+      "Battery Voltage": "48 VDC",
+      "Max Solar Input": "2000W",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Villas & Duplex Homes",
+      "Hotels & Lodges",
+      "Cold Storage",
+      "Gas Stations"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/saver-3500.webp",
+    "images": [
+      "/images/products/smarten/saver-3500.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Saver_Solar_PCU_900VA-12V_to_3.5KVA-48V.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/saver-series/",
+    "price": 69000,
+    "compareAt": 78000,
+    "stock": 9,
+    "rating": 4.9,
+    "badges": [
+      "3.5 kVA",
+      "48V System",
+      "PWM Solar"
+    ]
+  },
+  {
+    "id": "smarten-saver-5k5-10k",
+    "name": "Smarten Saver 5.5kVA – 10kVA Heavy Solar PCU",
+    "slug": "smarten-saver-5-5kva-10kva-heavy-solar-pcu",
+    "category": "Solar PCU",
+    "subcategory": "PWM Solar PCU",
+    "series": "Saver Series",
+    "model": "Saver 5.5K / 10K",
+    "capacity": "5.5 kVA – 10 kVA (48V / 96V / 120V)",
+    "brand": "Smarten",
+    "tagline": "Commercial heavy solar hybrid PCU for large institutions and off-grid facilities.",
+    "description": "The heavy-duty Saver 5.5kVA to 10kVA series provides robust high-power renewable backup. With solar panel support up to 6000W+, it powers entire commercial facilities with automatic switching between solar, battery storage, and utility grid.",
+    "features": [
+      "5.5kVA to 10kVA continuous power delivery",
+      "Configurable DC buses: 48V (4 batts), 96V (8 batts), 120V (10 batts)",
+      "Handles high solar arrays up to 6000W+",
+      "Commercial grade copper transformer and heavy bypass contactor",
+      "Real-time energy generation accounting"
+    ],
+    "specs": [
+      {
+        "label": "Capacity Range",
+        "value": "5.5 kVA / 7.5 kVA / 10 kVA"
+      },
+      {
+        "label": "Battery Voltage",
+        "value": "48V / 96V / 120V DC"
+      },
+      {
+        "label": "Solar Input",
+        "value": "Up to 6000 Watts"
+      },
+      {
+        "label": "Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Capacity Range": "5.5 kVA - 10 kVA",
+      "Battery Voltage": "48V / 96V / 120V DC",
+      "Solar Capacity": "Up to 6000W",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Hospitals & Dialysis Centers",
+      "Commercial Complexes",
+      "Off-Grid Agricultural Projects",
+      "Resorts"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/saver-10k.webp",
+    "images": [
+      "/images/products/smarten/saver-10k.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Saver_Solar_PCU_5.5KVA-48V_to_10KVA-120V.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/saver-series/",
+    "price": 135000,
+    "compareAt": 155000,
+    "stock": 5,
+    "rating": 5,
+    "badges": [
+      "Heavy Commercial",
+      "Up to 10kVA",
+      "Solar Hybrid"
+    ]
+  },
+  {
+    "id": "smarten-shine-1100va",
+    "name": "Smarten Shine 1100VA Solar PCU",
+    "slug": "smarten-shine-1100va-solar-pcu",
+    "category": "Solar PCU",
+    "subcategory": "PWM Solar PCU",
+    "series": "Shine Series",
+    "model": "Shine 1100",
+    "capacity": "1100 VA / 12V",
+    "brand": "Smarten",
+    "tagline": "High-efficiency pure sine wave solar PCU with animated LCD energy flow display.",
+    "description": "The Smarten Shine Series is equipped with an informative LCD screen displaying live energy generation, load consumption, and battery health. Its intelligent PWM solar charger maximizes panel efficiency for daily household savings.",
+    "features": [
+      "Pure Sine Wave output with DSP control",
+      "Animated LCD display showing real-time power flow",
+      "Solar priority automatic load management",
+      "Ultra-low 90V AC mains charging capability",
+      "High temperature and surge protection"
+    ],
+    "specs": [
+      {
+        "label": "Capacity",
+        "value": "1100 VA"
+      },
+      {
+        "label": "Battery System",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Solar Input",
+        "value": "Up to 600 Watts"
+      },
+      {
+        "label": "Controller",
+        "value": "PWM 35A"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Capacity": "1100 VA",
+      "Battery Voltage": "12 VDC",
+      "Solar Input": "600W",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Home Solar Systems",
+      "Retail Outlets",
+      "Offices"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/shine-1100.webp",
+    "images": [
+      "/images/products/smarten/shine-1100.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/SHINE-Series-with-LCD.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/shine-series/",
+    "price": 27000,
+    "compareAt": 30000,
+    "stock": 15,
+    "rating": 4.8,
+    "badges": [
+      "Shine Series",
+      "Animated LCD",
+      "PWM Solar"
+    ]
+  },
+  {
+    "id": "smarten-boom-1100va",
+    "name": "Smarten Boom 1100VA Solar PCU (LED Display)",
+    "slug": "smarten-boom-1100va-solar-pcu-led-display",
+    "category": "Solar PCU",
+    "subcategory": "PWM Solar PCU",
+    "series": "Boom Series",
+    "model": "Boom 1100",
+    "capacity": "1100 VA / 12V",
+    "brand": "Smarten",
+    "tagline": "Rugged and durable solar PCU with LED indicators engineered for demanding conditions.",
+    "description": "The Boom Series is built for reliability in rugged environments and remote areas. Featuring simple, intuitive LED status displays, heavy-duty electronics, and reliable PWM solar charging, Boom provides uncompromised solar power at an affordable price point.",
+    "features": [
+      "Pure Sine Wave power output",
+      "Heavy duty build designed for rural and semi-urban power grids",
+      "Clear LED indicators for solar charging, battery full, overload, and fault",
+      "Works down to 90V mains voltage",
+      "High surge capability"
+    ],
+    "specs": [
+      {
+        "label": "Capacity",
+        "value": "1100 VA"
+      },
+      {
+        "label": "Battery Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Solar Input",
+        "value": "Up to 600 Watts"
+      },
+      {
+        "label": "Display",
+        "value": "Multi-LED Status Bar"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Capacity": "1100 VA",
+      "Battery Voltage": "12 VDC",
+      "Display": "LED Status Bar",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Rural Homes",
+      "Agricultural Hubs",
+      "Community Centers"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/boom-1100.webp",
+    "images": [
+      "/images/products/smarten/boom-1100.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2022/01/BOOM-Series-with-LED-Display.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/boom-series/",
+    "price": 24500,
+    "compareAt": 27500,
+    "stock": 18,
+    "rating": 4.8,
+    "badges": [
+      "Boom Series",
+      "Rugged LED",
+      "High Surge"
+    ]
+  },
+  {
+    "id": "smarten-superb-1100va",
+    "name": "Smarten Superb 1100VA MPPT Solar PCU",
+    "slug": "smarten-superb-1100va-mppt-solar-pcu",
+    "category": "Solar PCU",
+    "subcategory": "MPPT Solar PCU",
+    "series": "Superb Series",
+    "model": "Superb 1100",
+    "capacity": "1100 VA / 12V (800W Solar)",
+    "brand": "Smarten",
+    "tagline": "Premium MPPT solar PCU extracting 30% more power from solar panels.",
+    "description": "The Smarten Superb 1100 is equipped with ultra-fast Maximum Power Point Tracking (MPPT) technology. Unlike standard PWM inverters, Superb tracks optimal voltage and current dynamically, extracting up to 30% more energy from your solar panels on cloudy or cold days.",
+    "features": [
+      "True MPPT technology with 98% tracking efficiency",
+      "Extracts up to 30% more energy compared to conventional PWM systems",
+      "Pure Sine Wave with ultra-clean AC output",
+      "Supports higher voltage solar panels (up to 50V Voc on 12V battery)",
+      "Multi-color LCD displaying PV volts, PV current, unit generated, and battery level",
+      "Advanced 4-stage smart battery charging"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "1100 VA"
+      },
+      {
+        "label": "Battery System",
+        "value": "12 VDC (1 Battery)"
+      },
+      {
+        "label": "Max Solar Panel Input",
+        "value": "800 Watts"
+      },
+      {
+        "label": "Solar Controller",
+        "value": "MPPT 35A (Tracking > 98%)"
+      },
+      {
+        "label": "PV Input Voltage (Voc)",
+        "value": "Up to 50 VDC"
+      },
+      {
+        "label": "Waveform",
+        "value": "Pure Sine Wave"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "1100 VA",
+      "Battery Voltage": "12 VDC",
+      "Max Solar Input": "800W",
+      "Controller": "MPPT 35A (>98% Efficiency)",
+      "Max PV Voc": "50 VDC",
+      "Waveform": "Pure Sine Wave",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Solar-Powered Residences",
+      "Cloudy & Mountain Climates",
+      "Home IT Workstations",
+      "Solar Clinics"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/superb-1100.webp",
+    "images": [
+      "/images/products/smarten/superb-1100.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/SUPERB-SOLAR-PCU-MPPT-BASED-1100-3.2kva.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/superb-series/",
+    "price": 34000,
+    "compareAt": 38500,
+    "stock": 20,
+    "rating": 5,
+    "badges": [
+      "MPPT Technology",
+      "+30% Solar Energy",
+      "Flagship MPPT"
+    ]
+  },
+  {
+    "id": "smarten-superb-2250va",
+    "name": "Smarten Superb 2250VA 24V MPPT Solar PCU",
+    "slug": "smarten-superb-2250va-24v-mppt-solar-pcu",
+    "category": "Solar PCU",
+    "subcategory": "MPPT Solar PCU",
+    "series": "Superb Series",
+    "model": "Superb 2250",
+    "capacity": "2250 VA / 24V (1800W Solar)",
+    "brand": "Smarten",
+    "tagline": "24V dual-battery MPPT solar PCU supporting up to 1800W solar arrays.",
+    "description": "The Superb 2250VA MPPT Solar PCU brings industrial-grade MPPT tracking to medium and large residences. Operating on two 12V batteries with up to 1800W of high-efficiency solar modules, it allows daytime self-sufficiency with minimal grid interaction.",
+    "features": [
+      "2250 VA heavy load capacity",
+      "High-speed DSP controlled MPPT algorithm",
+      "Supports large format half-cut and bifacial solar panels (up to 100V Voc)",
+      "Pure Sine Wave with minimal total harmonic distortion",
+      "Color LCD console with historical power generation insights"
+    ],
+    "specs": [
+      {
+        "label": "Capacity",
+        "value": "2250 VA / 1800W"
+      },
+      {
+        "label": "Battery Bank",
+        "value": "24 VDC (2 Batteries)"
+      },
+      {
+        "label": "Max Solar Panel",
+        "value": "1800 Watts"
+      },
+      {
+        "label": "PV Input Voltage Range",
+        "value": "35V – 100V Voc"
+      },
+      {
+        "label": "MPPT Controller",
+        "value": "50A High Efficiency"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Capacity": "2250 VA",
+      "Battery Voltage": "24 VDC",
+      "Max Solar Input": "1800W",
+      "PV Voc": "Up to 100V",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Independent Houses",
+      "Solar Commercial Shops",
+      "School Classrooms",
+      "Telecom Repeater Sites"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/superb-2250.webp",
+    "images": [
+      "/images/products/smarten/superb-2250.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/SUPERB-SOLAR-PCU-MPPT-BASED-1100-3.2kva.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/superb-series/",
+    "price": 52000,
+    "compareAt": 58500,
+    "stock": 14,
+    "rating": 4.9,
+    "badges": [
+      "Superb MPPT",
+      "1800W Solar",
+      "24V System"
+    ]
+  },
+  {
+    "id": "smarten-superb-3200va",
+    "name": "Smarten Superb 3.2kVA 24V MPPT Solar PCU",
+    "slug": "smarten-superb-3-2kva-24v-mppt-solar-pcu",
+    "category": "Solar PCU",
+    "subcategory": "MPPT Solar PCU",
+    "series": "Superb Series",
+    "model": "Superb 3200",
+    "capacity": "3200 VA / 24V (2400W Solar)",
+    "brand": "Smarten",
+    "tagline": "The pinnacle of 24V MPPT solar systems: 3.2kVA power with 2400W solar capability.",
+    "description": "The Superb 3200 is one of the highest power 24V solar inverters available, delivering 3200 VA of pure sine wave power from just two 12V batteries while supporting a massive 2400W solar panel array. It effortlessly runs refrigerators, 1HP pumps, washing machines, and complete home loads.",
+    "features": [
+      "Industry-leading 3200 VA capacity on a convenient 24V battery bank",
+      "Up to 2400W solar panel input with high Voc tolerance",
+      "State of the art MPPT tracker with 99% peak efficiency",
+      "Pure Sine Wave with copper transformer durability",
+      "Digital multi-color LCD monitor with real-time generation and fault logs"
+    ],
+    "specs": [
+      {
+        "label": "Rated Capacity",
+        "value": "3200 VA / 2560W"
+      },
+      {
+        "label": "Battery Bank",
+        "value": "24 VDC (2 Batteries)"
+      },
+      {
+        "label": "Max Solar Panel Input",
+        "value": "2400 Watts"
+      },
+      {
+        "label": "MPPT Controller",
+        "value": "60A MPPT"
+      },
+      {
+        "label": "PV Voltage Range",
+        "value": "35V – 100V Voc"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity": "3.2 kVA",
+      "Battery Voltage": "24 VDC",
+      "Max Solar Input": "2400W",
+      "MPPT Current": "60A",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Modern Homes & Bungalows",
+      "Dental Clinics & Labs",
+      "Supermarkets",
+      "Agricultural Water Pumping"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/superb-3200.webp",
+    "images": [
+      "/images/products/smarten/superb-3200.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/SUPERB-SOLAR-PCU-MPPT-BASED-1100-3.2kva.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/superb-series/",
+    "price": 68000,
+    "compareAt": 76000,
+    "stock": 12,
+    "rating": 5,
+    "badges": [
+      "3.2 kVA",
+      "2400W Solar",
+      "Top Rated MPPT"
+    ]
+  },
+  {
+    "id": "smarten-superb-5k5-to-20k",
+    "name": "Smarten Superb 5.5kVA – 20kVA Heavy MPPT Solar PCU",
+    "slug": "smarten-superb-5-5kva-20kva-heavy-mppt-solar-pcu",
+    "category": "Solar PCU",
+    "subcategory": "MPPT Solar PCU",
+    "series": "Superb Series",
+    "model": "Superb Heavy Commercial",
+    "capacity": "5.5 kVA – 20 kVA (48V – 240V)",
+    "brand": "Smarten",
+    "tagline": "Commercial MPPT solar powerhouse with solar panel capacity up to 15,000W.",
+    "description": "Built for heavy commercial buildings, institutions, and industrial applications, the Superb 5.5kVA to 20kVA MPPT series harnesses maximum solar energy from massive rooftop PV arrays. With high DC bus voltage (48V to 240V) and multi-channel MPPT, it provides continuous 3-phase and single-phase solar hybrid power.",
+    "features": [
+      "Extreme capacity options: 5.5kVA, 7.5kVA, 10kVA, 15kVA, up to 20kVA",
+      "Heavy MPPT charge controller handling up to 15,000W solar panel arrays",
+      "Galvanic isolation transformer architecture for industrial noise immunity",
+      "Full network connectivity, telemetry, and automated diesel generator sync",
+      "Pure Sine Wave with seamless 3-stage solar energy allocation"
+    ],
+    "specs": [
+      {
+        "label": "Capacity Range",
+        "value": "5.5 kVA to 20 kVA"
+      },
+      {
+        "label": "Battery Bank Options",
+        "value": "48V / 96V / 120V / 240V DC"
+      },
+      {
+        "label": "Solar PV Input",
+        "value": "Up to 15,000 Watts"
+      },
+      {
+        "label": "MPPT Efficiency",
+        "value": "> 98.5%"
+      },
+      {
+        "label": "Output",
+        "value": "Pure Sine Wave Single & Three Phase"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Capacity Range": "5.5 kVA - 20 kVA",
+      "Battery Bus": "48V - 240V DC",
+      "Max Solar Input": "Up to 15 kW",
+      "Efficiency": "> 98.5%",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Hotels & Resorts",
+      "Hospitals & Laboratories",
+      "Manufacturing Plants",
+      "Large Academic Institutions"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/superb-10k.webp",
+    "images": [
+      "/images/products/smarten/superb-10k.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/SUPERB-SOLAR-PCU-MPPT-BASED-5.5KVA-TO-20KVA.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/superb-series/",
+    "price": 165000,
+    "compareAt": 190000,
+    "stock": 6,
+    "rating": 5,
+    "badges": [
+      "Up to 20kVA",
+      "15kW Solar",
+      "Commercial MPPT"
+    ]
+  },
+  {
+    "id": "smarten-savior-12v-24v-auto",
+    "name": "Smarten Savior 12V/24V Auto PWM Solar Charge Controller",
+    "slug": "smarten-savior-12v-24v-auto-pwm-solar-charge-controller",
+    "category": "Solar Charge Controllers",
+    "subcategory": "PWM Solar Charge Controller",
+    "series": "Savior Series",
+    "model": "Savior 12V/24V Auto",
+    "capacity": "12V / 24V Auto (25A / 40A)",
+    "brand": "Smarten",
+    "tagline": "Upgrades any existing inverter into a smart solar PCU with automatic voltage sensing.",
+    "description": "The Smarten Savior PWM Solar Charge Controller converts any standard home inverter or battery into an intelligent solar hybrid system. It automatically detects 12V or 24V battery systems and prioritizes solar power for battery charging and load usage.",
+    "features": [
+      "Converts any normal inverter into a solar inverter",
+      "Auto sensing for 12V or 24V battery banks",
+      "Microcontroller based 4-stage PWM charging (Bulk, Absorption, Float, Equalization)",
+      "LED indicators for solar availability, battery charging, and reverse current",
+      "Comprehensive protection against reverse PV connection and night battery drain"
+    ],
+    "specs": [
+      {
+        "label": "Nominal System Voltage",
+        "value": "12V / 24V Auto Detection"
+      },
+      {
+        "label": "Max Charging Current",
+        "value": "25A / 40A"
+      },
+      {
+        "label": "Charging Algorithm",
+        "value": "4-Stage PWM"
+      },
+      {
+        "label": "Max Solar Panel",
+        "value": "400W (12V) / 800W (24V)"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "System Voltage": "12V / 24V Auto",
+      "Rated Current": "25A / 40A",
+      "Technology": "PWM 4-Stage",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Retrofitting Existing Inverters",
+      "Solar Street Lights",
+      "Small Solar Cabin Systems"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/savior-12-24.webp",
+    "images": [
+      "/images/products/smarten/savior-12-24.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Savior_PWM_Based_Solar_Charge_Controller_12V-24V_Auto_24V-48V_Auto.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/savior-savior-pwm-based-solar-charge-controller/",
+    "price": 4500,
+    "compareAt": 5500,
+    "stock": 45,
+    "rating": 4.8,
+    "badges": [
+      "Inverter Retrofit",
+      "12V/24V Auto",
+      "PWM Smart"
+    ]
+  },
+  {
+    "id": "smarten-savior-plus-high-voltage",
+    "name": "Smarten Savior+ High Voltage PWM Charge Controller (48V–120V)",
+    "slug": "smarten-savior-plus-high-voltage-pwm-charge-controller",
+    "category": "Solar Charge Controllers",
+    "subcategory": "PWM Solar Charge Controller",
+    "series": "Savior Series",
+    "model": "Savior+ High Voltage",
+    "capacity": "48V – 120V / 50A",
+    "brand": "Smarten",
+    "tagline": "Heavy-duty commercial PWM controller for high-voltage battery banks up to 120V.",
+    "description": "The Savior+ High Voltage series is engineered to retrofit large commercial inverters (48V, 72V, 96V, and 120V DC banks) into high-power solar hybrid systems. Equipped with heavy terminal blocks, thermal heatsinks, and multi-stage PWM protection.",
+    "features": [
+      "Supports high voltage DC battery banks: 48V, 72V, 96V, 120V",
+      "Heavy 50A continuous solar charging current rating",
+      "Microcontroller telemetry with thermal foldback",
+      "Protects expensive battery banks from overcharging and sulfation",
+      "Compact metal chassis with forced air cooling"
+    ],
+    "specs": [
+      {
+        "label": "Voltage Options",
+        "value": "48V / 72V / 96V / 120V DC"
+      },
+      {
+        "label": "Rated Current",
+        "value": "50 Amperes"
+      },
+      {
+        "label": "Max Solar Array",
+        "value": "Up to 6000 Watts"
+      },
+      {
+        "label": "Cooling",
+        "value": "Smart Thermo-Controlled Fan"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Voltage": "48V - 120V DC",
+      "Rated Current": "50A",
+      "Max Solar Input": "Up to 6000W",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Commercial Inverter Retrofits",
+      "Telecom Solar Offsets",
+      "Agricultural Sites"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/savior-120.webp",
+    "images": [
+      "/images/products/smarten/savior-120.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Savior_PWM_Based_Solar_Charge_Controller_12V-25Amp_to_120V-50Amp.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/savior-savior-pwm-based-solar-charge-controller/",
+    "price": 12500,
+    "compareAt": 14500,
+    "stock": 25,
+    "rating": 4.9,
+    "badges": [
+      "50A Heavy",
+      "Up to 120V",
+      "Commercial Grade"
+    ]
+  },
+  {
+    "id": "smarten-prime-plus-mppt-50a",
+    "name": "Smarten Prime+ MPPT Solar Charge Controller (12V–120V 50A)",
+    "slug": "smarten-prime-plus-mppt-solar-charge-controller-50a",
+    "category": "Solar Charge Controllers",
+    "subcategory": "MPPT Solar Charge Controller",
+    "series": "Prime Series",
+    "model": "Prime+ 50A",
+    "capacity": "12V – 120V / 50A MPPT",
+    "brand": "Smarten",
+    "tagline": "Ultra-fast tracking MPPT solar charge controller yielding up to 30% additional energy.",
+    "description": "The Smarten Prime+ is an advanced Maximum Power Point Tracking (MPPT) solar charge controller designed to convert any existing battery bank and inverter setup into a peak-efficiency solar generator. With 98%+ tracking efficiency, it ensures maximum harvesting even in partial shade or overcast skies.",
+    "features": [
+      "Ultra-fast MPPT tracking algorithm (> 98% tracking efficiency)",
+      "Extracts up to 30% more solar yield compared to conventional PWM controllers",
+      "Digital LCD screen showing solar input wattage, battery amps, and total energy harvested",
+      "Wide input PV voltage range allowing series connection of modern solar panels",
+      "Smart 4-stage temperature compensated battery charging",
+      "Full electronic protection against over-voltage, reverse PV, short circuit, and overheating"
+    ],
+    "specs": [
+      {
+        "label": "Nominal Battery Voltage",
+        "value": "12V / 24V / 36V / 48V / 96V / 120V Options"
+      },
+      {
+        "label": "Charging Current",
+        "value": "50 Amperes"
+      },
+      {
+        "label": "MPPT Efficiency",
+        "value": "> 98%"
+      },
+      {
+        "label": "Max Solar PV Voltage (Voc)",
+        "value": "Up to 150 VDC"
+      },
+      {
+        "label": "Display",
+        "value": "Informative Backlit LCD"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years Full Warranty"
+      }
+    ],
+    "specifications": {
+      "Battery Voltage": "12V - 120V",
+      "Current": "50A",
+      "MPPT Efficiency": "> 98%",
+      "Max PV Voc": "150 VDC",
+      "Display": "Backlit LCD",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Retrofit Inverters to Solar MPPT",
+      "Off-Grid Solar Homesteads",
+      "Solar Water Pumping",
+      "Telecom Stations"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/prime-plus-50a.webp",
+    "images": [
+      "/images/products/smarten/prime-plus-50a.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Prime_MPPT_Solar_Charge_Controller_12V-120V_50A.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/prime-mppt-based-solar-charge-controller/",
+    "price": 18500,
+    "compareAt": 21500,
+    "stock": 30,
+    "rating": 5,
+    "badges": [
+      "Prime+ MPPT",
+      "50A Current",
+      "+30% Solar Yield"
+    ]
+  },
+  {
+    "id": "smarten-tejas-dc-controller",
+    "name": "Smarten Tejas DC MPPT Solar Controller (12V 25A)",
+    "slug": "smarten-tejas-dc-mppt-solar-controller-12v-25a",
+    "category": "Solar Charge Controllers",
+    "subcategory": "DC Solar Controller",
+    "series": "Tejas Series",
+    "model": "Tejas 12V 25A",
+    "capacity": "12V / 25A DC MPPT",
+    "brand": "Smarten",
+    "tagline": "Specialized DC solar management controller for direct DC lighting and appliances.",
+    "description": "The Smarten Tejas DC is a dedicated MPPT solar management controller tailored for DC power systems, solar home systems, DC water pumps, and telecommunications equipment. It delivers high-efficiency direct DC power distribution without inverter conversion losses.",
+    "features": [
+      "Direct DC distribution avoiding inverter conversion loss",
+      "MPPT tracker designed for 12V DC applications",
+      "Supports up to 400W solar panel arrays",
+      "Automatic night-time disconnect preventing reverse drain",
+      "Rugged metal enclosure"
+    ],
+    "specs": [
+      {
+        "label": "System Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Rated Current",
+        "value": "25 Amperes"
+      },
+      {
+        "label": "Technology",
+        "value": "MPPT"
+      },
+      {
+        "label": "Max Solar Panel",
+        "value": "400 Watts"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Voltage": "12 VDC",
+      "Current": "25A",
+      "Technology": "MPPT",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "DC Solar Home Kits",
+      "Security CCTV Sites",
+      "Solar Street Lighting",
+      "Boats & RVs"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/tejas-dc-25a.webp",
+    "images": [
+      "/images/products/smarten/tejas-dc-25a.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Tejas_DC_MPPT_Solar_PCU_12V_25Amp.pdf-.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/tejas-dc-solar-charge-controller/",
+    "price": 8500,
+    "compareAt": 9900,
+    "stock": 20,
+    "rating": 4.8,
+    "badges": [
+      "Tejas DC",
+      "MPPT Technology",
+      "DC System"
+    ]
+  },
+  {
+    "id": "smarten-kranti-pv-changer",
+    "name": "Smarten Kranti PV Charger / Solar Changer",
+    "slug": "smarten-kranti-pv-charger-solar-changer",
+    "category": "Solar Charge Controllers",
+    "subcategory": "PV Changer",
+    "series": "Kranti Series",
+    "model": "Kranti PV Changer",
+    "capacity": "700VA – 1500VA Auto Changer",
+    "brand": "Smarten",
+    "tagline": "Automated solar-grid transfer device converting ordinary inverters to solar PCUs.",
+    "description": "The Kranti PV Changer connects between the solar panel array, your existing home inverter, and the utility grid. It monitors solar generation and automatically manages grid connection, allowing your regular inverter to behave like a modern solar PCU.",
+    "features": [
+      "Plug-and-play solar conversion for existing inverters",
+      "Intelligent mains disconnection when solar power is ample",
+      "Heavy duty switching relays with surge suppressor",
+      "Clear visual LED feedback of power states"
+    ],
+    "specs": [
+      {
+        "label": "Inverter Compatibility",
+        "value": "Up to 1500 VA"
+      },
+      {
+        "label": "Solar Array Support",
+        "value": "Up to 1000 Watts"
+      },
+      {
+        "label": "System Voltage",
+        "value": "12V / 24V Automatic"
+      },
+      {
+        "label": "Warranty",
+        "value": "2 Years"
+      }
+    ],
+    "specifications": {
+      "Capacity": "Up to 1500 VA",
+      "Voltage": "12V / 24V",
+      "Warranty": "2 Years"
+    },
+    "applications": [
+      "Retrofitting Standard Home Inverters",
+      "Small Business Solar Add-ons"
+    ],
+    "warranty": "2 Years Manufacturer Warranty",
+    "image": "/images/products/smarten/kranti-pv-changer.webp",
+    "images": [
+      "/images/products/smarten/kranti-pv-changer.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Kranti_PV_Charger-2.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/pv-changer/",
+    "price": 6500,
+    "compareAt": 7800,
+    "stock": 28,
+    "rating": 4.7,
+    "badges": [
+      "Kranti PV",
+      "Auto Changer",
+      "Solar Retrofit"
+    ]
+  },
+  {
+    "id": "smarten-bravo-tubular-150ah",
+    "name": "Smarten Bravo 150Ah Tall Tubular Battery (C20)",
+    "slug": "smarten-bravo-150ah-tall-tubular-battery-c20",
+    "category": "Tubular Batteries",
+    "subcategory": "Tall Tubular Battery",
+    "series": "Bravo Series",
+    "model": "Bravo 150Ah",
+    "capacity": "150 Ah / 12V (C20)",
+    "brand": "Smarten",
+    "tagline": "Rugged tall tubular battery with high acid volume and spine casting technology.",
+    "description": "The Smarten Bravo 150Ah Tall Tubular Battery is built with pressure die-cast spines and advanced active material for long cycle life in frequent power outage conditions. With a large electrolyte volume and ceramic vent plugs, it offers low maintenance and sustained deep-discharge recovery.",
+    "features": [
+      "High-pressure die-cast spines (up to 100 bar) resisting corrosion and plate shedding",
+      "Extra electrolyte volume above plates for lower water replenishment frequency",
+      "Porous tubular gauntlets providing superior electrical retention and deep discharge resilience",
+      "Low antimony alloy formulation ensuring minimal self-discharge during standby",
+      "Ceramic float vent plugs for safe gas release and visual acid level inspection"
+    ],
+    "specs": [
+      {
+        "label": "Nominal Capacity",
+        "value": "150 Ah @ C20 Rate"
+      },
+      {
+        "label": "Nominal Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Battery Construction",
+        "value": "Tall Tubular Deep Cycle"
+      },
+      {
+        "label": "Grid Alloy",
+        "value": "Special Low Antimony Lead Alloy"
+      },
+      {
+        "label": "Life Expectancy",
+        "value": "1200+ Cycles @ 80% DOD"
+      },
+      {
+        "label": "Warranty",
+        "value": "36 Months (18 Full + 18 Pro-rata)"
+      }
+    ],
+    "specifications": {
+      "Capacity": "150 Ah (C20)",
+      "Voltage": "12 VDC",
+      "Technology": "Tall Tubular Spine Casting",
+      "Expected Cycles": "1200+ Cycles",
+      "Warranty": "36 Months"
+    },
+    "applications": [
+      "Home Inverters & UPS",
+      "Solar Backup Systems",
+      "Offices & Shops",
+      "Clinics"
+    ],
+    "warranty": "36 Months Manufacturer Warranty",
+    "image": "/images/products/smarten/bravo-battery-2400.webp",
+    "images": [
+      "/images/products/smarten/bravo-battery-2400.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Nova_Bravo_Tall_Tubular_Battery_Up_to_260Ah_C20.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/bravo-series-tubular-battery/",
+    "price": 28500,
+    "compareAt": 32000,
+    "stock": 25,
+    "rating": 4.9,
+    "badges": [
+      "Tall Tubular",
+      "150 Ah C20",
+      "36M Warranty"
+    ]
+  },
+  {
+    "id": "smarten-bravo-tubular-200ah",
+    "name": "Smarten Bravo 200Ah Tall Tubular Battery (C20)",
+    "slug": "smarten-bravo-200ah-tall-tubular-battery-c20",
+    "category": "Tubular Batteries",
+    "subcategory": "Tall Tubular Battery",
+    "series": "Bravo Series",
+    "model": "Bravo 200Ah",
+    "capacity": "200 Ah / 12V (C20)",
+    "brand": "Smarten",
+    "tagline": "Heavy-duty 200Ah tall tubular battery engineered for long-duration outages.",
+    "description": "The Bravo 200Ah Tall Tubular Battery provides immense electrical storage for homes and businesses facing extended power cuts. Its robust spine construction withstands continuous deep cycling without loss of capacity.",
+    "features": [
+      "Substantial 200Ah electrical storage at C20 rating",
+      "High-pressure spine casting guarantees structural durability over 7-10 years",
+      "Exceptional deep discharge recovery performance",
+      "Low maintenance with micro-porous ceramic level indicators",
+      "High acid volume keeping operating temperatures cool"
+    ],
+    "specs": [
+      {
+        "label": "Nominal Capacity",
+        "value": "200 Ah @ C20 Rate"
+      },
+      {
+        "label": "Nominal Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Construction",
+        "value": "Tall Tubular Heavy Duty"
+      },
+      {
+        "label": "Cycle Life",
+        "value": "1400+ Cycles @ 80% DOD"
+      },
+      {
+        "label": "Warranty",
+        "value": "36 Months (18 Full + 18 Pro-rata)"
+      }
+    ],
+    "specifications": {
+      "Capacity": "200 Ah (C20)",
+      "Voltage": "12 VDC",
+      "Technology": "Tall Tubular Heavy Duty",
+      "Cycle Life": "1400+ Cycles",
+      "Warranty": "36 Months"
+    },
+    "applications": [
+      "Multi-Storey Residences",
+      "Large Domestic Inverters",
+      "Commercial Outlets",
+      "Solar PV Systems"
+    ],
+    "warranty": "36 Months Manufacturer Warranty",
+    "image": "/images/products/smarten/bravo-battery-2400.webp",
+    "images": [
+      "/images/products/smarten/bravo-battery-2400.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Nova_Bravo_Tall_Tubular_Battery_Up_to_260Ah_C20.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/bravo-series-tubular-battery/",
+    "price": 36000,
+    "compareAt": 41000,
+    "stock": 20,
+    "rating": 5,
+    "badges": [
+      "200 Ah Heavy",
+      "Tall Tubular",
+      "36M Warranty"
+    ]
+  },
+  {
+    "id": "smarten-bravo-tubular-240ah",
+    "name": "Smarten Bravo 240Ah Tall Tubular Battery (C20)",
+    "slug": "smarten-bravo-240ah-tall-tubular-battery-c20",
+    "category": "Tubular Batteries",
+    "subcategory": "Tall Tubular Battery",
+    "series": "Bravo Series",
+    "model": "Bravo 240Ah",
+    "capacity": "240 Ah / 12V (C20)",
+    "brand": "Smarten",
+    "tagline": "Maximum capacity tall tubular battery delivering relentless backup for heavy loads.",
+    "description": "The Bravo 240Ah is one of the highest capacity tall tubular batteries manufactured by Smarten. Engineered for commercial applications and luxury villas requiring non-stop backup for refrigerators, ACs, and high-wattage workstations.",
+    "features": [
+      "Massive 240Ah capacity rating (C20)",
+      "Extra tall design provides oversized acid reservoir for cooler running",
+      "Highest resistance to plate corrosion and positive spine degradation",
+      "Ceramic vent plugs with float indicators for easy maintenance",
+      "Superb performance in both solar and normal inverter charging"
+    ],
+    "specs": [
+      {
+        "label": "Nominal Capacity",
+        "value": "240 Ah @ C20"
+      },
+      {
+        "label": "Nominal Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Technology",
+        "value": "Tall Tubular Extra Deep Cycle"
+      },
+      {
+        "label": "Warranty",
+        "value": "48 Months (24 Full + 24 Pro-rata)"
+      }
+    ],
+    "specifications": {
+      "Capacity": "240 Ah (C20)",
+      "Voltage": "12 VDC",
+      "Warranty": "48 Months"
+    },
+    "applications": [
+      "Luxury Villas",
+      "Corporate Hubs",
+      "Telecom Centers",
+      "Off-Grid Renewable Stations"
+    ],
+    "warranty": "48 Months Manufacturer Warranty",
+    "image": "/images/products/smarten/bravo-battery-2400.webp",
+    "images": [
+      "/images/products/smarten/bravo-battery-2400.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Nova_Bravo_Tall_Tubular_Battery_Up_to_260Ah_C20.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/bravo-series-tubular-battery/",
+    "price": 43000,
+    "compareAt": 49000,
+    "stock": 15,
+    "rating": 5,
+    "badges": [
+      "240 Ah Massive",
+      "Tall Tubular",
+      "48M Warranty"
+    ]
+  },
+  {
+    "id": "smarten-saver-shine-solar-tubular-150ah",
+    "name": "Smarten Saver / Shine Solar Tall Tubular Battery 150Ah (C10)",
+    "slug": "smarten-saver-shine-solar-tall-tubular-battery-150ah-c10",
+    "category": "Tubular Batteries",
+    "subcategory": "Solar Tubular Battery",
+    "series": "Saver Series",
+    "model": "Saver Solar 150Ah",
+    "capacity": "150 Ah / 12V (C10 Solar Rated)",
+    "brand": "Smarten",
+    "tagline": "C10 solar-rated tall tubular battery optimized for fast charging and solar cycling.",
+    "description": "The Saver & Shine Solar Tall Tubular Battery is specifically formulated for solar PV charging with a stringent C10 rating. Unlike standard C20 inverter batteries, C10 batteries accept high solar charging currents during peak sunlight hours and provide superior daily cyclic life.",
+    "features": [
+      "Rigorous C10 rating ensuring high-rate solar charge acceptance",
+      "Formulated specifically for daily deep cyclic solar discharge",
+      "Low antimony spine structure reduces water evaporation by over 70%",
+      "Special carbon additives for Partial State of Charge (PSoC) operation",
+      "Ceramic float indicators included"
+    ],
+    "specs": [
+      {
+        "label": "Capacity",
+        "value": "150 Ah @ C10 Solar Discharge Rate"
+      },
+      {
+        "label": "Nominal Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Battery Type",
+        "value": "Solar Tall Tubular (C10)"
+      },
+      {
+        "label": "Cycle Life",
+        "value": "1800+ Cycles @ 80% DOD"
+      },
+      {
+        "label": "Warranty",
+        "value": "60 Months (36 Full + 24 Pro-rata)"
+      }
+    ],
+    "specifications": {
+      "Capacity": "150 Ah (C10 Solar)",
+      "Voltage": "12 VDC",
+      "Cycle Life": "1800+ Cycles",
+      "Warranty": "60 Months (5 Years)"
+    },
+    "applications": [
+      "Solar PCU Installations",
+      "Off-Grid Solar Kits",
+      "Solar Water Pumping",
+      "Rural Microgrids"
+    ],
+    "warranty": "60 Months (5 Years) Manufacturer Warranty",
+    "image": "/images/products/smarten/saver-battery-220.webp",
+    "images": [
+      "/images/products/smarten/saver-battery-220.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/SAVER-SHINE-Tall-Tubular-Battery-Up-to-240Ah-C10.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/saver-series-tubular-battery/",
+    "price": 33500,
+    "compareAt": 38000,
+    "stock": 22,
+    "rating": 5,
+    "badges": [
+      "C10 Solar Rated",
+      "5 Yrs Warranty",
+      "1800+ Cycles"
+    ]
+  },
+  {
+    "id": "smarten-saver-shine-solar-tubular-200ah",
+    "name": "Smarten Saver / Shine Solar Tall Tubular Battery 200Ah (C10)",
+    "slug": "smarten-saver-shine-solar-tall-tubular-battery-200ah-c10",
+    "category": "Tubular Batteries",
+    "subcategory": "Solar Tubular Battery",
+    "series": "Saver Series",
+    "model": "Saver Solar 200Ah",
+    "capacity": "200 Ah / 12V (C10 Solar Rated)",
+    "brand": "Smarten",
+    "tagline": "200Ah C10 solar powerhouse for dependable off-grid and hybrid solar storage.",
+    "description": "The Saver/Shine 200Ah C10 Solar Battery delivers heavy daily cycling performance for solar homes and businesses. Optimized with active carbon chemistry, it excels under the rapid charging cycles produced by rooftop solar arrays.",
+    "features": [
+      "True C10 Solar Rating delivering 200Ah under rapid discharge and recharge",
+      "Over 1800 cycles at 80% depth of discharge",
+      "Spine cast positive plates at 100 bar pressure for maximum density",
+      "Extra electrolyte reservoir for minimum maintenance in hot weather",
+      "Industry-leading 60-month warranty"
+    ],
+    "specs": [
+      {
+        "label": "Capacity",
+        "value": "200 Ah @ C10 Rate"
+      },
+      {
+        "label": "Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Classification",
+        "value": "C10 Solar Tall Tubular"
+      },
+      {
+        "label": "Warranty",
+        "value": "60 Months (36 Full + 24 Pro-rata)"
+      }
+    ],
+    "specifications": {
+      "Capacity": "200 Ah (C10 Solar)",
+      "Voltage": "12 VDC",
+      "Cycle Life": "1800+ Cycles",
+      "Warranty": "60 Months"
+    },
+    "applications": [
+      "Off-Grid Solar Homes",
+      "Hybrid Solar Installations",
+      "Agricultural Cold Storage",
+      "Hospital Backup"
+    ],
+    "warranty": "60 Months (5 Years) Manufacturer Warranty",
+    "image": "/images/products/smarten/saver-battery-220.webp",
+    "images": [
+      "/images/products/smarten/saver-battery-220.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/SAVER-SHINE-Tall-Tubular-Battery-Up-to-240Ah-C10.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/saver-series-tubular-battery/",
+    "price": 42500,
+    "compareAt": 48000,
+    "stock": 18,
+    "rating": 5,
+    "badges": [
+      "200Ah C10 Solar",
+      "60M Warranty",
+      "High Solar Harvest"
+    ]
+  },
+  {
+    "id": "smarten-boom-tubular-bmtt1500",
+    "name": "Smarten Boom BMTT-1500 150Ah Tubular Battery",
+    "slug": "smarten-boom-bmtt-1500-150ah-tubular-battery",
+    "category": "Tubular Batteries",
+    "subcategory": "Tubular Battery",
+    "series": "Boom Series",
+    "model": "BMTT-1500",
+    "capacity": "150 Ah / 12V",
+    "brand": "Smarten",
+    "tagline": "Rugged and dependable tubular battery engineered for long backups in heavy outage zones.",
+    "description": "The Smarten Boom BMTT-1500 is specifically designed for areas with heavy power cuts and fluctuating grid voltages. Engineered with heavy tubular plates and puncture-resistant separators, it delivers reliable cranking and backup power.",
+    "features": [
+      "Heavy duty spine cast plates resisting grid degradation",
+      "Superior charge recovery from deep discharge state",
+      "Puncture-resistant polyethylene envelope separators",
+      "Float indicators for electrolyte level tracking",
+      "Economical cost-per-cycle"
+    ],
+    "specs": [
+      {
+        "label": "Nominal Capacity",
+        "value": "150 Ah"
+      },
+      {
+        "label": "Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Technology",
+        "value": "Tubular Deep Cycle"
+      },
+      {
+        "label": "Warranty",
+        "value": "36 Months"
+      }
+    ],
+    "specifications": {
+      "Capacity": "150 Ah",
+      "Voltage": "12 VDC",
+      "Warranty": "36 Months"
+    },
+    "applications": [
+      "Rural Residences",
+      "Commercial Inverters",
+      "Small Enterprise Backup"
+    ],
+    "warranty": "36 Months Manufacturer Warranty",
+    "image": "/images/products/smarten/boom-battery-1500.webp",
+    "images": [
+      "/images/products/smarten/boom-battery-1500.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2025/07/Boom-BMTT-1500-BMTT-2000.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/boom-series-tubular-battery/",
+    "price": 27500,
+    "compareAt": 31000,
+    "stock": 20,
+    "rating": 4.8,
+    "badges": [
+      "Boom Series",
+      "150 Ah",
+      "Heavy Tubular"
+    ]
+  },
+  {
+    "id": "smarten-boom-tubular-bmtt2000",
+    "name": "Smarten Boom BMTT-2000 200Ah Tubular Battery",
+    "slug": "smarten-boom-bmtt-2000-200ah-tubular-battery",
+    "category": "Tubular Batteries",
+    "subcategory": "Tubular Battery",
+    "series": "Boom Series",
+    "model": "BMTT-2000",
+    "capacity": "200 Ah / 12V",
+    "brand": "Smarten",
+    "tagline": "High-capacity 200Ah rugged tubular battery for uninterrupted commercial power.",
+    "description": "The Boom BMTT-2000 provides high storage volume for heavy-duty inverters. Built to withstand extreme operating temperatures and deep discharges, it offers maximum value for homes, stores, and institutions.",
+    "features": [
+      "200 Ah high-density electrical storage",
+      "Spine casting at 100 bar for ultra-dense lead microstructure",
+      "Low maintenance with acid-resistant casing",
+      "Quick charge acceptance under variable grid conditions"
+    ],
+    "specs": [
+      {
+        "label": "Nominal Capacity",
+        "value": "200 Ah"
+      },
+      {
+        "label": "Voltage",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Technology",
+        "value": "Tubular Deep Cycle"
+      },
+      {
+        "label": "Warranty",
+        "value": "36 Months"
+      }
+    ],
+    "specifications": {
+      "Capacity": "200 Ah",
+      "Voltage": "12 VDC",
+      "Warranty": "36 Months"
+    },
+    "applications": [
+      "Commercial Establishments",
+      "Heavy Home Inverters",
+      "Workshops"
+    ],
+    "warranty": "36 Months Manufacturer Warranty",
+    "image": "/images/products/smarten/boom-battery-2000.webp",
+    "images": [
+      "/images/products/smarten/boom-battery-2000.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2025/07/Boom-BMTT-1500-BMTT-2000.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/boom-series-tubular-battery/",
+    "price": 35000,
+    "compareAt": 39500,
+    "stock": 16,
+    "rating": 4.9,
+    "badges": [
+      "Boom Series",
+      "200 Ah",
+      "Heavy Duty"
+    ]
+  },
+  {
+    "id": "smarten-mono-bifacial-topcon-550w",
+    "name": "Smarten 550W Monocrystalline Bifacial TOPCon Solar Panel",
+    "slug": "smarten-550w-monocrystalline-bifacial-topcon-solar-panel",
+    "category": "Solar Panels",
+    "subcategory": "Monocrystalline",
+    "series": "TOPCon Bifacial Series",
+    "model": "TOPCon 550W",
+    "capacity": "550 Watts (Bifacial)",
+    "brand": "Smarten",
+    "tagline": "Next-generation N-Type TOPCon bifacial module delivering up to 22.8% module efficiency.",
+    "description": "The Smarten 550W Bifacial TOPCon solar panel features cutting-edge N-Type cell technology with dual-glass bifacial generation. By capturing reflected sunlight from the rear surface, it generates up to 25% extra electricity, making it ideal for rooftop and ground installations.",
+    "features": [
+      "N-Type TOPCon cell technology with superior low-light and high-temperature performance",
+      "Bifacial generation: up to 25% additional energy yield from rear reflection (albedo)",
+      "High module efficiency up to 22.8%",
+      "Lower temperature coefficient (-0.30%/°C) for higher generation on hot summer days",
+      "Zero Light Induced Degradation (LID) and Anti-PID protection",
+      "Robust 35mm anodized aluminum frame rated for 5400Pa snow load and 2400Pa wind load"
+    ],
+    "specs": [
+      {
+        "label": "Peak Power (Pmax)",
+        "value": "550 Watts"
+      },
+      {
+        "label": "Module Efficiency",
+        "value": "22.8%"
+      },
+      {
+        "label": "Open Circuit Voltage (Voc)",
+        "value": "50.12 V"
+      },
+      {
+        "label": "Short Circuit Current (Isc)",
+        "value": "14.02 A"
+      },
+      {
+        "label": "Max Power Voltage (Vmp)",
+        "value": "42.15 V"
+      },
+      {
+        "label": "Max Power Current (Imp)",
+        "value": "13.05 A"
+      },
+      {
+        "label": "Cell Type",
+        "value": "N-Type Monocrystalline TOPCon 144 Half-Cells"
+      },
+      {
+        "label": "Performance Warranty",
+        "value": "30 Years Linear Power Warranty"
+      }
+    ],
+    "specifications": {
+      "Wattage": "550W",
+      "Efficiency": "22.8%",
+      "Voc": "50.12V",
+      "Isc": "14.02A",
+      "Vmp": "42.15V",
+      "Imp": "13.05A",
+      "Technology": "N-Type TOPCon Bifacial",
+      "Warranty": "30 Years Linear Warranty"
+    },
+    "applications": [
+      "Residential Rooftops",
+      "Commercial Solar Plants",
+      "Ground Mounted Solar Farms",
+      "Industrial Sheds"
+    ],
+    "warranty": "12 Years Product + 30 Years Linear Performance Warranty",
+    "image": "/images/products/smarten/mono-bifacial-panel.webp",
+    "images": [
+      "/images/products/smarten/mono-bifacial-panel.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Solar_Panel_DCR_Non-DCR_Bifacial_TOPCon_Monocrystalline.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/monocrystalline/",
+    "price": 24500,
+    "compareAt": 28000,
+    "stock": 80,
+    "rating": 5,
+    "badges": [
+      "TOPCon N-Type",
+      "550W Bifacial",
+      "30 Yrs Warranty"
+    ]
+  },
+  {
+    "id": "smarten-mono-halfcut-400w",
+    "name": "Smarten 400W Monocrystalline Half-Cut Solar Panel",
+    "slug": "smarten-400w-monocrystalline-half-cut-solar-panel",
+    "category": "Solar Panels",
+    "subcategory": "Monocrystalline",
+    "series": "Monocrystalline Series",
+    "model": "Mono 400W",
+    "capacity": "400 Watts",
+    "brand": "Smarten",
+    "tagline": "High-efficiency 144 half-cut monocrystalline solar module with superior shade tolerance.",
+    "description": "The Smarten 400W Monocrystalline module uses half-cut multi-busbar (MBB) cell architecture. Half-cut cells reduce internal resistance losses and minimize shading impacts, ensuring peak generation in urban and residential installations.",
+    "features": [
+      "144 half-cut PERC monocrystalline cells with multi-busbar technology",
+      "Reduced hot-spot risks and lower resistive internal power loss",
+      "High conversion efficiency up to 21.2%",
+      "Excellent generation in hazy and morning/evening low-light conditions",
+      "IP68 waterproof junction box with bypass diodes"
+    ],
+    "specs": [
+      {
+        "label": "Peak Power (Pmax)",
+        "value": "400 Watts"
+      },
+      {
+        "label": "Module Efficiency",
+        "value": "21.2%"
+      },
+      {
+        "label": "Open Circuit Voltage (Voc)",
+        "value": "49.50 V"
+      },
+      {
+        "label": "Short Circuit Current (Isc)",
+        "value": "10.25 A"
+      },
+      {
+        "label": "Max Power Voltage (Vmp)",
+        "value": "41.20 V"
+      },
+      {
+        "label": "Max Power Current (Imp)",
+        "value": "9.71 A"
+      },
+      {
+        "label": "Warranty",
+        "value": "25 Years Linear Performance Warranty"
+      }
+    ],
+    "specifications": {
+      "Wattage": "400W",
+      "Efficiency": "21.2%",
+      "Voc": "49.50V",
+      "Isc": "10.25A",
+      "Technology": "Mono PERC Half-Cut",
+      "Warranty": "25 Years"
+    },
+    "applications": [
+      "Urban Home Rooftops",
+      "Commercial Buildings",
+      "Solar Hybrid Systems"
+    ],
+    "warranty": "10 Years Product + 25 Years Performance Warranty",
+    "image": "/images/products/smarten/mono-halfcut-panel.webp",
+    "images": [
+      "/images/products/smarten/mono-halfcut-panel.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/09/Solar_Panel_DCR_Non-DCR_Bifacial_TOPCon_Monocrystalline.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/monocrystalline/",
+    "price": 18000,
+    "compareAt": 20500,
+    "stock": 60,
+    "rating": 4.9,
+    "badges": [
+      "Mono PERC",
+      "400W Half-Cut",
+      "25 Yrs Warranty"
+    ]
+  },
+  {
+    "id": "smarten-poly-solar-panel-355w",
+    "name": "Smarten 355W Polycrystalline Solar Panel",
+    "slug": "smarten-355w-polycrystalline-solar-panel",
+    "category": "Solar Panels",
+    "subcategory": "Polycrystalline",
+    "series": "Polycrystalline Series",
+    "model": "Poly 355W",
+    "capacity": "355 Watts",
+    "brand": "Smarten",
+    "tagline": "Cost-effective, highly durable polycrystalline module for high-reliability solar setups.",
+    "description": "The Smarten 355W Polycrystalline Solar Panel delivers dependable renewable energy at an economical price point. Built with high-transmission anti-reflective tempered glass and a corrosion-resistant anodized aluminum frame for long outdoor durability.",
+    "features": [
+      "72 high-purity polycrystalline solar cells",
+      "Anti-reflective high transmittance tempered glass for enhanced light absorption",
+      "Robust aluminum alloy frame tested for harsh weather and high wind speeds",
+      "Bypass diodes prevent module overheating under partial shade",
+      "25-year performance assurance"
+    ],
+    "specs": [
+      {
+        "label": "Rated Power",
+        "value": "355 Watts"
+      },
+      {
+        "label": "Module Efficiency",
+        "value": "18.3%"
+      },
+      {
+        "label": "Open Circuit Voltage (Voc)",
+        "value": "46.80 V"
+      },
+      {
+        "label": "Short Circuit Current (Isc)",
+        "value": "9.60 A"
+      },
+      {
+        "label": "Voltage at Pmax (Vmp)",
+        "value": "38.60 V"
+      },
+      {
+        "label": "Current at Pmax (Imp)",
+        "value": "9.20 A"
+      },
+      {
+        "label": "Warranty",
+        "value": "25 Years Linear Warranty"
+      }
+    ],
+    "specifications": {
+      "Wattage": "355W",
+      "Efficiency": "18.3%",
+      "Voc": "46.80V",
+      "Isc": "9.60A",
+      "Technology": "Polycrystalline 72 Cells",
+      "Warranty": "25 Years"
+    },
+    "applications": [
+      "Solar Water Pumping",
+      "Agricultural Solar Systems",
+      "Cost-Effective Rooftops"
+    ],
+    "warranty": "10 Years Product + 25 Years Performance Warranty",
+    "image": "/images/products/smarten/poly-solar-panel.webp",
+    "images": [
+      "/images/products/smarten/poly-solar-panel.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/08/Smarten-Product-cataloge-2026.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/polycrystalline/",
+    "price": 15500,
+    "compareAt": 17800,
+    "stock": 50,
+    "rating": 4.8,
+    "badges": [
+      "Polycrystalline",
+      "355W",
+      "Cost-Effective"
+    ]
+  },
+  {
+    "id": "smarten-poly-solar-panel-160w",
+    "name": "Smarten 160W 12V Polycrystalline Solar Panel",
+    "slug": "smarten-160w-12v-polycrystalline-solar-panel",
+    "category": "Solar Panels",
+    "subcategory": "Polycrystalline",
+    "series": "Polycrystalline Series",
+    "model": "Poly 160W",
+    "capacity": "160 Watts (12V)",
+    "brand": "Smarten",
+    "tagline": "Compact 12V polycrystalline panel designed for direct 12V battery charging.",
+    "description": "The Smarten 160W panel is engineered specifically for 12V battery banks. Its compact dimensions and optimal 18V Vmp output make it the ideal companion for small solar home systems, security cabins, streetlights, and camping setups.",
+    "features": [
+      "Optimal 36-cell layout delivering ~18V Vmp ideal for 12V battery charging",
+      "High transmission tempered glass with impact resistance",
+      "Pre-drilled mounting holes for easy installation on roofs and poles",
+      "Built-in junction box with MC4 compatible cables"
+    ],
+    "specs": [
+      {
+        "label": "Rated Power",
+        "value": "160 Watts"
+      },
+      {
+        "label": "Nominal System",
+        "value": "12 VDC"
+      },
+      {
+        "label": "Voltage at Pmax (Vmp)",
+        "value": "18.50 V"
+      },
+      {
+        "label": "Current at Pmax (Imp)",
+        "value": "8.65 A"
+      },
+      {
+        "label": "Open Circuit Voltage (Voc)",
+        "value": "22.50 V"
+      },
+      {
+        "label": "Short Circuit Current (Isc)",
+        "value": "9.20 A"
+      },
+      {
+        "label": "Warranty",
+        "value": "25 Years Linear Warranty"
+      }
+    ],
+    "specifications": {
+      "Wattage": "160W",
+      "Voltage": "12V System (18.5V Vmp)",
+      "Warranty": "25 Years"
+    },
+    "applications": [
+      "12V Battery Charging",
+      "Solar Street Lighting",
+      "Boats & RVs",
+      "Rural Security Cabins"
+    ],
+    "warranty": "10 Years Product + 25 Years Performance Warranty",
+    "image": "/images/products/smarten/poly-solar-panel.webp",
+    "images": [
+      "/images/products/smarten/poly-solar-panel.webp"
+    ],
+    "brochureUrl": "https://www.smartenpowersystems.com/wp-content/uploads/2026/08/Smarten-Product-cataloge-2026.pdf",
+    "sourceUrl": "https://www.smartenpowersystems.com/categories/polycrystalline/",
+    "price": 8200,
+    "compareAt": 9500,
+    "stock": 40,
+    "rating": 4.8,
+    "badges": [
+      "12V Direct",
+      "160W Poly",
+      "25 Yrs Warranty"
+    ]
+  }
+]

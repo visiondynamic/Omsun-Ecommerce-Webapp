@@ -57,6 +57,7 @@ type ShopSearch = {
   q?: string | undefined;
   category?: string | undefined;
   subcategory?: string | undefined;
+  series?: string | undefined;
   brand?: string | undefined;
 };
 
@@ -66,6 +67,7 @@ export const Route = createFileRoute("/shop")({
       q: typeof search["q"] === "string" ? search["q"] : undefined,
       category: typeof search["category"] === "string" ? search["category"] : undefined,
       subcategory: typeof search["subcategory"] === "string" ? search["subcategory"] : undefined,
+      series: typeof search["series"] === "string" ? search["series"] : undefined,
       brand: typeof search["brand"] === "string" ? search["brand"] : undefined,
     };
   },
@@ -95,6 +97,9 @@ function Shop() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
     search.subcategory || null,
   );
+  const [selectedSeries, setSelectedSeries] = useState<string | null>(
+    search.series || null,
+  );
   const [brands, setBrands] = useState<string[]>(search.brand ? [search.brand] : []);
   const [maxPrice, setMaxPrice] = useState(1500000);
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -122,12 +127,16 @@ function Shop() {
       setSelectedSubcategory(null);
     }
 
+    if (search.series !== undefined) {
+      setSelectedSeries(search.series);
+    }
+
     if (search.brand !== undefined) {
       setBrands([search.brand]);
     } else if (search.category === undefined && search.q === undefined) {
       setBrands([]);
     }
-  }, [search.q, search.category, search.subcategory, search.brand]);
+  }, [search.q, search.category, search.subcategory, search.series, search.brand]);
 
   const { data: apiProducts } = useQuery<Product[]>({
     queryKey: ["products"],
@@ -151,19 +160,23 @@ function Shop() {
   const toggle = (list: string[], set: (v: string[]) => void, value: string) => {
     set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
     setSelectedSubcategory(null);
+    setSelectedSeries(null);
   };
 
   const selectCategoryCard = (categoryKey: string) => {
     if (categoryKey === "All") {
       setCats([]);
       setSelectedSubcategory(null);
+      setSelectedSeries(null);
     } else {
       if (cats.length === 1 && cats[0] === categoryKey) {
         setCats([]);
         setSelectedSubcategory(null);
+        setSelectedSeries(null);
       } else {
         setCats([categoryKey]);
         setSelectedSubcategory(null);
+        setSelectedSeries(null);
       }
     }
   };
@@ -172,6 +185,7 @@ function Shop() {
     setQuery("");
     setCats([]);
     setSelectedSubcategory(null);
+    setSelectedSeries(null);
     setBrands([]);
     setMaxPrice(1500000);
     setInStockOnly(false);
@@ -182,15 +196,62 @@ function Shop() {
       name: "All Products",
       categoryKey: "All",
       icon: LayoutGrid,
-      count: allProducts.length,
+      count: allProducts.filter((p) => !p.name.toLowerCase().includes("smf")).length,
       image: null,
       badge: "Full Catalog",
       tag: "All Equipment",
     },
     {
+      name: "Home UPS",
+      categoryKey: "Home UPS",
+      icon: Zap,
+      count: allProducts.filter((p) => p.category === "Home UPS").length,
+      image: "/images/products/smarten/bravo-900.webp",
+      badge: "Pure Sine Wave",
+      tag: "Bravo, Nova & EverOn",
+    },
+    {
+      name: "Solar PCU",
+      categoryKey: "Solar PCU",
+      icon: Sun,
+      count: allProducts.filter((p) => p.category === "Solar PCU").length,
+      image: "/images/products/smarten/superb-1100.webp",
+      badge: "MPPT & PWM",
+      tag: "Superb, Saver, Shine, Boom",
+    },
+    {
+      name: "Solar Charge Controllers",
+      categoryKey: "Solar Charge Controllers",
+      icon: Gauge,
+      count: allProducts.filter((p) => p.category === "Solar Charge Controllers").length,
+      image: "/images/products/smarten/prime-plus-50a.webp",
+      badge: "Smart Tracking",
+      tag: "Prime+, Savior+ & Tejas",
+    },
+    {
+      name: "Tubular Batteries",
+      categoryKey: "Tubular Batteries",
+      icon: BatteryCharging,
+      count: allProducts.filter(
+        (p) => p.category === "Tubular Batteries" && !p.name.toLowerCase().includes("smf"),
+      ).length,
+      image: "/images/products/smarten/bravo-battery-2400.webp",
+      badge: "C10 & C20",
+      tag: "Tall Tubular Deep Cycle",
+    },
+    {
+      name: "Solar Panels",
+      categoryKey: "Solar Panels",
+      icon: PanelsTopLeft,
+      count: allProducts.filter((p) => p.category === "Solar Panels").length,
+      image: "/images/products/smarten/mono-bifacial-panel.webp",
+      badge: "Bifacial TOPCon",
+      tag: "Mono & Poly Modules",
+    },
+    {
       name: "Stabilizer",
       categoryKey: "Stabilizer",
-      icon: Gauge,
+      icon: ShieldCheck,
       count: allProducts.filter((p) => p.category === "Stabilizer").length,
       image: stabilizerImg,
       badge: "Voltage Control",
@@ -204,24 +265,6 @@ function Shop() {
       image: inverterImg,
       badge: "Power Backup",
       tag: "Online LF & Industrial",
-    },
-    {
-      name: "Solar",
-      categoryKey: "Solar",
-      icon: Sun,
-      count: allProducts.filter((p) => p.category === "Solar").length,
-      image: panelImg,
-      badge: "Renewable PV",
-      tag: "Panels, Inverters & Kits",
-    },
-    {
-      name: "Battery",
-      categoryKey: "Battery",
-      icon: BatteryCharging,
-      count: allProducts.filter((p) => p.category === "Battery").length,
-      image: batteryImg,
-      badge: "Energy Storage",
-      tag: "LiFePO4 & Tubular",
     },
     {
       name: "Security",
@@ -246,29 +289,56 @@ function Shop() {
     return PRODUCT_TAXONOMY.flatMap((t) => t.subcategories);
   }, [cats]);
 
+  // Derive relevant series dynamically
+  const availableSeries = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of allProducts) {
+      if (p.series && (cats.length === 0 || cats.includes(p.category))) {
+        set.add(p.series);
+      }
+    }
+    return Array.from(set);
+  }, [allProducts, cats]);
+
   const activeFilterCount = useMemo(() => {
     return (
       cats.length +
       brands.length +
       (selectedSubcategory ? 1 : 0) +
+      (selectedSeries ? 1 : 0) +
       (inStockOnly ? 1 : 0) +
       (query.trim() ? 1 : 0) +
       (maxPrice < 1500000 ? 1 : 0)
     );
-  }, [cats, brands, selectedSubcategory, inStockOnly, query, maxPrice]);
+  }, [cats, brands, selectedSubcategory, selectedSeries, inStockOnly, query, maxPrice]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     const filtered = allProducts.filter((p) => {
+      // STRICT EXCLUSION: Never show SMF battery anywhere in catalog
+      const catLower = (p.category || "").toLowerCase();
+      const subLower = (p.subcategory || "").toLowerCase();
+      const nameLower = (p.name || "").toLowerCase();
+      if (catLower.includes("smf") || subLower.includes("smf") || nameLower.includes("smf")) {
+        return false;
+      }
+
       if (q) {
         const specsStr = (p.specs || []).map((s) => `${s.label} ${s.value}`).join(" ");
-        const corpus = `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand} ${p.tagline || ""} ${specsStr}`.toLowerCase();
+        const seriesStr = p.series || "";
+        const modelStr = p.model || "";
+        const capacityStr = p.capacity || "";
+        const corpus =
+          `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand} ${seriesStr} ${modelStr} ${capacityStr} ${p.tagline || ""} ${specsStr}`.toLowerCase();
         if (!corpus.includes(q)) return false;
       }
       if (cats.length > 0 && !cats.includes(p.category)) {
         return false;
       }
-      if (selectedSubcategory && p.subcategory !== selectedSubcategory) {
+      if (selectedSubcategory && p.subcategory !== selectedSubcategory && p.series !== selectedSubcategory) {
+        return false;
+      }
+      if (selectedSeries && p.series !== selectedSeries) {
         return false;
       }
       if (brands.length > 0 && !brands.includes(p.brand)) {
@@ -287,7 +357,7 @@ function Shop() {
     if (sort === "price-desc") return [...filtered].sort((a, b) => b.price - a.price);
     if (sort === "rating") return [...filtered].sort((a, b) => b.rating - a.rating);
     return filtered;
-  }, [query, cats, selectedSubcategory, brands, maxPrice, inStockOnly, sort, allProducts]);
+  }, [query, cats, selectedSubcategory, selectedSeries, brands, maxPrice, inStockOnly, sort, allProducts]);
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -508,6 +578,43 @@ function Shop() {
               })}
             </div>
           )}
+
+          {/* ── Series Quick Chips ── */}
+          {availableSeries.length > 0 && (
+            <div className="mt-2.5 flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar animate-in fade-in duration-200">
+              <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap mr-1">
+                Series:
+              </span>
+              <button
+                onClick={() => setSelectedSeries(null)}
+                className={cn(
+                  "rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-all shrink-0 cursor-pointer border",
+                  selectedSeries === null
+                    ? "bg-emerald-500 text-black border-emerald-500 shadow-xs"
+                    : "bg-card text-muted-foreground border-white/10 hover:border-emerald-500/40 hover:text-white",
+                )}
+              >
+                All Series
+              </button>
+              {availableSeries.map((ser) => {
+                const isSerSelected = selectedSeries === ser;
+                return (
+                  <button
+                    key={ser}
+                    onClick={() => setSelectedSeries(isSerSelected ? null : ser)}
+                    className={cn(
+                      "rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-all shrink-0 cursor-pointer border",
+                      isSerSelected
+                        ? "bg-emerald-500 text-black border-emerald-500 shadow-xs"
+                        : "bg-card text-muted-foreground border-white/10 hover:border-emerald-500/40 hover:text-white",
+                    )}
+                  >
+                    {ser}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* ═══════════════ MAIN CONTENT: STICKY SIDEBAR + PRODUCT GRID ═══════════════ */}
@@ -557,7 +664,7 @@ function Shop() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search specs or brands..."
+                placeholder="Search specs, models or series..."
                 className="h-11 rounded-xl pl-10 border-slate-300 dark:border-white/15 text-xs font-medium focus-visible:ring-emerald-500"
               />
               {query && (
@@ -582,6 +689,21 @@ function Shop() {
                 />
               ))}
             </FilterGroup>
+
+            {/* Series Filter List */}
+            {availableSeries.length > 0 && (
+              <FilterGroup title="Product Series">
+                {availableSeries.map((ser) => (
+                  <CheckRow
+                    key={ser}
+                    id={`ser-${ser}`}
+                    label={ser}
+                    checked={selectedSeries === ser}
+                    onChange={() => setSelectedSeries(selectedSeries === ser ? null : ser)}
+                  />
+                ))}
+              </FilterGroup>
+            )}
 
             {/* Subcategories Filter List */}
             {activeSubcategories.length > 0 && (
