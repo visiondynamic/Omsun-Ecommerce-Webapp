@@ -25,6 +25,7 @@ import {
   User,
   ShieldCheck,
   Package,
+  Truck,
   LogOut,
   LayoutDashboard,
 } from "lucide-react";
