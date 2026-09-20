@@ -82,7 +82,7 @@ export function CartDrawer() {
                     </h4>
 
                     <div className="mt-1 font-display text-sm font-extrabold text-emerald-300">
-                      {formatNPR(product.price)}
+                      {product.brand === "Smarten" ? "Quote on Request" : formatNPR(product.price)}
                     </div>
                   </div>
 

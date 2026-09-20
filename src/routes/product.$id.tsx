@@ -9,6 +9,7 @@ import {
   ExternalLink,
   FileDown,
   FileText,
+  MessageSquare,
   Minus,
   Plus,
   ShieldCheck,
@@ -23,6 +24,7 @@ import { useCart } from "@/context/CartContext";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
+import { QuoteEnquiryModal } from "@/components/site/QuoteEnquiryModal";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatNPR, fallbackProducts, mapApiProductToProduct, getProduct } from "@/lib/products";
@@ -47,9 +49,12 @@ export const Route = createFileRoute("/product/$id")({
   },
   head: ({ loaderData }) => {
     const p = loaderData?.product;
+    const isSmarten = p?.brand === "Smarten";
     const title = p ? `${p.name} | OMSUN Nepal` : "Product | OMSUN Nepal";
     const description = p
-      ? `${p.tagline} — ${formatNPR(p.price)}. Nationwide delivery, warranty and installation support from OMSUN Nepal.`
+      ? isSmarten
+        ? `${p.name}${p.model ? ` (${p.model})` : ""}. Request an official quotation and distributor pricing from OMSUN Nepal. Nationwide delivery, manufacturer warranty, and certified technical support across Nepal.`
+        : `${p.tagline} — ${formatNPR(p.price)}. Nationwide delivery, warranty and installation support from OMSUN Nepal.`
       : "OMSUN Nepal product details.";
     return {
       meta: [
@@ -68,6 +73,7 @@ function ProductPage() {
   const { addToCart, buyNow } = useCart();
   const [qty, setQty] = useState(1);
   const [active, setActive] = useState(0);
+  const [quoteModalOpen, setQuoteModalOpen] = useState(false);
 
   const { data: apiProduct } = useQuery<Product>({
     queryKey: ["product", fallbackProduct.id],
@@ -254,9 +260,19 @@ function ProductPage() {
                     <span>Official Brochure (PDF)</span>
                   </a>
                 )}
-                <span className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-5 py-2.5 text-base font-extrabold text-emerald-400 backdrop-blur-md">
-                  {formatNPR(product.price)}
-                </span>
+                {isSmarten ? (
+                  <Button
+                    onClick={() => setQuoteModalOpen(true)}
+                    className="rounded-2xl border border-emerald-400/40 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 px-6 py-2.5 text-sm font-extrabold text-white shadow-xl shadow-emerald-950/30 backdrop-blur-md transition-all hover:scale-105"
+                  >
+                    <MessageSquare className="size-4 mr-1.5" />
+                    <span>Request a Quote</span>
+                  </Button>
+                ) : (
+                  <span className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-5 py-2.5 text-base font-extrabold text-emerald-400 backdrop-blur-md">
+                    {formatNPR(product.price)}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -463,116 +479,225 @@ function ProductPage() {
                 <span className="text-muted-foreground">· 128 verified reviews</span>
               </div>
 
-              <div className="surface-card mt-8 p-7 rounded-2xl border border-slate-200/80 dark:border-white/10">
-                <div className="flex items-end gap-3">
-                  <span className="font-display text-4xl font-extrabold">
-                    {formatNPR(product.price)}
-                  </span>
-                  {product.compareAt && (
-                    <span className="pb-1 text-sm text-muted-foreground line-through">
-                      {formatNPR(product.compareAt)}
+              {isSmarten ? (
+                <div className="surface-card mt-8 p-7 rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-card to-emerald-950/10 shadow-xl">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-200/80 dark:border-white/10">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                      <Zap className="size-3.5" />
+                      <span>Official Quotation</span>
+                    </div>
+                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                      Model: {product.model || product.name}
                     </span>
-                  )}
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold border",
-                      out
-                        ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                        : product.stock <= 5
-                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                          : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+                  </div>
+
+                  <div className="mt-5">
+                    <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Pricing & Availability
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-extrabold text-[#38B46A] mt-1">
+                      Price on Request
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                      Official Smarten distributor and bulk project rates available for Nepal. Submit your inquiry to receive personalized pricing, warranty terms, and delivery timeline.
+                    </p>
+                  </div>
+
+                  <div className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/20 p-3.5 text-xs space-y-2 text-foreground">
+                    <div className="flex items-center gap-2 font-medium">
+                      <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
+                      <span>Authorized Smarten Partner & Direct Importer</span>
+                    </div>
+                    <div className="flex items-center gap-2 font-medium">
+                      <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
+                      <span>Official Manufacturer Warranty & Serialized Card</span>
+                    </div>
+                    <div className="flex items-center gap-2 font-medium">
+                      <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
+                      <span>Ready Stock at Kathmandu Central Depot</span>
+                    </div>
+                    <div className="flex items-center gap-2 font-medium">
+                      <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
+                      <span>System Engineering & Sizing Support Included</span>
+                    </div>
+                  </div>
+
+                  {/* Primary & Secondary CTAs */}
+                  <div className="mt-6 space-y-3">
+                    <Button
+                      size="lg"
+                      onClick={() => setQuoteModalOpen(true)}
+                      className="h-14 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold text-base shadow-xl shadow-emerald-950/20 transition-all hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <MessageSquare className="size-5" />
+                      <span>Request a Quote</span>
+                    </Button>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="h-12 rounded-xl border-slate-300 dark:border-white/20 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5"
+                      >
+                        <Link
+                          to="/contact"
+                          search={{
+                            product: product.name,
+                            model: product.model,
+                            series: product.series,
+                            inquiryType: "smarten-quote",
+                          }}
+                        >
+                          <ExternalLink className="size-3.5" />
+                          <span>Enquire Now</span>
+                        </Link>
+                      </Button>
+
+                      <a
+                        href={`https://wa.me/9779801828498?text=${encodeURIComponent(
+                          `Hello OMSUN Nepal, I would like to request an official quotation for ${product.name}${product.model ? ` (Model: ${product.model})` : ""}.`,
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="h-12 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-colors"
+                      >
+                        <MessageSquare className="size-3.5" />
+                        <span>WhatsApp Desk</span>
+                      </a>
+                    </div>
+
+                    {product.brochureUrl && (
+                      <a
+                        href={product.brochureUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 h-12 w-full rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-bold transition-all"
+                      >
+                        <FileDown className="size-4" />
+                        <span>Download Official Brochure (PDF)</span>
+                      </a>
                     )}
-                  >
+                  </div>
+
+                  {/* Flow breadcrumb */}
+                  <div className="mt-5 pt-4 border-t border-slate-200/80 dark:border-white/10 text-center">
+                    <p className="text-[11px] font-semibold text-muted-foreground">
+                      Browse Product → View Details → View Specifications → <span className="text-[#38B46A] font-bold">Request a Quote</span>
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="surface-card mt-8 p-7 rounded-2xl border border-slate-200/80 dark:border-white/10">
+                  <div className="flex items-end gap-3">
+                    <span className="font-display text-4xl font-extrabold">
+                      {formatNPR(product.price)}
+                    </span>
+                    {product.compareAt && (
+                      <span className="pb-1 text-sm text-muted-foreground line-through">
+                        {formatNPR(product.compareAt)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
                     <span
                       className={cn(
-                        "size-2 rounded-full shrink-0",
+                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold border",
                         out
-                          ? "bg-rose-500"
+                          ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
                           : product.stock <= 5
-                            ? "bg-amber-500 animate-pulse"
-                            : "bg-emerald-500",
+                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
                       )}
-                    />
-                    {out
-                      ? "Currently Out of Stock"
-                      : product.stock <= 5
-                        ? `Hurry, only ${product.stock} units left in stock!`
-                        : `In Stock: ${product.stock} units available`}
-                  </span>
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    • Kathmandu Central Warehouse
-                  </span>
-                </div>
+                    >
+                      <span
+                        className={cn(
+                          "size-2 rounded-full shrink-0",
+                          out
+                            ? "bg-rose-500"
+                            : product.stock <= 5
+                              ? "bg-amber-500 animate-pulse"
+                              : "bg-emerald-500",
+                        )}
+                      />
+                      {out
+                        ? "Currently Out of Stock"
+                        : product.stock <= 5
+                          ? `Hurry, only ${product.stock} units left in stock!`
+                          : `In Stock: ${product.stock} units available`}
+                    </span>
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      • Kathmandu Central Warehouse
+                    </span>
+                  </div>
 
-                <div className="mt-7 flex items-center gap-4">
-                  <div className="flex items-center rounded-2xl border p-1">
+                  <div className="mt-7 flex items-center gap-4">
+                    <div className="flex items-center rounded-2xl border p-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Decrease quantity"
+                        onClick={() => setQty((q) => Math.max(1, q - 1))}
+                        className="min-h-11 min-w-11 rounded-xl"
+                      >
+                        <Minus className="size-4" />
+                      </Button>
+                      <span className="w-10 text-center font-display font-bold">{qty}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Increase quantity"
+                        disabled={out || qty >= (product.stock || 1)}
+                        onClick={() => setQty((q) => Math.min(product.stock || 1, q + 1))}
+                        className="min-h-11 min-w-11 rounded-xl disabled:opacity-30"
+                      >
+                        <Plus className="size-4" />
+                      </Button>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      Total {formatNPR(product.price * qty)}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mt-6">
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Decrease quantity"
-                      onClick={() => setQty((q) => Math.max(1, q - 1))}
-                      className="min-h-11 min-w-11 rounded-xl"
+                      disabled={out}
+                      onClick={() => addToCart(product, qty)}
+                      className="h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-sm font-bold hover:bg-emerald-500 hover:text-black transition-all"
                     >
-                      <Minus className="size-4" />
+                      <ShoppingCart className="size-4 mr-1.5" />{" "}
+                      {out ? "Out of Stock" : "Add to Cart"}
                     </Button>
-                    <span className="w-10 text-center font-display font-bold">{qty}</span>
+
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Increase quantity"
-                      disabled={out || qty >= (product.stock || 1)}
-                      onClick={() => setQty((q) => Math.min(product.stock || 1, q + 1))}
-                      className="min-h-11 min-w-11 rounded-xl disabled:opacity-30"
+                      disabled={out}
+                      onClick={() => buyNow(product, qty)}
+                      className="h-14 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold text-sm shadow-xl hover:from-orange-400 hover:to-amber-500 transition-all hover:scale-[1.02]"
                     >
-                      <Plus className="size-4" />
+                      <Zap className="size-4 mr-1.5" /> Buy Now
                     </Button>
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    Total {formatNPR(product.price * qty)}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 mt-6">
-                  <Button
-                    disabled={out}
-                    onClick={() => addToCart(product, qty)}
-                    className="h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-sm font-bold hover:bg-emerald-500 hover:text-black transition-all"
-                  >
-                    <ShoppingCart className="size-4 mr-1.5" />{" "}
-                    {out ? "Out of Stock" : "Add to Cart"}
-                  </Button>
 
                   <Button
-                    disabled={out}
-                    onClick={() => buyNow(product, qty)}
-                    className="h-14 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold text-sm shadow-xl hover:from-orange-400 hover:to-amber-500 transition-all hover:scale-[1.02]"
+                    variant="outline"
+                    className="mt-3 h-14 w-full rounded-2xl border-2 text-base font-semibold"
+                    onClick={() => toast.success("Quote request sent to our sales engineer.")}
                   >
-                    <Zap className="size-4 mr-1.5" /> Buy Now
+                    Request a bulk quote
                   </Button>
+
+                  {product.brochureUrl && (
+                    <a
+                      href={product.brochureUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 flex items-center justify-center gap-2 h-12 w-full rounded-2xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs sm:text-sm font-bold transition-all"
+                    >
+                      <FileDown className="size-4" />
+                      <span>Download Official Brochure (PDF)</span>
+                    </a>
+                  )}
                 </div>
-
-                <Button
-                  variant="outline"
-                  className="mt-3 h-14 w-full rounded-2xl border-2 text-base font-semibold"
-                  onClick={() => toast.success("Quote request sent to our sales engineer.")}
-                >
-                  Request a bulk quote
-                </Button>
-
-                {product.brochureUrl && (
-                  <a
-                    href={product.brochureUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 flex items-center justify-center gap-2 h-12 w-full rounded-2xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs sm:text-sm font-bold transition-all"
-                  >
-                    <FileDown className="size-4" />
-                    <span>Download Official Brochure (PDF)</span>
-                  </a>
-                )}
-              </div>
+              )}
 
               <ul className="mt-6 grid gap-4">
                 {[
@@ -621,44 +746,72 @@ function ProductPage() {
 
         {/* ── MOBILE STICKY BOTTOM ACTION BAR (Daraz/Amazon Style) ── */}
         <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden border-t border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#071f17]/95 p-3 backdrop-blur-xl shadow-2xl flex items-center gap-2.5">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total</div>
-              <span
-                className={cn(
-                  "text-[9.5px] font-bold px-1.5 py-0.2 rounded",
-                  out
-                    ? "text-rose-600 bg-rose-500/10"
-                    : product.stock <= 5
-                      ? "text-amber-600 bg-amber-500/10"
-                      : "text-emerald-600 bg-emerald-500/10",
-                )}
+          {isSmarten ? (
+            <>
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Smarten Product
+                </div>
+                <div className="text-xs sm:text-sm font-extrabold text-[#38B46A] truncate">
+                  Official Quote on Request
+                </div>
+              </div>
+              <Button
+                onClick={() => setQuoteModalOpen(true)}
+                className="h-11 rounded-xl px-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-md shrink-0 flex items-center gap-1.5 cursor-pointer"
               >
-                {out ? "Out of Stock" : `${product.stock} left`}
-              </span>
-            </div>
-            <div className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 font-mono truncate">
-              {formatNPR(product.price * qty)}
-            </div>
-          </div>
-          <Button
-            disabled={out}
-            onClick={() => addToCart(product, qty)}
-            variant="outline"
-            className="h-11 rounded-xl px-3 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 text-xs font-bold shrink-0"
-          >
-            <ShoppingCart className="size-3.5 mr-1" /> Add
-          </Button>
-          <Button
-            disabled={out}
-            onClick={() => buyNow(product, qty)}
-            className="h-11 rounded-xl px-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-md shrink-0"
-          >
-            <Zap className="size-3.5 mr-1" /> Buy Now
-          </Button>
+                <MessageSquare className="size-3.5" />
+                <span>Request a Quote</span>
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total</div>
+                  <span
+                    className={cn(
+                      "text-[9.5px] font-bold px-1.5 py-0.2 rounded",
+                      out
+                        ? "text-rose-600 bg-rose-500/10"
+                        : product.stock <= 5
+                          ? "text-amber-600 bg-amber-500/10"
+                          : "text-emerald-600 bg-emerald-500/10",
+                    )}
+                  >
+                    {out ? "Out of Stock" : `${product.stock} left`}
+                  </span>
+                </div>
+                <div className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 font-mono truncate">
+                  {formatNPR(product.price * qty)}
+                </div>
+              </div>
+              <Button
+                disabled={out}
+                onClick={() => addToCart(product, qty)}
+                variant="outline"
+                className="h-11 rounded-xl px-3 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 text-xs font-bold shrink-0"
+              >
+                <ShoppingCart className="size-3.5 mr-1" /> Add
+              </Button>
+              <Button
+                disabled={out}
+                onClick={() => buyNow(product, qty)}
+                className="h-11 rounded-xl px-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-md shrink-0"
+              >
+                <Zap className="size-3.5 mr-1" /> Buy Now
+              </Button>
+            </>
+          )}
         </div>
       </main>
       <Footer />
+
+      <QuoteEnquiryModal
+        open={quoteModalOpen}
+        onOpenChange={setQuoteModalOpen}
+        product={product}
+      />
     </div>
   );
 }

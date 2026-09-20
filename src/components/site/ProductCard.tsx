@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   Eye,
   Leaf,
+  MessageSquare,
   Minus,
   Plus,
   RotateCcw,
@@ -17,6 +18,7 @@ import {
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { QuoteEnquiryModal } from "@/components/site/QuoteEnquiryModal";
 import { formatNPR, type Product } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
@@ -28,14 +30,16 @@ export function ProductCard({
   variant?: "dark" | "light";
 }) {
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [quoteModalOpen, setQuoteModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const { addToCart, buyNow } = useCart();
 
+  const isSmarten = product.brand === "Smarten";
   const out = product.stock === 0;
 
-  // Calculate discount percentage if compareAt exists
+  // Calculate discount percentage if compareAt exists (never for Smarten)
   const discountPercent =
-    product.compareAt && product.compareAt > product.price
+    !isSmarten && product.compareAt && product.compareAt > product.price
       ? Math.round(((product.compareAt - product.price) / product.compareAt) * 100)
       : null;
 
@@ -147,21 +151,33 @@ export function ProductCard({
             )}
 
             {/* Price & Discount Row (OMSUN Theme) */}
-            <div className="mt-2 flex flex-wrap items-baseline justify-between gap-1">
-              <div className="flex flex-wrap items-baseline gap-1.5">
-                <span className="font-display text-sm sm:text-base font-extrabold text-emerald-700 dark:text-emerald-400">
-                  {formatNPR(product.price)}
+            {isSmarten ? (
+              <div className="mt-2 flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-extrabold text-amber-700 dark:text-amber-300">
+                  <MessageSquare className="size-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>Request a Quote</span>
                 </span>
-                {product.compareAt ? (
-                  <span className="text-[11px] line-through font-mono text-slate-400 dark:text-white/40">
-                    {formatNPR(product.compareAt)}
-                  </span>
-                ) : null}
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                  Price on Request
+                </span>
               </div>
-              <span className="text-[9px] font-bold text-emerald-600/90 dark:text-emerald-400/90 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800/40">
-                13% VAT Incl.
-              </span>
-            </div>
+            ) : (
+              <div className="mt-2 flex flex-wrap items-baseline justify-between gap-1">
+                <div className="flex flex-wrap items-baseline gap-1.5">
+                  <span className="font-display text-sm sm:text-base font-extrabold text-emerald-700 dark:text-emerald-400">
+                    {formatNPR(product.price)}
+                  </span>
+                  {product.compareAt ? (
+                    <span className="text-[11px] line-through font-mono text-slate-400 dark:text-white/40">
+                      {formatNPR(product.compareAt)}
+                    </span>
+                  ) : null}
+                </div>
+                <span className="text-[9px] font-bold text-emerald-600/90 dark:text-emerald-400/90 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800/40">
+                  13% VAT Incl.
+                </span>
+              </div>
+            )}
 
             {/* Star Rating & Stock Availability */}
             <div className="mt-2 flex items-center justify-between text-[10.5px]">
@@ -192,27 +208,51 @@ export function ProductCard({
 
           {/* Bottom Section */}
           <div className="pt-1.5 border-t border-slate-200/60 dark:border-white/10 mt-2">
-            {/* OMSUN DUAL ACTION BUTTONS */}
-            <div className="grid grid-cols-2 gap-1.5 mt-1">
-              <Button
-                disabled={out}
-                onClick={() => addToCart(product, 1)}
-                variant="outline"
-                className="h-9 rounded-xl font-bold text-[10px] sm:text-xs px-1 sm:px-2 transition-all border border-emerald-600 text-emerald-800 hover:bg-emerald-50 bg-emerald-50/50 dark:border-emerald-500/40 dark:text-emerald-300 dark:hover:bg-emerald-500/20 dark:bg-emerald-500/10"
-              >
-                <ShoppingCart className="size-3 mr-1 shrink-0 hidden sm:inline-block" />
-                <span className="truncate">Cart</span>
-              </Button>
+            {isSmarten ? (
+              <div className="grid grid-cols-2 gap-1.5 mt-1">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-9 rounded-xl font-bold text-[10px] sm:text-xs px-1 sm:px-2 border-slate-300 dark:border-white/20 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10"
+                >
+                  <Link to="/product/$id" params={{ id: product.id }}>
+                    <Eye className="size-3 mr-1 shrink-0" />
+                    <span>Details</span>
+                  </Link>
+                </Button>
 
-              <Button
-                disabled={out}
-                onClick={() => buyNow(product, 1)}
-                className="h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 font-extrabold text-[10px] sm:text-xs px-1 sm:px-2 text-white shadow-md transition-all hover:from-emerald-400 hover:to-teal-500 hover:scale-[1.02]"
-              >
-                <Zap className="size-3 mr-1 shrink-0 hidden sm:inline-block" />
-                <span className="truncate">Buy Now</span>
-              </Button>
-            </div>
+                <Button
+                  type="button"
+                  onClick={() => setQuoteModalOpen(true)}
+                  className="h-9 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 font-extrabold text-[10px] sm:text-xs px-1 sm:px-2 text-white shadow-md hover:from-amber-400 hover:to-orange-500 hover:scale-[1.02] transition-all cursor-pointer"
+                >
+                  <MessageSquare className="size-3 mr-1 shrink-0" />
+                  <span className="truncate">Enquire Now</span>
+                </Button>
+              </div>
+            ) : (
+              /* OMSUN DUAL ACTION BUTTONS */
+              <div className="grid grid-cols-2 gap-1.5 mt-1">
+                <Button
+                  disabled={out}
+                  onClick={() => addToCart(product, 1)}
+                  variant="outline"
+                  className="h-9 rounded-xl font-bold text-[10px] sm:text-xs px-1 sm:px-2 transition-all border border-emerald-600 text-emerald-800 hover:bg-emerald-50 bg-emerald-50/50 dark:border-emerald-500/40 dark:text-emerald-300 dark:hover:bg-emerald-500/20 dark:bg-emerald-500/10"
+                >
+                  <ShoppingCart className="size-3 mr-1 shrink-0 hidden sm:inline-block" />
+                  <span className="truncate">Cart</span>
+                </Button>
+
+                <Button
+                  disabled={out}
+                  onClick={() => buyNow(product, 1)}
+                  className="h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 font-extrabold text-[10px] sm:text-xs px-1 sm:px-2 text-white shadow-md transition-all hover:from-emerald-400 hover:to-teal-500 hover:scale-[1.02]"
+                >
+                  <Zap className="size-3 mr-1 shrink-0 hidden sm:inline-block" />
+                  <span className="truncate">Buy Now</span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </article>
@@ -277,21 +317,28 @@ export function ProductCard({
                 </p>
 
                 {/* Price Section */}
-                <div className="mt-4 flex items-baseline gap-3">
-                  <span className="font-display text-2xl font-extrabold text-emerald-700 dark:text-emerald-400">
-                    {formatNPR(product.price)}
-                  </span>
-                  {product.compareAt && (
-                    <span className="text-xs text-slate-400 dark:text-white/40 line-through font-medium">
-                      {formatNPR(product.compareAt)}
+                {isSmarten ? (
+                  <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs sm:text-sm font-extrabold text-amber-700 dark:text-amber-300">
+                    <MessageSquare className="size-4" />
+                    <span>Price Available Upon Official Enquiry</span>
+                  </div>
+                ) : (
+                  <div className="mt-4 flex items-baseline gap-3">
+                    <span className="font-display text-2xl font-extrabold text-emerald-700 dark:text-emerald-400">
+                      {formatNPR(product.price)}
                     </span>
-                  )}
-                  {discountPercent && (
-                    <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-extrabold text-red-500 border border-red-500/20">
-                      -{discountPercent}% OFF
-                    </span>
-                  )}
-                </div>
+                    {product.compareAt && (
+                      <span className="text-xs text-slate-400 dark:text-white/40 line-through font-medium">
+                        {formatNPR(product.compareAt)}
+                      </span>
+                    )}
+                    {discountPercent && (
+                      <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-extrabold text-red-500 border border-red-500/20">
+                        -{discountPercent}% OFF
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Specs List */}
                 <div className="mt-6 space-y-2 border-t border-b border-slate-200 dark:border-white/10 py-4">
@@ -312,96 +359,152 @@ export function ProductCard({
               </div>
 
               {/* Quantity Selector & Dual Actions */}
-              <div className="mt-6 space-y-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-white/70 block">
-                      Quantity:
-                    </span>
-                    <span
-                      className={cn(
-                        "text-[11px] font-extrabold mt-0.5 inline-block",
-                        out
-                          ? "text-rose-500"
+              {isSmarten ? (
+                <div className="mt-6 space-y-3">
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="h-12 rounded-xl border-slate-300 dark:border-white/20 font-bold text-xs"
+                    >
+                      <Link
+                        to="/product/$id"
+                        params={{ id: product.id }}
+                        onClick={() => setQuickViewOpen(false)}
+                      >
+                        <Eye className="size-4 mr-1.5" />
+                        Full Specifications
+                      </Link>
+                    </Button>
+
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setQuickViewOpen(false);
+                        setQuoteModalOpen(true);
+                      }}
+                      className="h-12 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-extrabold text-xs shadow-lg hover:from-amber-400 hover:to-orange-500 cursor-pointer"
+                    >
+                      <MessageSquare className="size-4 mr-1.5" />
+                      Request a Quote
+                    </Button>
+                  </div>
+
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-10 w-full rounded-xl border-slate-300 dark:border-white/20 text-xs font-bold hover:bg-slate-100 dark:hover:bg-white/10"
+                  >
+                    <Link
+                      to="/product/$id"
+                      params={{ id: product.id }}
+                      onClick={() => setQuickViewOpen(false)}
+                      className="flex items-center justify-center gap-1.5"
+                    >
+                      <span>View Full Product Page</span>
+                      <ArrowRight className="size-3.5" />
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-white/70 block">
+                        Quantity:
+                      </span>
+                      <span
+                        className={cn(
+                          "text-[11px] font-extrabold mt-0.5 inline-block",
+                          out
+                            ? "text-rose-500"
+                            : product.stock <= 5
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-emerald-600 dark:text-emerald-400",
+                        )}
+                      >
+                        {out
+                          ? "Currently out of stock"
                           : product.stock <= 5
-                            ? "text-amber-600 dark:text-amber-400"
-                            : "text-emerald-600 dark:text-emerald-400",
-                      )}
-                    >
-                      {out
-                        ? "Currently out of stock"
-                        : product.stock <= 5
-                          ? `Only ${product.stock} units remaining!`
-                          : `${product.stock} units available in stock`}
-                    </span>
+                            ? `Only ${product.stock} units remaining!`
+                            : `${product.stock} units available in stock`}
+                      </span>
+                    </div>
+                    <div className="flex items-center rounded-xl border border-slate-300 dark:border-white/15 bg-slate-100 dark:bg-black/30 p-1">
+                      <button
+                        type="button"
+                        disabled={quantity <= 1}
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        className="grid size-8 place-items-center rounded-lg text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-30 transition-colors"
+                      >
+                        <Minus className="size-3.5" />
+                      </button>
+                      <span className="w-10 text-center font-mono text-sm font-bold">{quantity}</span>
+                      <button
+                        type="button"
+                        disabled={quantity >= (product.stock || 1)}
+                        onClick={() => setQuantity((q) => Math.min(product.stock || 1, q + 1))}
+                        className="grid size-8 place-items-center rounded-lg text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-30 transition-colors"
+                      >
+                        <Plus className="size-3.5" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center rounded-xl border border-slate-300 dark:border-white/15 bg-slate-100 dark:bg-black/30 p-1">
-                    <button
-                      type="button"
-                      disabled={quantity <= 1}
-                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      className="grid size-8 place-items-center rounded-lg text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-30 transition-colors"
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <Button
+                      disabled={out}
+                      onClick={() => {
+                        addToCart(product, quantity);
+                        setQuickViewOpen(false);
+                      }}
+                      className="h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold text-xs hover:bg-emerald-500 hover:text-black"
                     >
-                      <Minus className="size-3.5" />
-                    </button>
-                    <span className="w-10 text-center font-mono text-sm font-bold">{quantity}</span>
-                    <button
-                      type="button"
-                      disabled={quantity >= (product.stock || 1)}
-                      onClick={() => setQuantity((q) => Math.min(product.stock || 1, q + 1))}
-                      className="grid size-8 place-items-center rounded-lg text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-30 transition-colors"
+                      <ShoppingCart className="size-4 mr-1.5" />
+                      Add to Cart
+                    </Button>
+
+                    <Button
+                      disabled={out}
+                      onClick={() => {
+                        setQuickViewOpen(false);
+                        buyNow(product, quantity);
+                      }}
+                      className="h-12 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold text-xs shadow-lg hover:from-orange-400 hover:to-amber-500"
                     >
-                      <Plus className="size-3.5" />
-                    </button>
+                      <Zap className="size-4 mr-1.5" />
+                      Buy Now
+                    </Button>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <Button
-                    disabled={out}
-                    onClick={() => {
-                      addToCart(product, quantity);
-                      setQuickViewOpen(false);
-                    }}
-                    className="h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold text-xs hover:bg-emerald-500 hover:text-black"
-                  >
-                    <ShoppingCart className="size-4 mr-1.5" />
-                    Add to Cart
-                  </Button>
 
                   <Button
-                    disabled={out}
-                    onClick={() => {
-                      setQuickViewOpen(false);
-                      buyNow(product, quantity);
-                    }}
-                    className="h-12 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold text-xs shadow-lg hover:from-orange-400 hover:to-amber-500"
+                    asChild
+                    variant="outline"
+                    className="h-10 w-full rounded-xl border-slate-300 dark:border-white/20 text-xs font-bold hover:bg-slate-100 dark:hover:bg-white/10"
                   >
-                    <Zap className="size-4 mr-1.5" />
-                    Buy Now
+                    <Link
+                      to="/product/$id"
+                      params={{ id: product.id }}
+                      onClick={() => setQuickViewOpen(false)}
+                      className="flex items-center justify-center gap-1.5"
+                    >
+                      <span>View Full Product Page</span>
+                      <ArrowRight className="size-3.5" />
+                    </Link>
                   </Button>
                 </div>
-
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-10 w-full rounded-xl border-slate-300 dark:border-white/20 text-xs font-bold hover:bg-slate-100 dark:hover:bg-white/10"
-                >
-                  <Link
-                    to="/product/$id"
-                    params={{ id: product.id }}
-                    onClick={() => setQuickViewOpen(false)}
-                    className="flex items-center justify-center gap-1.5"
-                  >
-                    <span>View Full Product Page</span>
-                    <ArrowRight className="size-3.5" />
-                  </Link>
-                </Button>
-              </div>
+              )}
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Smarten Quote Enquiry Modal */}
+      <QuoteEnquiryModal
+        open={quoteModalOpen}
+        onOpenChange={setQuoteModalOpen}
+        product={product}
+      />
     </>
   );
 }

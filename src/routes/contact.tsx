@@ -31,14 +31,29 @@ import projectImg from "@/assets/project-nepal.webp";
 import bannerNepal from "@/assets/banner-nepal.webp";
 import heroContactBg from "@/assets/hero-contact-bg.webp";
 
+type ContactSearch = {
+  product?: string | undefined;
+  model?: string | undefined;
+  series?: string | undefined;
+  inquiryType?: string | undefined;
+};
+
 export const Route = createFileRoute("/contact")({
+  validateSearch: (search: Record<string, unknown>): ContactSearch => {
+    return {
+      product: typeof search["product"] === "string" ? search["product"] : undefined,
+      model: typeof search["model"] === "string" ? search["model"] : undefined,
+      series: typeof search["series"] === "string" ? search["series"] : undefined,
+      inquiryType: typeof search["inquiryType"] === "string" ? search["inquiryType"] : undefined,
+    };
+  },
   head: () => ({
     meta: [
-      { title: "Contact Us | OMSUN Solar & Electrical Nepal" },
+      { title: "Contact Us & Request a Quote | OMSUN Solar & Electrical Nepal" },
       {
         name: "description",
         content:
-          "Get in touch with OMSUN Nepal Pvt. Ltd. for commercial solar EPC, residential hybrid installations, solar equipment distribution, NEA net-metering assistance, and technical consultations across Nepal.",
+          "Get in touch with OMSUN Nepal Pvt. Ltd. for commercial solar EPC, residential hybrid installations, solar equipment distribution, Smarten product quotes, and technical consultations across Nepal.",
       },
     ],
   }),
@@ -141,16 +156,21 @@ const faqs = [
 ];
 
 function ContactPage() {
+  const search = Route.useSearch();
+  const defaultMessage = search.product
+    ? `Hello OMSUN Nepal, I would like to request an official quotation and pricing for ${search.product}${search.model ? ` (Model: ${search.model})` : ""}${search.series ? ` [${search.series}]` : ""}. Please provide distributor pricing, warranty details, and delivery timeline.`
+    : "";
+
   /* ── Form State ── */
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
-    company: "",
-    inquiryType: "residential",
-    systemSize: "5kw-15kw",
+    company: search.product ? `Quotation: ${search.product}` : "",
+    inquiryType: search.inquiryType || "wholesale",
+    systemSize: search.model || "5kw-15kw",
     district: "Kathmandu",
-    message: "",
+    message: defaultMessage,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -406,6 +426,28 @@ function ContactPage() {
                         </p>
                       </div>
                     </div>
+
+                    {search.product && (
+                      <div className="mb-6 rounded-2xl border border-[#03C987]/40 bg-[#03C987]/10 p-4 sm:p-5 text-emerald-100 flex items-start gap-3.5">
+                        <div className="size-9 rounded-xl bg-[#03C987]/20 border border-[#03C987]/40 flex items-center justify-center text-[#03C987] shrink-0 mt-0.5">
+                          <Zap className="size-4.5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-[#03C987] bg-[#03C987]/15 px-2 py-0.5 rounded-full mb-1">
+                            Quotation Request
+                          </span>
+                          <h3 className="text-sm sm:text-base font-bold text-white truncate">
+                            {search.product}
+                            {search.model ? (
+                              <span className="text-slate-300 font-normal"> — Model: {search.model}</span>
+                            ) : null}
+                          </h3>
+                          <p className="text-xs text-slate-300 mt-1">
+                            We have automatically configured your request for this product. You can customize the details and quantity in the message below.
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     {submitted ? (
                       <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/40 p-8 text-center">

@@ -952,9 +952,15 @@ export function Navbar() {
                             <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 truncate">
                               {p.name}
                             </h4>
-                            <span className="font-mono text-xs font-bold text-emerald-400 shrink-0">
-                              {formatNPR(p.price)}
-                            </span>
+                            {p.brand === "Smarten" ? (
+                              <span className="text-[10px] font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/30 shrink-0">
+                                Quote on Request
+                              </span>
+                            ) : (
+                              <span className="font-mono text-xs font-bold text-emerald-400 shrink-0">
+                                {formatNPR(p.price)}
+                              </span>
+                            )}
                           </div>
                           <p className="text-xs text-white/50 truncate mt-0.5">{p.tagline}</p>
                         </div>
