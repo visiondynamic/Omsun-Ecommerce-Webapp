@@ -2337,6 +2337,128 @@ app.delete("/api/admin/banners/:id", authMiddleware, adminMiddleware, async (req
 });
 
 /* ═══════════════════════════════════════════════════════════════════ */
+/* TEAM MEMBERS (Public & Admin)                                       */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+// Public endpoint for homepage
+app.get("/api/team", async (_req, res, next) => {
+  try {
+    const rows = await query(
+      "SELECT id, name, position, bio, image, display_order, is_active, created_at, updated_at FROM team_members WHERE is_active = 1 ORDER BY display_order ASC, created_at ASC",
+    );
+    const members = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      position: r.position,
+      bio: r.bio,
+      image: r.image,
+      displayOrder: Number(r.display_order),
+      isActive: Boolean(r.is_active),
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    }));
+    res.json(members);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Admin list of all members (active and inactive)
+app.get("/api/admin/team", authMiddleware, adminMiddleware, async (_req, res, next) => {
+  try {
+    const rows = await query(
+      "SELECT id, name, position, bio, image, display_order, is_active, created_at, updated_at FROM team_members ORDER BY display_order ASC, created_at ASC",
+    );
+    const members = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      position: r.position,
+      bio: r.bio,
+      image: r.image,
+      displayOrder: Number(r.display_order),
+      isActive: Boolean(r.is_active),
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    }));
+    res.json(members);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Admin create team member
+app.post("/api/admin/team", authMiddleware, adminMiddleware, async (req, res, next) => {
+  const { id, name, position, bio, image, displayOrder, isActive } = req.body ?? {};
+  if (!name || !position) {
+    return res.status(400).json({ error: "Name and position/designation are required" });
+  }
+
+  try {
+    const memberId =
+      id || `team-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+    const imgUrl = image || "/images/team/ashish-baral.jpg";
+    const orderNum = displayOrder != null ? Number(displayOrder) : 0;
+    const activeVal = isActive === false ? 0 : 1;
+
+    await query(
+      `INSERT INTO team_members (id, name, position, bio, image, display_order, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [memberId, name.trim(), position.trim(), bio ? bio.trim() : null, imgUrl, orderNum, activeVal],
+    );
+
+    res.status(201).json({ ok: true, id: memberId });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Admin update team member
+app.put("/api/admin/team/:id", authMiddleware, adminMiddleware, async (req, res, next) => {
+  const { name, position, bio, image, displayOrder, isActive } = req.body ?? {};
+  try {
+    const existing = await query("SELECT id FROM team_members WHERE id = ?", [req.params.id]);
+    if (existing.length === 0) return res.status(404).json({ error: "Team member not found" });
+
+    await query(
+      `UPDATE team_members SET
+         name = COALESCE(?, name),
+         position = COALESCE(?, position),
+         bio = COALESCE(?, bio),
+         image = COALESCE(?, image),
+         display_order = COALESCE(?, display_order),
+         is_active = COALESCE(?, is_active)
+       WHERE id = ?`,
+      [
+        name != null ? name.trim() : null,
+        position != null ? position.trim() : null,
+        bio !== undefined ? (bio ? bio.trim() : null) : null,
+        image != null ? image : null,
+        displayOrder != null ? Number(displayOrder) : null,
+        isActive != null ? (isActive ? 1 : 0) : null,
+        req.params.id,
+      ],
+    );
+
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Admin delete team member
+app.delete("/api/admin/team/:id", authMiddleware, adminMiddleware, async (req, res, next) => {
+  try {
+    const existing = await query("SELECT id FROM team_members WHERE id = ?", [req.params.id]);
+    if (existing.length === 0) return res.status(404).json({ error: "Team member not found" });
+
+    await query("DELETE FROM team_members WHERE id = ?", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════════ */
 /* ADMIN — Stats / Analytics                                           */
 /* ═══════════════════════════════════════════════════════════════════ */
 app.get("/api/admin/stats", authMiddleware, adminMiddleware, async (_req, res, next) => {

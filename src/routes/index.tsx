@@ -23,6 +23,7 @@ import { Footer } from "@/components/site/Footer";
 import { Reveal } from "@/components/site/Reveal";
 import { ProductCard } from "@/components/site/ProductCard";
 import { HeroSlider } from "@/components/site/HeroSlider";
+import { TeamSection } from "@/components/site/TeamSection";
 import { partnerBrandLogos } from "@/components/site/PartnerLogos";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
@@ -466,6 +467,9 @@ function Home() {
             </div>
           </div>
         </section>
+
+        {/* EXECUTIVE LEADERSHIP & TEAM MEMBERS */}
+        <TeamSection />
 
         {/* TESTIMONIALS (SECTION 7 — SKY BLUE TO MINT GREEN 💧🍃) */}
         <section className="bg-gradient-to-b from-[#EFF8FF] via-[#EBF5FF] to-[#E5F7EF] py-28 text-[#173226]">

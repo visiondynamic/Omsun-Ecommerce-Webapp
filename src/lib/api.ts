@@ -1,3 +1,5 @@
+import type { TeamMember } from "./teamData";
+
 const API_BASE = import.meta.env["VITE_API_URL"] || "http://localhost:4000";
 
 class ApiClient {
@@ -519,6 +521,33 @@ class ApiClient {
 
   async deleteBanner(id: string) {
     return this.request<{ ok: boolean }>(`/api/admin/banners/${id}`, { method: "DELETE" });
+  }
+
+  /* ── Team Members ── */
+  async getTeam() {
+    return this.request<TeamMember[]>("/api/team");
+  }
+
+  async getAdminTeam() {
+    return this.request<TeamMember[]>("/api/admin/team");
+  }
+
+  async createTeamMember(member: Partial<TeamMember>) {
+    return this.request<{ ok: boolean; id: string }>("/api/admin/team", {
+      method: "POST",
+      body: JSON.stringify(member),
+    });
+  }
+
+  async updateTeamMember(id: string, member: Partial<TeamMember>) {
+    return this.request<{ ok: boolean }>(`/api/admin/team/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(member),
+    });
+  }
+
+  async deleteTeamMember(id: string) {
+    return this.request<{ ok: boolean }>(`/api/admin/team/${id}`, { method: "DELETE" });
   }
 
   /* ── Stats ── */

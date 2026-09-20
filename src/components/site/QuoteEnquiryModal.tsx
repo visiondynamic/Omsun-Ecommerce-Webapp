@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/products";
 
 interface QuoteEnquiryModalProps {
@@ -74,7 +75,7 @@ export function QuoteEnquiryModal({ open, onOpenChange, product }: QuoteEnquiryM
 
     setIsSubmitting(true);
     try {
-      const fullMessage = `[PRODUCT QUOTE REQUEST - SMARTEN]
+      const fullMessage = `[PRODUCT QUOTE REQUEST - ${product.brand.toUpperCase()}]
 Product: ${product.name}
 Model: ${product.model || "N/A"}
 Series: ${product.series || "N/A"}
@@ -92,7 +93,7 @@ ${message}`;
         phone: phone.trim(),
         company: `${requirementType} - Qty: ${quantity}`,
         inquiryType: "wholesale",
-        systemSize: product.capacity || product.model || "Smarten Power",
+        systemSize: product.capacity || product.model || `${product.brand} System`,
         district: district.trim(),
         message: fullMessage,
       });
@@ -108,6 +109,8 @@ ${message}`;
     }
   };
 
+  const isPowerOne = product.brand === "Power-One";
+
   const whatsappMessage = encodeURIComponent(
     `Hello OMSUN Nepal, I am interested in requesting an official quote for ${product.name} (Model: ${product.model || "N/A"}). Please provide price and stock availability.`,
   );
@@ -118,9 +121,16 @@ ${message}`;
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border-slate-200 dark:border-white/15 bg-white dark:bg-[#061e16] p-6 sm:p-8 shadow-2xl text-foreground">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wider",
+                isPowerOne
+                  ? "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                  : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+              )}
+            >
               <Sparkles className="size-3.5" />
-              <span>Official Smarten Product Quotation</span>
+              <span>Official {product.brand} Product Quotation</span>
             </span>
           </div>
           <DialogTitle className="font-display text-xl sm:text-2xl font-extrabold text-foreground">
@@ -140,8 +150,15 @@ ${message}`;
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5 mb-1">
-              <span className="rounded bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.2 text-[9px] font-bold text-amber-700 dark:text-amber-300 uppercase">
-                Smarten
+              <span
+                className={cn(
+                  "rounded border px-1.5 py-0.2 text-[9px] font-bold uppercase",
+                  isPowerOne
+                    ? "bg-blue-500/15 border-blue-500/30 text-blue-700 dark:text-blue-300"
+                    : "bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300",
+                )}
+              >
+                {product.brand}
               </span>
               {product.series && (
                 <span className="rounded bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 text-[9px] font-semibold text-emerald-700 dark:text-emerald-300">
@@ -157,7 +174,12 @@ ${message}`;
             <h4 className="font-bold text-xs sm:text-sm text-foreground truncate">
               {product.name}
             </h4>
-            <div className="mt-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+            <div
+              className={cn(
+                "mt-0.5 text-[11px] font-bold",
+                isPowerOne ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400",
+              )}
+            >
               Pricing: Available Upon Official Enquiry
             </div>
           </div>
@@ -307,7 +329,12 @@ ${message}`;
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-12 w-full rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:via-orange-400 hover:to-amber-500 text-white font-extrabold text-sm shadow-xl transition-all cursor-pointer"
+                className={cn(
+                  "h-12 w-full rounded-xl text-white font-extrabold text-sm shadow-xl transition-all cursor-pointer",
+                  isPowerOne
+                    ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:via-indigo-500 hover:to-blue-600"
+                    : "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:via-orange-400 hover:to-amber-500",
+                )}
               >
                 {isSubmitting ? (
                   <span>Submitting Quotation Request...</span>

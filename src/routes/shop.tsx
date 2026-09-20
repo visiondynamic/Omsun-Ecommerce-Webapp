@@ -73,16 +73,16 @@ export const Route = createFileRoute("/shop")({
   },
   head: () => ({
     meta: [
-      { title: "Shop Solar, UPS, Stabilizers & Security | OMSUN Nepal" },
+      { title: "Product Catalog — Solar, UPS, Stabilizers & Security | OMSUN Nepal" },
       {
         name: "description",
         content:
-          "Browse OMSUN Nepal's certified product catalog: Online & Offline UPS, Servo & Oil Cooled Stabilizers, CCTV Security, Hybrid Solar systems and LiFePO4 Battery Storage.",
+          "Browse OMSUN Nepal's certified product catalog: Power-One & Smarten Online UPS, Servo & Oil Cooled Stabilizers, CCTV Security, Hybrid Solar systems and LiFePO4 Battery Storage.",
       },
-      { property: "og:title", content: "Shop Solar, UPS, Stabilizers & Security | OMSUN Nepal" },
+      { property: "og:title", content: "Product Catalog — Solar, UPS, Stabilizers & Security | OMSUN Nepal" },
       {
         property: "og:description",
-        content: "Filter by category, subcategory, brand, price and availability. Nationwide delivery in Nepal.",
+        content: "Filter by category, subcategory, brand, and series. Nationwide delivery in Nepal.",
       },
     ],
   }),
@@ -256,6 +256,24 @@ function Shop() {
       image: stabilizerImg,
       badge: "Voltage Control",
       tag: "Servo, AVR & Industrial",
+    },
+    {
+      name: "Power-One UPS",
+      categoryKey: "Power-One UPS",
+      icon: Zap,
+      count: allProducts.filter((p) => p.category === "Power-One UPS").length,
+      image: "/images/products/power-one/pmp_dropdown.png",
+      badge: "PMP & PTM",
+      tag: "True Online 3-Phase UPS",
+    },
+    {
+      name: "Power-One Solar",
+      categoryKey: "Power-One Solar",
+      icon: Sun,
+      count: allProducts.filter((p) => p.category === "Power-One Solar").length,
+      image: "/images/products/power-one/on_grid_dropdown.png",
+      badge: "On-Grid & Hybrid",
+      tag: "Solar Inverters & EPC Solutions",
     },
     {
       name: "UPS",

@@ -210,6 +210,51 @@ export async function setup() {
     console.log("✓ Seeded default coupons (OMSUN10, WELCOME5K)");
   }
 
+  // 4. Seed Executive Team Members (Ashish Baral - CEO, Sudhir Bhattarai - CTO, Mukhul Ghimire - CFO)
+  const initialTeam = [
+    {
+      id: "team-ashish-baral",
+      name: "Ashish Baral",
+      position: "CEO",
+      bio: "Visionary executive leading OMSUN Nepal's strategic expansion, energy infrastructure partnerships, and corporate governance across Nepal.",
+      image: "/images/team/ashish-baral.jpg",
+      display_order: 1,
+      is_active: 1,
+    },
+    {
+      id: "team-sudhir-bhattarai",
+      name: "Sudhir Bhattarai",
+      position: "CTO",
+      bio: "Technology and engineering strategist overseeing power electronics architectures, solar EPC technical compliance, and smart grid automation.",
+      image: "/images/team/sudhir-bhattarai.jpg",
+      display_order: 2,
+      is_active: 1,
+    },
+    {
+      id: "team-mukhul-ghimire",
+      name: "Mukhul Ghimire",
+      position: "CFO",
+      bio: "Chief Financial Officer managing fiscal integrity, commercial risk assessment, vendor capitalization, and project financing for utility installations.",
+      image: "/images/team/mukhul-ghimire.jpg",
+      display_order: 3,
+      is_active: 1,
+    },
+  ];
+
+  for (const m of initialTeam) {
+    await conn.query(
+      `INSERT INTO team_members (id, name, position, bio, image, display_order, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         name = VALUES(name),
+         position = VALUES(position),
+         bio = VALUES(bio),
+         display_order = VALUES(display_order)`,
+      [m.id, m.name, m.position, m.bio, m.image, m.display_order, m.is_active]
+    );
+  }
+  console.log("✓ Seeded executive team members (Ashish Baral - CEO, Sudhir Bhattarai - CTO, Mukhul Ghimire - CFO).");
+
   await conn.end();
   console.log("🎉 Database setup & seeding complete! You are ready to go.");
 }

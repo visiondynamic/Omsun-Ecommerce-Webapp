@@ -58,7 +58,7 @@ import heroImg from "@/assets/banner-solar-farm.webp";
 
 const links = [
   { label: "Home", to: "/", color: "#3BB273", glow: "rgba(59,178,115,0.4)", hasMenu: false },
-  { label: "Shop", to: "/shop", color: "#2F80ED", glow: "rgba(47,128,237,0.4)", hasMenu: true },
+  { label: "Product", to: "/shop", color: "#2F80ED", glow: "rgba(47,128,237,0.4)", hasMenu: true },
   {
     label: "Solar Solutions",
     to: "/solar-solutions",
@@ -95,7 +95,7 @@ export function Navbar() {
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
   const [pillColor, setPillColor] = useState("rgba(59,178,115,0.08)");
-  const [activeMenu, setActiveMenu] = useState<"Shop" | "Solar Solutions" | "Projects" | null>(
+  const [activeMenu, setActiveMenu] = useState<"Product" | "Solar Solutions" | "Projects" | null>(
     null,
   );
 
@@ -155,7 +155,7 @@ export function Navbar() {
   }, []);
 
   function handleMenuEnter(menuName: string) {
-    if (menuName === "Shop" || menuName === "Solar Solutions" || menuName === "Projects") {
+    if (menuName === "Product" || menuName === "Solar Solutions" || menuName === "Projects") {
       if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
       setActiveMenu(menuName);
     }
@@ -485,18 +485,18 @@ export function Navbar() {
               </button>
             </div>
 
-            {/* ═══════════════ 1. SHOP MEGA MENU POP-OVER ═══════════════ */}
+            {/* ═══════════════ 1. PRODUCT MEGA MENU POP-OVER ═══════════════ */}
             <div
               className={cn(
                 "absolute inset-x-0 top-full z-50 mt-3 w-full pt-1 transition-all duration-300 ease-out",
-                activeMenu === "Shop"
+                activeMenu === "Product"
                   ? "pointer-events-auto visible translate-y-0 opacity-100 scale-100"
                   : "pointer-events-none invisible -translate-y-2 opacity-0 scale-95",
               )}
-              onMouseEnter={() => handleMenuEnter("Shop")}
+              onMouseEnter={() => handleMenuEnter("Product")}
               onMouseLeave={handleMenuLeave}
             >
-              {activeMenu === "Shop" && (
+              {activeMenu === "Product" && (
                 <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#051711]/98 p-7 shadow-[0_35px_80px_-10px_rgba(0,0,0,0.9)] backdrop-blur-3xl">
                   <div className="grid grid-cols-12 gap-8 items-stretch">
                     {/* Left Column: Feature Highlight & Intro */}
@@ -547,36 +547,36 @@ export function Navbar() {
                     <div className="col-span-8 grid grid-cols-3 gap-3.5 pl-2">
                       {[
                         {
+                          name: "Power-One UPS",
+                          desc: "PMP & PTM 3-Phase Online",
+                          icon: Zap,
+                          color: "#2563eb",
+                          image: "/images/products/power-one/pmp_dropdown.png",
+                          searchParams: { category: "Power-One UPS" },
+                        },
+                        {
+                          name: "Power-One Solar",
+                          desc: "On-Grid & Hybrid Inverters",
+                          icon: Sun,
+                          color: "#0284c7",
+                          image: "/images/products/power-one/on_grid_dropdown.png",
+                          searchParams: { category: "Power-One Solar" },
+                        },
+                        {
+                          name: "Smarten Power",
+                          desc: "Bravo, Superb & Prime",
+                          icon: Zap,
+                          color: "#f59e0b",
+                          image: "/images/products/smarten/bravo-900.webp",
+                          searchParams: { brand: "Smarten" },
+                        },
+                        {
                           name: "Stabilizer",
                           desc: "Servo, AVR & Industrial",
                           icon: Gauge,
                           color: "#10b981",
                           image: stabilizerImg,
                           searchParams: { category: "Stabilizer" },
-                        },
-                        {
-                          name: "UPS",
-                          desc: "Online LF & Industrial",
-                          icon: Zap,
-                          color: "#3b82f6",
-                          image: inverterImg,
-                          searchParams: { category: "UPS" },
-                        },
-                        {
-                          name: "Solar",
-                          desc: "Panels, Inverters & Kits",
-                          icon: Sun,
-                          color: "#f59e0b",
-                          image: panelImg,
-                          searchParams: { category: "Solar" },
-                        },
-                        {
-                          name: "Battery",
-                          desc: "LiFePO4 & Tubular",
-                          icon: BatteryCharging,
-                          color: "#06b6d4",
-                          image: batteryImg,
-                          searchParams: { category: "Battery" },
                         },
                         {
                           name: "Security",
@@ -952,7 +952,7 @@ export function Navbar() {
                             <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 truncate">
                               {p.name}
                             </h4>
-                            {p.brand === "Smarten" ? (
+                            {p.brand === "Smarten" || p.brand === "Power-One" ? (
                               <span className="text-[10px] font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/30 shrink-0">
                                 Quote on Request
                               </span>
@@ -1131,7 +1131,7 @@ export function Navbar() {
           <span className="grid size-6 place-items-center">
             <ShoppingBag className="size-4.5" />
           </span>
-          <span>Shop</span>
+          <span>Product</span>
         </Link>
 
         <button

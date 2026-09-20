@@ -49,10 +49,10 @@ export const Route = createFileRoute("/product/$id")({
   },
   head: ({ loaderData }) => {
     const p = loaderData?.product;
-    const isSmarten = p?.brand === "Smarten";
+    const isQuoteOnly = p?.brand === "Smarten" || p?.brand === "Power-One" || p?.price === 0;
     const title = p ? `${p.name} | OMSUN Nepal` : "Product | OMSUN Nepal";
     const description = p
-      ? isSmarten
+      ? isQuoteOnly
         ? `${p.name}${p.model ? ` (${p.model})` : ""}. Request an official quotation and distributor pricing from OMSUN Nepal. Nationwide delivery, manufacturer warranty, and certified technical support across Nepal.`
         : `${p.tagline} — ${formatNPR(p.price)}. Nationwide delivery, warranty and installation support from OMSUN Nepal.`
       : "OMSUN Nepal product details.";
@@ -139,6 +139,8 @@ function ProductPage() {
       product.subcategory?.toLowerCase().includes("servo") ||
       product.name.toLowerCase().includes("servo"));
   const isSmarten = product.brand === "Smarten";
+  const isPowerOne = product.brand === "Power-One";
+  const isQuoteOnly = isSmarten || isPowerOne || product.price === 0;
 
   const currentImage = gallery[active] || gallery[0] || product.image;
 
@@ -186,7 +188,7 @@ function ProductPage() {
               </Link>
               <span>/</span>
               <Link to="/shop" className="hover:text-emerald-300 transition-colors">
-                Shop
+                Product
               </Link>
               <span>/</span>
               <Link
@@ -217,7 +219,9 @@ function ProductPage() {
                         "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider border",
                         isSmarten
                           ? "border-amber-400/40 bg-amber-400/15 text-amber-300"
-                          : "border-sky-400/30 bg-sky-400/10 text-sky-300",
+                          : isPowerOne
+                            ? "border-blue-400/40 bg-blue-400/15 text-blue-300"
+                            : "border-sky-400/30 bg-sky-400/10 text-sky-300",
                       )}
                     >
                       {product.brand}
@@ -260,10 +264,10 @@ function ProductPage() {
                     <span>Official Brochure (PDF)</span>
                   </a>
                 )}
-                {isSmarten ? (
+                {isQuoteOnly ? (
                   <Button
                     onClick={() => setQuoteModalOpen(true)}
-                    className="rounded-2xl border border-emerald-400/40 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 px-6 py-2.5 text-sm font-extrabold text-white shadow-xl shadow-emerald-950/30 backdrop-blur-md transition-all hover:scale-105"
+                    className="rounded-2xl border border-emerald-400/40 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 px-6 py-2.5 text-sm font-extrabold text-white shadow-xl shadow-emerald-950/30 backdrop-blur-md transition-all hover:scale-105 cursor-pointer"
                   >
                     <MessageSquare className="size-4 mr-1.5" />
                     <span>Request a Quote</span>
@@ -416,7 +420,7 @@ function ProductPage() {
                           <div>
                             <h4 className="font-bold text-foreground">Official Product Documentation</h4>
                             <p className="text-xs text-muted-foreground">
-                              Download official Smarten specifications sheet and manufacturer brochure
+                              Download official {product.brand} specifications sheet and manufacturer brochure
                             </p>
                           </div>
                           <a
@@ -479,7 +483,7 @@ function ProductPage() {
                 <span className="text-muted-foreground">· 128 verified reviews</span>
               </div>
 
-              {isSmarten ? (
+              {isQuoteOnly ? (
                 <div className="surface-card mt-8 p-7 rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-card to-emerald-950/10 shadow-xl">
                   <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-200/80 dark:border-white/10">
                     <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
@@ -499,14 +503,14 @@ function ProductPage() {
                       Price on Request
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                      Official Smarten distributor and bulk project rates available for Nepal. Submit your inquiry to receive personalized pricing, warranty terms, and delivery timeline.
+                      Official {product.brand} distributor and bulk project rates available for Nepal. Submit your inquiry to receive personalized pricing, warranty terms, and delivery timeline.
                     </p>
                   </div>
 
                   <div className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/20 p-3.5 text-xs space-y-2 text-foreground">
                     <div className="flex items-center gap-2 font-medium">
                       <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
-                      <span>Authorized Smarten Partner & Direct Importer</span>
+                      <span>Authorized {product.brand} Partner & Direct Importer</span>
                     </div>
                     <div className="flex items-center gap-2 font-medium">
                       <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
@@ -545,7 +549,7 @@ function ProductPage() {
                             product: product.name,
                             model: product.model,
                             series: product.series,
-                            inquiryType: "smarten-quote",
+                            inquiryType: isPowerOne ? "powerone-quote" : "smarten-quote",
                           }}
                         >
                           <ExternalLink className="size-3.5" />
@@ -746,11 +750,11 @@ function ProductPage() {
 
         {/* ── MOBILE STICKY BOTTOM ACTION BAR (Daraz/Amazon Style) ── */}
         <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden border-t border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#071f17]/95 p-3 backdrop-blur-xl shadow-2xl flex items-center gap-2.5">
-          {isSmarten ? (
+          {isQuoteOnly ? (
             <>
               <div className="min-w-0 flex-1">
                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Smarten Product
+                  {product.brand} Product
                 </div>
                 <div className="text-xs sm:text-sm font-extrabold text-[#38B46A] truncate">
                   Official Quote on Request

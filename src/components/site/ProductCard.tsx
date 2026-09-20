@@ -34,12 +34,13 @@ export function ProductCard({
   const [quantity, setQuantity] = useState(1);
   const { addToCart, buyNow } = useCart();
 
-  const isSmarten = product.brand === "Smarten";
+  const isQuoteOnly = product.brand === "Smarten" || product.brand === "Power-One" || product.price === 0;
+  const isPowerOne = product.brand === "Power-One";
   const out = product.stock === 0;
 
-  // Calculate discount percentage if compareAt exists (never for Smarten)
+  // Calculate discount percentage if compareAt exists (never for quote-only brands)
   const discountPercent =
-    !isSmarten && product.compareAt && product.compareAt > product.price
+    !isQuoteOnly && product.compareAt && product.compareAt > product.price
       ? Math.round(((product.compareAt - product.price) / product.compareAt) * 100)
       : null;
 
@@ -151,10 +152,22 @@ export function ProductCard({
             )}
 
             {/* Price & Discount Row (OMSUN Theme) */}
-            {isSmarten ? (
+            {isQuoteOnly ? (
               <div className="mt-2 flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-extrabold text-amber-700 dark:text-amber-300">
-                  <MessageSquare className="size-3.5 text-amber-600 dark:text-amber-400" />
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-extrabold",
+                    isPowerOne
+                      ? "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                      : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+                  )}
+                >
+                  <MessageSquare
+                    className={cn(
+                      "size-3.5",
+                      isPowerOne ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400",
+                    )}
+                  />
                   <span>Request a Quote</span>
                 </span>
                 <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
@@ -208,7 +221,7 @@ export function ProductCard({
 
           {/* Bottom Section */}
           <div className="pt-1.5 border-t border-slate-200/60 dark:border-white/10 mt-2">
-            {isSmarten ? (
+            {isQuoteOnly ? (
               <div className="grid grid-cols-2 gap-1.5 mt-1">
                 <Button
                   asChild
@@ -224,7 +237,12 @@ export function ProductCard({
                 <Button
                   type="button"
                   onClick={() => setQuoteModalOpen(true)}
-                  className="h-9 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 font-extrabold text-[10px] sm:text-xs px-1 sm:px-2 text-white shadow-md hover:from-amber-400 hover:to-orange-500 hover:scale-[1.02] transition-all cursor-pointer"
+                  className={cn(
+                    "h-9 rounded-xl font-extrabold text-[10px] sm:text-xs px-1 sm:px-2 text-white shadow-md hover:scale-[1.02] transition-all cursor-pointer",
+                    isPowerOne
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
+                      : "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
+                  )}
                 >
                   <MessageSquare className="size-3 mr-1 shrink-0" />
                   <span className="truncate">Enquire Now</span>
@@ -317,8 +335,15 @@ export function ProductCard({
                 </p>
 
                 {/* Price Section */}
-                {isSmarten ? (
-                  <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs sm:text-sm font-extrabold text-amber-700 dark:text-amber-300">
+                {isQuoteOnly ? (
+                  <div
+                    className={cn(
+                      "mt-4 inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs sm:text-sm font-extrabold",
+                      isPowerOne
+                        ? "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                        : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+                    )}
+                  >
                     <MessageSquare className="size-4" />
                     <span>Price Available Upon Official Enquiry</span>
                   </div>
@@ -359,7 +384,7 @@ export function ProductCard({
               </div>
 
               {/* Quantity Selector & Dual Actions */}
-              {isSmarten ? (
+              {isQuoteOnly ? (
                 <div className="mt-6 space-y-3">
                   <div className="grid grid-cols-2 gap-2.5">
                     <Button
@@ -383,7 +408,12 @@ export function ProductCard({
                         setQuickViewOpen(false);
                         setQuoteModalOpen(true);
                       }}
-                      className="h-12 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-extrabold text-xs shadow-lg hover:from-amber-400 hover:to-orange-500 cursor-pointer"
+                      className={cn(
+                        "h-12 rounded-xl text-white font-extrabold text-xs shadow-lg cursor-pointer",
+                        isPowerOne
+                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
+                          : "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
+                      )}
                     >
                       <MessageSquare className="size-4 mr-1.5" />
                       Request a Quote

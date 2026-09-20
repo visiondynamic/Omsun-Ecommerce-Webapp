@@ -45,6 +45,7 @@ export {
 };
 
 import { smartenFallbackProducts } from "@/lib/smartenData";
+import { powerOneFallbackProducts } from "@/lib/powerOneData";
 
 export type Product = {
   id: string;
@@ -174,6 +175,26 @@ export const PRODUCT_TAXONOMY: CategoryStructure[] = [
       "Industrial Online UPS",
       "Online UPS",
       "Modular UPS",
+    ],
+  },
+  {
+    name: "Power-One UPS",
+    slug: "power-one-ups",
+    skuPrefix: "PO-UPS",
+    description: "Enterprise 3-phase and single-phase double-conversion online UPS systems with galvanic isolation by Power-One.",
+    subcategories: ["PMP Series", "PTM Series"],
+  },
+  {
+    name: "Power-One Solar",
+    slug: "power-one-solar",
+    skuPrefix: "PO-SLR",
+    description: "Grid-tie inverters (1kW to 250kW), multi-megawatt hybrid systems, rugged off-grid inverters, and solar pump solutions by Power-One.",
+    subcategories: [
+      "On-Grid Inverters",
+      "Hybrid Inverters",
+      "Off-Grid Inverters",
+      "Solar Power Solutions",
+      "Solar Pump / Controllers",
     ],
   },
   {
@@ -1101,6 +1122,7 @@ const baseFallbackProducts: Product[] = [
 export const fallbackProducts: Product[] = [
   ...baseFallbackProducts,
   ...smartenFallbackProducts,
+  ...powerOneFallbackProducts,
 ];
 
 const API_BASE =

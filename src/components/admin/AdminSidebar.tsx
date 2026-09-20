@@ -16,6 +16,7 @@ import {
   ChevronRight,
   ShieldCheck,
   Radio,
+  UserCheck,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -32,6 +33,7 @@ export type AdminSection =
   | "coupons"
   | "reports"
   | "partners"
+  | "team"
   | "settings";
 
 interface AdminSidebarProps {
@@ -93,6 +95,7 @@ export function AdminSidebar({
     { id: "coupons", label: "Coupons / Promos", icon: Ticket },
     { id: "reports", label: "Reports & Analytics", icon: BarChart3 },
     { id: "partners", label: "Partner Brands", icon: Handshake },
+    { id: "team", label: "Team Members", icon: UserCheck },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 

@@ -27,6 +27,7 @@ import {
   TrendingUp,
   AlertTriangle,
   Eye,
+  EyeOff,
   Edit,
   Copy,
   Trash2,
@@ -45,8 +46,10 @@ import {
   Phone,
   Inbox,
   MessageSquare,
-  ExternalLink,
   FileSpreadsheet,
+  ArrowUp,
+  ArrowDown,
+  UserCheck,
 } from "lucide-react";
 import {
   AreaChart,
@@ -107,6 +110,9 @@ import { StockEditModal } from "@/components/admin/StockEditModal";
 import { CouponFormModal } from "@/components/admin/CouponFormModal";
 import { BannerEditModal } from "@/components/admin/BannerEditModal";
 import { PartnerFormModal } from "@/components/admin/PartnerFormModal";
+import { TeamMemberModal } from "@/components/admin/TeamMemberModal";
+import type { TeamMember } from "@/lib/teamData";
+import { initialFallbackTeam } from "@/lib/teamData";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -209,6 +215,16 @@ function AdminDashboardPage() {
     },
     staleTime: 2 * 60 * 1000,
   });
+
+  // Fetch team members from API
+  const { data: apiTeamList } = useQuery<TeamMember[]>({
+    queryKey: ["admin-team"],
+    queryFn: async () => {
+      return await api.getAdminTeam();
+    },
+    staleTime: 60 * 1000,
+  });
+  const effectiveTeam: TeamMember[] = apiTeamList ?? initialFallbackTeam;
 
   // Fetch stats from API
   const { data: apiStats } = useQuery({
@@ -321,8 +337,11 @@ function AdminDashboardPage() {
   const [selectedStockProduct, setSelectedStockProduct] = useState<Product | null>(null);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
-  const [selectedBannerForEdit, setSelectedBannerForEdit] = useState<AdminBanner | null>(null);
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [selectedTeamMemberForEdit, setSelectedTeamMemberForEdit] = useState<TeamMember | null>(null);
+  const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null);
+  const [teamSearchQuery, setTeamSearchQuery] = useState("");
 
   // Calculated Telemetry
   const totalRevenue =
@@ -651,6 +670,66 @@ function AdminDashboardPage() {
     setNotificationsList((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   };
 
+  // Team Member Handlers
+  const handleSaveTeamMember = async (member: Partial<TeamMember>) => {
+    try {
+      if (member.id && effectiveTeam.some((m) => m.id === member.id)) {
+        await api.updateTeamMember(member.id, member);
+        toast.success(`Team member "${member.name}" updated!`);
+      } else {
+        await api.createTeamMember(member);
+        toast.success(`Team member "${member.name}" created!`);
+      }
+      queryClient.invalidateQueries({ queryKey: ["admin-team"] });
+      queryClient.invalidateQueries({ queryKey: ["team"] });
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to save team member");
+      throw err;
+    }
+  };
+
+  const handleDeleteTeamMember = async (id: string, name: string) => {
+    try {
+      await api.deleteTeamMember(id);
+      queryClient.invalidateQueries({ queryKey: ["admin-team"] });
+      queryClient.invalidateQueries({ queryKey: ["team"] });
+      setMemberToDelete(null);
+      toast.success(`Team member "${name}" removed`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete team member");
+    }
+  };
+
+  const handleToggleTeamMemberVisibility = async (
+    id: string,
+    currentStatus: boolean,
+    name: string,
+  ) => {
+    try {
+      await api.updateTeamMember(id, { isActive: !currentStatus });
+      queryClient.invalidateQueries({ queryKey: ["admin-team"] });
+      queryClient.invalidateQueries({ queryKey: ["team"] });
+      toast.success(
+        !currentStatus
+          ? `"${name}" is now live on the homepage`
+          : `"${name}" hidden from homepage`,
+      );
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update visibility");
+    }
+  };
+
+  const handleReorderTeamMember = async (id: string, newOrder: number) => {
+    try {
+      await api.updateTeamMember(id, { displayOrder: newOrder });
+      queryClient.invalidateQueries({ queryKey: ["admin-team"] });
+      queryClient.invalidateQueries({ queryKey: ["team"] });
+      toast.success("Display order updated");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update order");
+    }
+  };
+
   // Dynamic Header Action Button
   const handleHeaderQuickAction = () => {
     switch (activeSection) {
@@ -663,6 +742,10 @@ function AdminDashboardPage() {
         break;
       case "partners":
         setIsPartnerModalOpen(true);
+        break;
+      case "team":
+        setSelectedTeamMemberForEdit(null);
+        setIsTeamModalOpen(true);
         break;
       case "inquiries":
         exportInquiriesCsv(effectiveContactMessages);
@@ -3310,6 +3393,245 @@ function AdminDashboardPage() {
           )}
 
           {/* ════════════════════════════════════════════════════════════ */}
+          {/* SECTION 11: TEAM MEMBERS */}
+          {/* ════════════════════════════════════════════════════════════ */}
+          {activeSection === "team" && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-display font-extrabold text-lg text-[#173226] dark:text-white flex items-center gap-2">
+                    <UserCheck className="size-5 text-[#38B46A]" />
+                    Executive & Core Leadership Team
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Manage executive profiles, designations, headshots, and display ordering on the homepage.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="relative">
+                    <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      placeholder="Search member or role..."
+                      value={teamSearchQuery}
+                      onChange={(e) => setTeamSearchQuery(e.target.value)}
+                      className="pl-8 h-9 text-xs w-48 sm:w-56 rounded-xl border-slate-200 dark:border-white/10"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setSelectedTeamMemberForEdit(null);
+                      setIsTeamModalOpen(true);
+                    }}
+                    className="h-9 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white text-xs font-extrabold gap-1.5 cursor-pointer hover:scale-105 transition-transform"
+                  >
+                    <Plus className="size-4" /> Add Member
+                  </Button>
+                </div>
+              </div>
+
+              {/* Metrics */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex items-center gap-3">
+                  <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                    <UserCheck className="size-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Total Team Members</span>
+                    <span className="text-xl font-extrabold text-[#173226] dark:text-white">{effectiveTeam.length}</span>
+                  </div>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex items-center gap-3">
+                  <div className="size-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                    <Eye className="size-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Active On Homepage</span>
+                    <span className="text-xl font-extrabold text-[#173226] dark:text-white">
+                      {effectiveTeam.filter((m) => m.isActive !== false).length}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex items-center gap-3">
+                  <div className="size-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                    <ShieldCheck className="size-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">C-Suite & Officers</span>
+                    <span className="text-xl font-extrabold text-[#173226] dark:text-white">
+                      {effectiveTeam.filter((m) => /ceo|cto|cfo|chief|director/i.test(m.position)).length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Members Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {effectiveTeam
+                  .filter((m) => {
+                    if (!teamSearchQuery.trim()) return true;
+                    const q = teamSearchQuery.toLowerCase();
+                    return m.name.toLowerCase().includes(q) || m.position.toLowerCase().includes(q);
+                  })
+                  .map((member, index, filteredArr) => {
+                    const isFirst = index === 0;
+                    const isLast = index === filteredArr.length - 1;
+
+                    return (
+                      <div
+                        key={member.id}
+                        className="group relative rounded-3xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 p-5 hover:border-[#38B46A]/50 hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                      >
+                        {/* Top: Image & Status */}
+                        <div>
+                          <div className="flex items-start justify-between gap-3 mb-4">
+                            <div className="relative">
+                              <div className="size-20 rounded-2xl overflow-hidden bg-slate-100 dark:bg-white/10 border-2 border-slate-200/60 dark:border-white/10 shadow-sm flex items-center justify-center">
+                                {member.image ? (
+                                  <img
+                                    src={member.image}
+                                    alt={member.name}
+                                    className="size-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                                    onError={(e) => {
+                                      (e.target as HTMLElement).style.display = "none";
+                                    }}
+                                  />
+                                ) : (
+                                  <span className="text-lg font-black text-slate-400">
+                                    {member.name.charAt(0)}
+                                  </span>
+                                )}
+                              </div>
+                              <span
+                                className={`absolute -bottom-1 -right-1 size-4 rounded-full border-2 border-white dark:border-[#0c1813] ${
+                                  member.isActive !== false ? "bg-emerald-500" : "bg-slate-400"
+                                }`}
+                                title={member.isActive !== false ? "Active on Homepage" : "Hidden"}
+                              />
+                            </div>
+
+                            <div className="flex flex-col items-end gap-1.5">
+                              <span
+                                className={`text-[10px] uppercase font-black tracking-wider px-2.5 py-0.5 rounded-full border ${
+                                  member.isActive !== false
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400"
+                                    : "bg-slate-100 text-slate-500 border-slate-200 dark:bg-white/5 dark:text-slate-400"
+                                }`}
+                              >
+                                {member.isActive !== false ? "Live on Site" : "Hidden"}
+                              </span>
+
+                              {/* Order Controls */}
+                              <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/10 rounded-lg p-0.5">
+                                <span className="text-[10px] font-mono font-bold px-1.5 text-slate-500 dark:text-slate-400">
+                                  #{member.displayOrder ?? index + 1}
+                                </span>
+                                <button
+                                  type="button"
+                                  title="Move Up"
+                                  disabled={isFirst}
+                                  onClick={() => handleReorderTeamMember(member.id, (member.displayOrder ?? index + 1) - 1)}
+                                  className="size-5 rounded flex items-center justify-center hover:bg-white dark:hover:bg-white/20 text-slate-600 dark:text-slate-300 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+                                >
+                                  <ArrowUp className="size-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  title="Move Down"
+                                  disabled={isLast}
+                                  onClick={() => handleReorderTeamMember(member.id, (member.displayOrder ?? index + 1) + 1)}
+                                  className="size-5 rounded flex items-center justify-center hover:bg-white dark:hover:bg-white/20 text-slate-600 dark:text-slate-300 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+                                >
+                                  <ArrowDown className="size-3" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Details */}
+                          <div className="space-y-1.5 mb-4">
+                            <h4 className="font-display font-extrabold text-base text-[#173226] dark:text-white leading-tight">
+                              {member.name}
+                            </h4>
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-emerald-500/10 text-[#38B46A] dark:text-emerald-400 text-xs font-bold">
+                              {member.position}
+                            </div>
+                            {member.bio && (
+                              <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-3 leading-relaxed pt-1">
+                                {member.bio}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Bottom Actions */}
+                        <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleToggleTeamMemberVisibility(member.id, member.isActive !== false, member.name)}
+                            className="h-8 px-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-[#173226] dark:hover:text-white cursor-pointer"
+                          >
+                            {member.isActive !== false ? (
+                              <>
+                                <EyeOff className="size-3.5 mr-1 text-slate-400" /> Hide
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="size-3.5 mr-1 text-[#38B46A]" /> Show
+                              </>
+                            )}
+                          </Button>
+
+                          <div className="flex items-center gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedTeamMemberForEdit(member);
+                                setIsTeamModalOpen(true);
+                              }}
+                              className="h-8 px-2.5 text-xs font-bold rounded-xl border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
+                            >
+                              <Edit className="size-3 mr-1 text-blue-500" /> Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setMemberToDelete(member)}
+                              className="h-8 px-2 text-xs font-bold rounded-xl text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              {effectiveTeam.length === 0 && (
+                <div className="p-12 text-center rounded-3xl bg-white dark:bg-white/5 border border-dashed border-slate-300 dark:border-white/10 space-y-3">
+                  <UserCheck className="size-10 text-slate-300 mx-auto" />
+                  <h4 className="font-bold text-slate-700 dark:text-slate-300">No team members listed</h4>
+                  <p className="text-xs text-slate-500">
+                    Add OMSUN corporate leadership, executive heads, or engineering leaders to appear on the homepage.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setSelectedTeamMemberForEdit(null);
+                      setIsTeamModalOpen(true);
+                    }}
+                    className="h-9 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white text-xs font-extrabold gap-1 cursor-pointer"
+                  >
+                    <Plus className="size-4" /> Add First Member
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════════════ */}
           {/* SECTION 12: SETTINGS */}
           {/* ════════════════════════════════════════════════════════════ */}
           {activeSection === "settings" && (
@@ -3843,6 +4165,62 @@ function AdminDashboardPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Team Member Form / Edit Modal */}
+      <TeamMemberModal
+        isOpen={isTeamModalOpen}
+        onClose={() => {
+          setIsTeamModalOpen(false);
+          setSelectedTeamMemberForEdit(null);
+        }}
+        memberToEdit={selectedTeamMemberForEdit}
+        onSaveMember={handleSaveTeamMember}
+      />
+
+      {/* Delete Team Member Dialog */}
+      <Dialog
+        open={!!memberToDelete}
+        onOpenChange={(open) => {
+          if (!open) setMemberToDelete(null);
+        }}
+      >
+        <DialogContent className="max-w-md rounded-3xl p-6 bg-white dark:bg-[#0c1813] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-display font-bold text-rose-600 flex items-center gap-2">
+              <Trash2 className="size-5" />
+              Remove Team Member?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500 pt-1">
+              Are you sure you want to remove{" "}
+              <span className="font-bold text-slate-800 dark:text-slate-200">
+                "{memberToDelete?.name}"
+              </span>{" "}
+              ({memberToDelete?.position}) from OMSUN leadership? This will remove them from the website and admin database.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-white/10">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setMemberToDelete(null)}
+              className="rounded-xl text-xs font-semibold cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (memberToDelete) {
+                  handleDeleteTeamMember(memberToDelete.id, memberToDelete.name);
+                }
+              }}
+              className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold cursor-pointer"
+            >
+              Confirm Remove
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
