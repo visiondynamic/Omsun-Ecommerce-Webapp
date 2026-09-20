@@ -80,13 +80,11 @@ import {
   OMSUN_CATEGORIES,
   INITIAL_ORDERS,
   INITIAL_CUSTOMERS,
-  INITIAL_COUPONS,
   INITIAL_BANNERS,
   INITIAL_PARTNERS,
   INITIAL_NOTIFICATIONS,
   AdminOrder,
   AdminCustomer,
-  AdminCoupon,
   AdminBanner,
   AdminPartner,
   AdminNotification,
@@ -107,7 +105,6 @@ import { GlobalSearchModal } from "@/components/admin/GlobalSearchModal";
 import { OrderDetailsDrawer } from "@/components/admin/OrderDetailsDrawer";
 import { ProductFormModal } from "@/components/admin/ProductFormModal";
 import { StockEditModal } from "@/components/admin/StockEditModal";
-import { CouponFormModal } from "@/components/admin/CouponFormModal";
 import { BannerEditModal } from "@/components/admin/BannerEditModal";
 import { PartnerFormModal } from "@/components/admin/PartnerFormModal";
 import { TeamMemberModal } from "@/components/admin/TeamMemberModal";
@@ -176,19 +173,7 @@ function AdminDashboardPage() {
     staleTime: 2 * 60 * 1000,
   });
 
-  // Fetch coupons from API
-  const { data: apiCouponsList } = useQuery<AdminCoupon[]>({
-    queryKey: ["admin-coupons"],
-    queryFn: async () => {
-      const rows = await api.getAdminCoupons();
-      return rows.map((r) => ({
-        ...r,
-        discountType: r.discountType as AdminCoupon["discountType"],
-        status: r.status as AdminCoupon["status"],
-      }));
-    },
-    staleTime: 2 * 60 * 1000,
-  });
+
 
   // Fetch banners from API
   const { data: apiBannersList } = useQuery<AdminBanner[]>({
@@ -249,8 +234,6 @@ function AdminDashboardPage() {
   const effectiveOrders = apiOrdersList ?? ordersList;
   const [customersList, setCustomersList] = useState<AdminCustomer[]>(INITIAL_CUSTOMERS);
   const effectiveCustomers = apiCustomersList ?? customersList;
-  const [couponsList, setCouponsList] = useState<AdminCoupon[]>(INITIAL_COUPONS);
-  const effectiveCoupons = apiCouponsList ?? couponsList;
   const [bannersList, setBannersList] = useState<AdminBanner[]>(INITIAL_BANNERS);
   const effectiveBanners = apiBannersList ?? bannersList;
   const [partnersList, setPartnersList] = useState<AdminPartner[]>(INITIAL_PARTNERS);
@@ -335,7 +318,6 @@ function AdminDashboardPage() {
   const [selectedProductForEdit, setSelectedProductForEdit] = useState<Product | null>(null);
   const [isStockModalOpen, setIsStockModalOpen] = useState(false);
   const [selectedStockProduct, setSelectedStockProduct] = useState<Product | null>(null);
-  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
@@ -736,9 +718,6 @@ function AdminDashboardPage() {
       case "products":
         setSelectedProductForEdit(null);
         setIsProductModalOpen(true);
-        break;
-      case "coupons":
-        setIsCouponModalOpen(true);
         break;
       case "partners":
         setIsPartnerModalOpen(true);
@@ -1590,11 +1569,6 @@ function AdminDashboardPage() {
                             </td>
                             <td className="p-4 font-mono font-extrabold text-[#38B46A] text-sm">
                               {formatNPR(prod.price)}
-                              {prod.compareAt && (
-                                <span className="block text-[10px] text-slate-400 line-through font-normal">
-                                  {formatNPR(prod.compareAt)}
-                                </span>
-                              )}
                             </td>
                             <td className="p-4">
                               <button
@@ -3049,68 +3023,6 @@ function AdminDashboardPage() {
             </div>
           )}
 
-          {/* ════════════════════════════════════════════════════════════ */}
-          {/* SECTION 7: COUPONS & PROMOTIONS */}
-          {/* ════════════════════════════════════════════════════════════ */}
-          {activeSection === "coupons" && (
-            <div className="space-y-5 sm:space-y-6">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div>
-                  <h3 className="font-display font-extrabold text-lg text-[#173226] dark:text-white">
-                    Promotional Coupon & Discount Management
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Active checkout promotional codes & campaign limits
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setIsCouponModalOpen(true)}
-                  className="h-9 rounded-xl bg-[#38B46A] hover:bg-[#2fa05c] text-white text-xs font-extrabold gap-1 cursor-pointer hover:scale-105 transition-transform"
-                >
-                  <Plus className="size-4" /> Create Coupon Code
-                </Button>
-              </div>
-
-              <div className="rounded-3xl bg-white dark:bg-[#0c241c] border border-[#E2EDE7] dark:border-white/10 shadow-sm overflow-hidden">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-[#E2EDE7] dark:border-white/10 bg-[#F2FBF4] dark:bg-white/5 font-extrabold uppercase text-slate-500">
-                      <th className="p-4">Promo Code</th>
-                      <th className="p-4">Discount Value</th>
-                      <th className="p-4">Min Order Spend</th>
-                      <th className="p-4">Usage Redemptions</th>
-                      <th className="p-4">Expiry Date</th>
-                      <th className="p-4">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-white/5 font-medium">
-                    {effectiveCoupons.map((cpn) => (
-                      <tr key={cpn.id} className="hover:bg-[#F2FBF4]/80 dark:hover:bg-white/5">
-                        <td className="p-4 font-mono font-extrabold text-sm text-[#38B46A]">
-                          {cpn.code}
-                        </td>
-                        <td className="p-4 font-bold text-[#173226] dark:text-white">
-                          {cpn.discountType === "Percentage"
-                            ? `${cpn.discountValue}% OFF`
-                            : `Rs ${cpn.discountValue} OFF`}
-                        </td>
-                        <td className="p-4 font-mono">{formatNPR(cpn.minSpend)}</td>
-                        <td className="p-4 font-bold">
-                          {cpn.usageCount} / {cpn.usageLimit}
-                        </td>
-                        <td className="p-4 font-mono text-slate-500">{cpn.expiryDate}</td>
-                        <td className="p-4">
-                          <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-[#ECFDF3] text-[#38B46A] border border-[#38B46A]/30">
-                            {cpn.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
 
           {/* ════════════════════════════════════════════════════════════ */}
           {/* SECTION 9: REPORTS & FINANCIAL ANALYTICS */}
@@ -3956,28 +3868,6 @@ function AdminDashboardPage() {
         onUpdateStock={handleUpdateStock}
       />
 
-      {/* Coupon Modal */}
-      <CouponFormModal
-        isOpen={isCouponModalOpen}
-        onClose={() => setIsCouponModalOpen(false)}
-        onSaveCoupon={async (cpn) => {
-          try {
-            await api.createCoupon({
-              code: cpn.code,
-              discountType: cpn.discountType === "Percentage" ? "percentage" : "fixed",
-              discountValue: cpn.discountValue,
-              minSpend: cpn.minSpend,
-              usageLimit: cpn.usageLimit,
-              expiryDate: cpn.expiryDate,
-            });
-            queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
-            toast.success(`Coupon "${cpn.code}" created in database`);
-          } catch (err: any) {
-            setCouponsList((prev) => [cpn, ...prev]);
-            toast.warning(`Notice: ${err?.message || "Coupon saved to session cache"}`);
-          }
-        }}
-      />
 
       {/* Banner Modal */}
       <BannerEditModal

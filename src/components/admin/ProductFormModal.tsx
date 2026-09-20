@@ -50,7 +50,6 @@ export function ProductFormModal({
       subcategory: initSub,
       brand: BRANDS[0] || "OMSUN",
       price: 25000,
-      compareAt: 30000,
       stock: 25,
       rating: 4.9,
       image: "",
@@ -261,7 +260,6 @@ export function ProductFormModal({
         subcategory: initSub,
         brand: BRANDS[0] || "OMSUN",
         price: 25000,
-        compareAt: 30000,
         stock: 30,
         rating: 4.9,
         image: "",
@@ -338,7 +336,7 @@ export function ProductFormModal({
       subcategory: formData.subcategory || undefined,
       brand: formData.brand ?? defaultBrand,
       price: Number(formData.price) || 0,
-      compareAt: formData.compareAt ? Number(formData.compareAt) : undefined,
+      compareAt: undefined,
       image: primaryImg,
       images: finalGallery,
       badges: parsedBadges,
@@ -789,18 +787,7 @@ export function ProductFormModal({
                 className="rounded-xl text-xs font-mono font-bold text-[#38B46A]"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-[#173226] dark:text-slate-200">
-                Compare At / MRP (NPR)
-              </Label>
-              <Input
-                type="number"
-                value={formData.compareAt ?? ""}
-                onChange={(e) => setFormData({ ...formData, compareAt: Number(e.target.value) })}
-                placeholder="Optional list price"
-                className="rounded-xl text-xs font-mono text-slate-400"
-              />
-            </div>
+
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-[#173226] dark:text-slate-200 flex items-center gap-1">
                 <Star className="size-3.5 text-amber-400 fill-amber-400" /> Rating (1-5)

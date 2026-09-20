@@ -803,7 +803,7 @@ async function logOrderStatusChange({
 /* 1. CREATE ORDER IMMEDIATELY (Before Payment) */
 app.post("/api/orders", orderLimiter, optionalAuthMiddleware, async (req, res, next) => {
   const body = req.body ?? {};
-  const { items, paymentMethod, paymentReceipt, couponCode } = body;
+  const { items, paymentMethod, paymentReceipt } = body;
   const shipping = body.shipping || {
     name: body.customerName || body.name,
     phone: body.customerPhone || body.phone,
@@ -867,31 +867,7 @@ app.post("/api/orders", orderLimiter, optionalAuthMiddleware, async (req, res, n
 
     // Standard shipping rule: Free delivery above 50,000 NPR, else 1,500 NPR
     const shippingFee = subtotal > 50000 ? 0 : 1500;
-    let discountAmount = 0;
-    let appliedCouponId = null;
-
-    // Check optional coupon with strict validity & usage limits
-    if (couponCode) {
-      const cpnRows = await query(
-        `SELECT * FROM coupons 
-         WHERE code = ? 
-           AND status = 'active' 
-           AND (expiry_date IS NULL OR expiry_date >= CURRENT_DATE()) 
-           AND (usage_limit = 0 OR usage_count < usage_limit)`,
-        [String(couponCode).toUpperCase().trim()],
-      );
-      if (cpnRows.length > 0) {
-        const cpn = cpnRows[0];
-        if (subtotal >= Number(cpn.min_spend)) {
-          appliedCouponId = cpn.id;
-          if (cpn.discount_type === "percentage") {
-            discountAmount = Math.round((subtotal * Number(cpn.discount_value)) / 100);
-          } else {
-            discountAmount = Math.min(subtotal, Number(cpn.discount_value));
-          }
-        }
-      }
-    }
+    const discountAmount = 0;
 
     const grandTotal = Math.max(0, subtotal + shippingFee - discountAmount);
     const orderRef = await generateOrderRef();
@@ -929,12 +905,6 @@ app.post("/api/orders", orderLimiter, optionalAuthMiddleware, async (req, res, n
         ]);
       }
 
-      // 2. Increment coupon usage count if applied
-      if (appliedCouponId) {
-        await conn.query("UPDATE coupons SET usage_count = usage_count + 1 WHERE id = ?", [
-          appliedCouponId,
-        ]);
-      }
 
       // 3. Insert master order record
       const [orderResult] = await conn.query(
@@ -2075,96 +2045,7 @@ app.get("/api/admin/customers", authMiddleware, adminMiddleware, async (_req, re
   }
 });
 
-/* ═══════════════════════════════════════════════════════════════════ */
-/* ADMIN — Coupons CRUD                                               */
-/* ═══════════════════════════════════════════════════════════════════ */
-app.get("/api/admin/coupons", authMiddleware, adminMiddleware, async (_req, res, next) => {
-  try {
-    const rows = await query("SELECT * FROM coupons ORDER BY created_at DESC");
-    const coupons = rows.map((r) => ({
-      id: r.id,
-      code: r.code,
-      discountType: r.discount_type === "percentage" ? "Percentage" : "Fixed",
-      discountValue: Number(r.discount_value),
-      minSpend: Number(r.min_spend),
-      usageCount: r.usage_count,
-      usageLimit: r.usage_limit,
-      expiryDate: r.expiry_date ? new Date(r.expiry_date).toISOString().split("T")[0] : "",
-      status: r.status.charAt(0).toUpperCase() + r.status.slice(1),
-    }));
-    res.json(coupons);
-  } catch (err) {
-    next(err);
-  }
-});
 
-app.post("/api/admin/coupons", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const { code, discountType, discountValue, minSpend, usageLimit, expiryDate } = req.body ?? {};
-  if (!code || !discountType || !discountValue) {
-    return res.status(400).json({ error: "code, discountType, and discountValue are required" });
-  }
-  try {
-    const id = `CPN-${code.toUpperCase()}`;
-    await query(
-      "INSERT INTO coupons (id, code, discount_type, discount_value, min_spend, usage_limit, expiry_date) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [
-        id,
-        code.toUpperCase(),
-        discountType.toLowerCase(),
-        discountValue,
-        minSpend || 0,
-        usageLimit || 100,
-        expiryDate || null,
-      ],
-    );
-    res.status(201).json({ ok: true, id });
-  } catch (err) {
-    if (err.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({ error: "Coupon code already exists" });
-    }
-    next(err);
-  }
-});
-
-/* ═══════════════════════════════════════════════════════════════════ */
-/* ADMIN — Coupons UPDATE / DELETE                                     */
-/* ═══════════════════════════════════════════════════════════════════ */
-app.put("/api/admin/coupons/:id", authMiddleware, adminMiddleware, async (req, res, next) => {
-  const { code, discountType, discountValue, minSpend, usageLimit, expiryDate, status } =
-    req.body ?? {};
-  try {
-    const existing = await query("SELECT id FROM coupons WHERE id = ?", [req.params.id]);
-    if (existing.length === 0) return res.status(404).json({ error: "Coupon not found" });
-    await query(
-      "UPDATE coupons SET code=COALESCE(?,code), discount_type=COALESCE(?,discount_type), discount_value=COALESCE(?,discount_value), min_spend=COALESCE(?,min_spend), usage_limit=COALESCE(?,usage_limit), expiry_date=COALESCE(?,expiry_date), status=COALESCE(?,status) WHERE id=?",
-      [
-        code?.toUpperCase(),
-        discountType?.toLowerCase(),
-        discountValue,
-        minSpend,
-        usageLimit,
-        expiryDate,
-        status?.toLowerCase(),
-        req.params.id,
-      ],
-    );
-    res.json({ ok: true });
-  } catch (err) {
-    if (err.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({ error: "Coupon code already exists" });
-    }
-    next(err);
-  }
-});
-
-app.delete("/api/admin/coupons/:id", authMiddleware, adminMiddleware, async (req, res, next) => {
-  try {
-    await query("DELETE FROM coupons WHERE id = ?", [req.params.id]);
-    res.json({ ok: true });
-  } catch (err) {
-    next(err);
-  }
-});
 
 /* ═══════════════════════════════════════════════════════════════════ */
 /* ADMIN — Partners CRUD                                               */

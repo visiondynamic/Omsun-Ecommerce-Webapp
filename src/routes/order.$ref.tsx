@@ -817,12 +817,7 @@ function OrderTrackingPage() {
                     {order.shippingFee === 0 ? "FREE" : formatNPR(order.shippingFee)}
                   </span>
                 </div>
-                {order.discountAmount > 0 && (
-                  <div className="flex justify-between text-amber-500">
-                    <span>Discount Applied:</span>
-                    <span className="font-mono">-{formatNPR(order.discountAmount)}</span>
-                  </div>
-                )}
+
                 <div className="flex justify-between font-extrabold text-sm border-t border-slate-200 dark:border-white/10 pt-2 text-foreground">
                   <span>Grand Total:</span>
                   <span className="font-mono text-emerald-600 dark:text-emerald-400">

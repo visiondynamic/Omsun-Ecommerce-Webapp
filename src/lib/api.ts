@@ -204,7 +204,6 @@ class ApiClient {
     };
     paymentMethod: string;
     paymentReceipt?: string | null;
-    couponCode?: string;
   }) {
     return this.request<{
       ok: boolean;
@@ -399,46 +398,6 @@ class ApiClient {
 
   async getAdminCustomers() {
     return this.request<AdminCustomerRow[]>("/api/admin/customers");
-  }
-
-  async getAdminCoupons() {
-    return this.request<AdminCouponRow[]>("/api/admin/coupons");
-  }
-
-  async createCoupon(coupon: {
-    code: string;
-    discountType: string;
-    discountValue: number;
-    minSpend: number;
-    usageLimit: number;
-    expiryDate: string;
-  }) {
-    return this.request<{ ok: boolean; id: string }>("/api/admin/coupons", {
-      method: "POST",
-      body: JSON.stringify(coupon),
-    });
-  }
-
-  async updateCoupon(
-    id: string,
-    coupon: Partial<{
-      code: string;
-      discountType: string;
-      discountValue: number;
-      minSpend: number;
-      usageLimit: number;
-      expiryDate: string;
-      status: string;
-    }>,
-  ) {
-    return this.request<{ ok: boolean }>(`/api/admin/coupons/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(coupon),
-    });
-  }
-
-  async deleteCoupon(id: string) {
-    return this.request<{ ok: boolean }>(`/api/admin/coupons/${id}`, { method: "DELETE" });
   }
 
   /* ── Partners ── */
@@ -763,17 +722,6 @@ export interface AdminCustomerRow {
   registeredDate: string;
 }
 
-export interface AdminCouponRow {
-  id: string;
-  code: string;
-  discountType: string;
-  discountValue: number;
-  minSpend: number;
-  usageCount: number;
-  usageLimit: number;
-  expiryDate: string;
-  status: string;
-}
 
 export interface AdminPartnerRow {
   id: string;

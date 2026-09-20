@@ -77,11 +77,7 @@ const SECTION_TITLES: Record<
     subtitle: "Registered Accounts, Purchasing History & VIP Profiles",
     actionLabel: "Export Clients",
   },
-  coupons: {
-    title: "Coupons & Promotions",
-    subtitle: "Discount Codes, Seasonal Deals & Campaign Management",
-    actionLabel: "Create Coupon",
-  },
+
   reports: {
     title: "Reports & Financial Analytics",
     subtitle: "Revenue Breakdown, Sales Growth & Stock Movement",

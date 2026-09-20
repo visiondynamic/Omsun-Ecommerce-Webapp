@@ -652,14 +652,8 @@ export function OrderDetailsDrawer({
               <div className="p-4 rounded-2xl bg-[#12342B] text-white space-y-1.5 text-xs font-medium">
                 <div className="flex justify-between text-slate-300">
                   <span>Subtotal:</span>
-                  <span className="font-mono">{formatNPR(order.totalAmount + (order.discountAmount || 0))}</span>
+                  <span className="font-mono">{formatNPR(order.totalAmount)}</span>
                 </div>
-                {order.discountAmount > 0 && (
-                  <div className="flex justify-between text-amber-400">
-                    <span>Discount Applied:</span>
-                    <span className="font-mono">-{formatNPR(order.discountAmount)}</span>
-                  </div>
-                )}
                 <div className="flex justify-between font-extrabold text-sm pt-2 border-t border-[#1e483c]">
                   <span>Total Payable:</span>
                   <span className="text-[#38B46A] font-mono">{formatNPR(order.totalAmount)}</span>

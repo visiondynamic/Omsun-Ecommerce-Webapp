@@ -129,18 +129,6 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS coupons (
-  id VARCHAR(32) PRIMARY KEY,
-  code VARCHAR(60) NOT NULL UNIQUE,
-  discount_type ENUM('percentage', 'fixed') NOT NULL,
-  discount_value DECIMAL(12,2) NOT NULL,
-  min_spend DECIMAL(12,2) NOT NULL DEFAULT 0,
-  usage_count INT NOT NULL DEFAULT 0,
-  usage_limit INT NOT NULL DEFAULT 100,
-  expiry_date DATE NULL,
-  status ENUM('active', 'expired', 'disabled') NOT NULL DEFAULT 'active',
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS partners (
   id VARCHAR(32) PRIMARY KEY,

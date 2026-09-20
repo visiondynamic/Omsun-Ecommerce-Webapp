@@ -7,7 +7,6 @@ import {
   ShoppingBag,
   MessageSquare,
   Users,
-  Ticket,
   BarChart3,
   Handshake,
   Settings,
@@ -30,7 +29,6 @@ export type AdminSection =
   | "orders"
   | "inquiries"
   | "customers"
-  | "coupons"
   | "reports"
   | "partners"
   | "team"
@@ -92,7 +90,6 @@ export function AdminSidebar({
         : {}),
     },
     { id: "customers", label: "Client Accounts", icon: Users },
-    { id: "coupons", label: "Coupons / Promos", icon: Ticket },
     { id: "reports", label: "Reports & Analytics", icon: BarChart3 },
     { id: "partners", label: "Partner Brands", icon: Handshake },
     { id: "team", label: "Team Members", icon: UserCheck },

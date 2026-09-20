@@ -38,11 +38,7 @@ export function ProductCard({
   const isPowerOne = product.brand === "Power-One";
   const out = product.stock === 0;
 
-  // Calculate discount percentage if compareAt exists (never for quote-only brands)
-  const discountPercent =
-    !isQuoteOnly && product.compareAt && product.compareAt > product.price
-      ? Math.round(((product.compareAt - product.price) / product.compareAt) * 100)
-      : null;
+
 
   return (
     <>
@@ -69,12 +65,6 @@ export function ProductCard({
                 {product.stock} In Stock
               </span>
             )}
-
-            {discountPercent ? (
-              <span className="rounded-md bg-amber-500/95 backdrop-blur-xs px-2 py-0.5 text-[8.5px] font-black uppercase tracking-wider text-white shadow-xs shrink-0">
-                -{discountPercent}% OFF
-              </span>
-            ) : null}
           </div>
 
           {/* Product Image Link */}
@@ -180,11 +170,6 @@ export function ProductCard({
                   <span className="font-display text-sm sm:text-base font-extrabold text-emerald-700 dark:text-emerald-400">
                     {formatNPR(product.price)}
                   </span>
-                  {product.compareAt ? (
-                    <span className="text-[11px] line-through font-mono text-slate-400 dark:text-white/40">
-                      {formatNPR(product.compareAt)}
-                    </span>
-                  ) : null}
                 </div>
                 <span className="text-[9px] font-bold text-emerald-600/90 dark:text-emerald-400/90 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800/40">
                   13% VAT Incl.
@@ -355,16 +340,6 @@ export function ProductCard({
                     <span className="font-display text-2xl font-extrabold text-emerald-700 dark:text-emerald-400">
                       {formatNPR(product.price)}
                     </span>
-                    {product.compareAt && (
-                      <span className="text-xs text-slate-400 dark:text-white/40 line-through font-medium">
-                        {formatNPR(product.compareAt)}
-                      </span>
-                    )}
-                    {discountPercent && (
-                      <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-extrabold text-red-500 border border-red-500/20">
-                        -{discountPercent}% OFF
-                      </span>
-                    )}
                   </div>
                 )}
 

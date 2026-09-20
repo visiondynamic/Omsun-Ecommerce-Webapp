@@ -199,16 +199,9 @@ export async function setup() {
   );
   console.log("✓ Seeded admin (admin@omsunnepal.com / admin@omsun.com.np) & customer accounts.");
 
-  // 3. Seed welcome coupons
-  const [existingCoupons] = await conn.query("SELECT COUNT(*) as count FROM coupons");
-  if (existingCoupons[0].count === 0) {
-    await conn.query(
-      `INSERT INTO coupons (id, code, discount_type, discount_value, min_spend, status)
-       VALUES ('c_solar10', 'OMSUN10', 'percentage', 10, 10000, 'active'),
-              ('c_welcome5k', 'WELCOME5K', 'fixed', 5000, 50000, 'active')`
-    );
-    console.log("✓ Seeded default coupons (OMSUN10, WELCOME5K)");
-  }
+  // 3. Drop legacy coupons table (coupons/promotions system permanently removed)
+  await conn.query("DROP TABLE IF EXISTS coupons");
+  console.log("✓ Dropped legacy coupons table (promotions/coupons removed).");
 
   // 4. Seed Executive Team Members (Ashish Baral - CEO, Sudhir Bhattarai - CTO, Mukhul Ghimire - CFO)
   const initialTeam = [

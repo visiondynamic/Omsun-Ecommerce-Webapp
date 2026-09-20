@@ -23,7 +23,7 @@ export interface AdminOrder {
   subtotal?: number | undefined;
   shippingFee?: number | undefined;
   totalAmount: number;
-  discountAmount: number;
+  discountAmount?: number;
   paymentMethod: "Fonepay QR" | "Cash on Delivery" | "Bank Transfer" | "eSewa" | "Khalti" | string;
   paymentStatus: PaymentStatus | "Pending Verification" | "PAYMENT_SUBMITTED" | "PAYMENT_VERIFIED" | "PAYMENT_REJECTED" | string;
   paymentReceipt?: string | null | undefined;
@@ -58,17 +58,6 @@ export interface AdminCustomer {
   registeredDate: string;
 }
 
-export interface AdminCoupon {
-  id: string;
-  code: string;
-  discountType: "Percentage" | "Fixed";
-  discountValue: number;
-  minSpend: number;
-  usageCount: number;
-  usageLimit: number;
-  expiryDate: string;
-  status: "Active" | "Expired" | "Disabled";
-}
 
 export interface AdminBanner {
   id: string;
@@ -188,7 +177,7 @@ export const INITIAL_ORDERS: AdminOrder[] = [
       },
     ],
     totalAmount: 614000,
-    discountAmount: 15000,
+    discountAmount: 0,
     paymentMethod: "Bank Transfer",
     paymentStatus: "Paid",
     orderStatus: "Processing",
@@ -214,8 +203,8 @@ export const INITIAL_ORDERS: AdminOrder[] = [
         image: catalogProducts[0]?.image || "",
       },
     ],
-    totalAmount: 430000,
-    discountAmount: 10000,
+    totalAmount: 49500,
+    discountAmount: 0,
     paymentMethod: "eSewa",
     paymentStatus: "Paid",
     orderStatus: "Completed",
@@ -248,8 +237,8 @@ export const INITIAL_ORDERS: AdminOrder[] = [
         image: catalogProducts[5]?.image || "",
       },
     ],
-    totalAmount: 108000,
-    discountAmount: 2000,
+    totalAmount: 11000,
+    discountAmount: 0,
     paymentMethod: "Khalti",
     paymentStatus: "Paid",
     orderStatus: "Pending",
@@ -299,7 +288,7 @@ export const INITIAL_ORDERS: AdminOrder[] = [
       },
     ],
     totalAmount: 1075000,
-    discountAmount: 25000,
+    discountAmount: 0,
     paymentMethod: "Bank Transfer",
     paymentStatus: "Paid",
     orderStatus: "Completed",
@@ -370,41 +359,6 @@ export const INITIAL_CUSTOMERS: AdminCustomer[] = [
   },
 ];
 
-export const INITIAL_COUPONS: AdminCoupon[] = [
-  {
-    id: "CPN-SOLAR10",
-    code: "SOLAR10",
-    discountType: "Percentage",
-    discountValue: 10,
-    minSpend: 50000,
-    usageCount: 42,
-    usageLimit: 100,
-    expiryDate: "2026-12-31",
-    status: "Active",
-  },
-  {
-    id: "CPN-OMSUNFEST",
-    code: "OMSUN5000",
-    discountType: "Fixed",
-    discountValue: 5000,
-    minSpend: 100000,
-    usageCount: 19,
-    usageLimit: 50,
-    expiryDate: "2026-09-30",
-    status: "Active",
-  },
-  {
-    id: "CPN-FIRSTBUY",
-    code: "NEPALGREEN",
-    discountType: "Percentage",
-    discountValue: 5,
-    minSpend: 20000,
-    usageCount: 88,
-    usageLimit: 200,
-    expiryDate: "2026-10-15",
-    status: "Active",
-  },
-];
 
 export const INITIAL_BANNERS: AdminBanner[] = [
   {

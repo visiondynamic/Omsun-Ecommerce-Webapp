@@ -19,7 +19,6 @@ import {
   Printer,
   Download,
   ShoppingBag,
-  Ticket,
   Zap,
   Star,
   Copy,
@@ -67,7 +66,6 @@ type SidebarTab =
   | "profile"
   | "address-book"
   | "payment-options"
-  | "vouchers"
   | "orders"
   | "warranty"
   | "returns"
@@ -387,11 +385,6 @@ function DashboardPage() {
     }
   };
 
-  const vouchers = [
-    { code: "OMSUNVIP1500", title: "Rs. 1,500 Off Solar Modules", min: "Min. spend Rs. 25,000", expiry: "Valid till 31 Dec 2026" },
-    { code: "POWERONE5", title: "5% Instant Discount on Online UPS", min: "Min. spend Rs. 40,000", expiry: "Valid till 31 Dec 2026" },
-    { code: "KTMEXPRESS", title: "Free Priority Delivery in Kathmandu", min: "Min. spend Rs. 10,000", expiry: "Valid till 15 Nov 2026" },
-  ];
 
   const primaryAddress = addresses.find((a) => a.isDefault) || addresses[0] || editingAddress;
 
@@ -532,18 +525,6 @@ function DashboardPage() {
               <span className="text-[10px] text-slate-400 font-mono">({addresses.length})</span>
             </button>
 
-            <button
-              onClick={() => setActiveTab("vouchers")}
-              className={`p-2 rounded-xl transition-all flex flex-col items-center gap-1 cursor-pointer ${
-                activeTab === "vouchers" ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 font-bold" : "hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-200"
-              }`}
-            >
-              <div className="size-8 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center">
-                <Ticket className="size-4" />
-              </div>
-              <span className="text-[11px] font-semibold">Vouchers</span>
-              <span className="text-[10px] text-slate-400 font-mono">({vouchers.length})</span>
-            </button>
           </div>
         </div>
 
@@ -556,7 +537,6 @@ function DashboardPage() {
             { id: "address-book", label: "Addresses", icon: MapPin, count: addresses.length },
             { id: "payment-options", label: "Payment & Fonepay", icon: CreditCard },
             { id: "warranty", label: "Warranty", icon: ShieldCheck },
-            { id: "vouchers", label: "Vouchers", icon: Ticket },
             { id: "telemetry", label: "Telemetry", icon: Zap },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -687,17 +667,6 @@ function DashboardPage() {
                   <span>Payment Methods</span>
                 </button>
 
-                <button
-                  onClick={() => setActiveTab("vouchers")}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all cursor-pointer text-left ${
-                    activeTab === "vouchers"
-                      ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold"
-                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5"
-                  }`}
-                >
-                  <Ticket className="size-3.5 text-amber-500" />
-                  <span>Vouchers & Promos</span>
-                </button>
               </div>
             </div>
 
@@ -1671,44 +1640,7 @@ function DashboardPage() {
             </div>
           )}
 
-          {/* ═════════════════════════════════════════════════════════════ */}
-          {/* 7. DEDICATED VIEW: VOUCHERS & PROMOS                          */}
-          {/* ═════════════════════════════════════════════════════════════ */}
-          {activeTab === "vouchers" && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                  Vouchers & Store Credits
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Active promo coupons and rewards ready to apply at checkout.
-                </p>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {vouchers.map((v) => (
-                  <div key={v.code} className="bg-white dark:bg-[#0c241c] p-4 rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-xs space-y-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md text-[11px]">
-                        {v.code}
-                      </span>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(v.code);
-                          toast.success(`Copied ${v.code}`);
-                        }}
-                        className="text-xs font-bold text-slate-400 hover:text-slate-900 cursor-pointer"
-                      >
-                        Copy
-                      </button>
-                    </div>
-                    <h4 className="font-bold text-slate-900 dark:text-white">{v.title}</h4>
-                    <p className="text-[11px] text-slate-400">{v.min}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* ═════════════════════════════════════════════════════════════ */}
           {/* 8. DEDICATED VIEW: TELEMETRY                                  */}

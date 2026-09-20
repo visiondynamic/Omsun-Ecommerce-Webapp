@@ -599,11 +599,6 @@ function ProductPage() {
                     <span className="font-display text-4xl font-extrabold">
                       {formatNPR(product.price)}
                     </span>
-                    {product.compareAt && (
-                      <span className="pb-1 text-sm text-muted-foreground line-through">
-                        {formatNPR(product.compareAt)}
-                      </span>
-                    )}
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <span
