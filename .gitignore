@@ -35,3 +35,4 @@ dist-ssr
 .env*
 public/uploads/*
 !public/uploads/.gitkeep
+server-api/uploads/receipt-*
