@@ -18,9 +18,9 @@ function numberToWordsNPR(num: number): string {
 
   function inWords(n: number): string {
     if (n === 0) return "";
-    if (n < 20) return a[n];
-    if (n < 100) return b[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + a[n % 10] : "");
-    if (n < 1000) return a[Math.floor(n / 100)] + " Hundred" + (n % 100 !== 0 ? " and " + inWords(n % 100) : "");
+    if (n < 20) return a[n] ?? "";
+    if (n < 100) return (b[Math.floor(n / 10)] ?? "") + (n % 10 !== 0 ? " " + (a[n % 10] ?? "") : "");
+    if (n < 1000) return (a[Math.floor(n / 100)] ?? "") + " Hundred" + (n % 100 !== 0 ? " and " + inWords(n % 100) : "");
     if (n < 100000) return inWords(Math.floor(n / 1000)) + " Thousand" + (n % 1000 !== 0 ? " " + inWords(n % 1000) : "");
     if (n < 10000000) return inWords(Math.floor(n / 100000)) + " Lakh" + (n % 100000 !== 0 ? " " + inWords(n % 100000) : "");
     return inWords(Math.floor(n / 10000000)) + " Crore" + (n % 10000000 !== 0 ? " " + inWords(n % 10000000) : "");
@@ -31,47 +31,47 @@ function numberToWordsNPR(num: number): string {
 }
 
 export interface TaxInvoiceOrder {
-  id?: string | number;
-  orderRef?: string;
-  order_ref?: string;
-  customerName?: string;
-  shipping_name?: string;
-  customerPhone?: string;
-  shipping_phone?: string;
-  customerEmail?: string;
-  shipping_email?: string;
-  shippingAddress?: string;
-  shipping_address?: string;
-  shippingCity?: string;
-  shipping_city?: string;
+  id?: string | number | null | undefined;
+  orderRef?: string | null | undefined;
+  order_ref?: string | null | undefined;
+  customerName?: string | null | undefined;
+  shipping_name?: string | null | undefined;
+  customerPhone?: string | null | undefined;
+  shipping_phone?: string | null | undefined;
+  customerEmail?: string | null | undefined;
+  shipping_email?: string | null | undefined;
+  shippingAddress?: string | null | undefined;
+  shipping_address?: string | null | undefined;
+  shippingCity?: string | null | undefined;
+  shipping_city?: string | null | undefined;
   items?: Array<{
-    id?: string | number;
-    productId?: string;
-    product_id?: string;
-    name?: string;
-    product_name?: string;
-    quantity?: number;
-    qty?: number;
-    price?: number;
-    unit_price?: number;
-    unitPrice?: number;
-  }>;
-  subtotal?: number;
-  shippingFee?: number;
-  shipping_fee?: number;
-  totalAmount?: number;
-  grand_total?: number;
-  grandTotal?: number;
-  paymentMethod?: string;
-  payment_method?: string;
-  paymentStatus?: string;
-  payment_status?: string;
-  transactionRef?: string | null;
-  transaction_ref?: string | null;
-  createdAt?: string;
-  created_at?: string;
-  verifiedBy?: string | null;
-  verified_by?: string | null;
+    id?: string | number | null | undefined;
+    productId?: string | null | undefined;
+    product_id?: string | null | undefined;
+    name?: string | null | undefined;
+    product_name?: string | null | undefined;
+    quantity?: number | null | undefined;
+    qty?: number | null | undefined;
+    price?: number | null | undefined;
+    unit_price?: number | null | undefined;
+    unitPrice?: number | null | undefined;
+  }> | null | undefined;
+  subtotal?: number | null | undefined;
+  shippingFee?: number | null | undefined;
+  shipping_fee?: number | null | undefined;
+  totalAmount?: number | null | undefined;
+  grand_total?: number | null | undefined;
+  grandTotal?: number | null | undefined;
+  paymentMethod?: string | null | undefined;
+  payment_method?: string | null | undefined;
+  paymentStatus?: string | null | undefined;
+  payment_status?: string | null | undefined;
+  transactionRef?: string | null | undefined;
+  transaction_ref?: string | null | undefined;
+  createdAt?: string | null | undefined;
+  created_at?: string | null | undefined;
+  verifiedBy?: string | null | undefined;
+  verified_by?: string | null | undefined;
 }
 
 interface TaxInvoiceModalProps {

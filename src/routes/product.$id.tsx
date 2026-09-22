@@ -49,7 +49,12 @@ export const Route = createFileRoute("/product/$id")({
   },
   head: ({ loaderData }) => {
     const p = loaderData?.product;
-    const isQuoteOnly = p?.brand === "Smarten" || p?.brand === "Power-One" || p?.price === 0;
+    const isQuoteOnly =
+      p?.brand === "Smarten" ||
+      p?.brand === "Power-One" ||
+      p?.brand === "Hikvision" ||
+      p?.brand === "Techno Vision" ||
+      p?.price === 0;
     const title = p ? `${p.name} | OMSUN Nepal` : "Product | OMSUN Nepal";
     const description = p
       ? isQuoteOnly
@@ -140,7 +145,8 @@ function ProductPage() {
       product.name.toLowerCase().includes("servo"));
   const isSmarten = product.brand === "Smarten";
   const isPowerOne = product.brand === "Power-One";
-  const isQuoteOnly = isSmarten || isPowerOne || product.price === 0;
+  const isHikvision = product.brand === "Hikvision" || product.brand === "Techno Vision";
+  const isQuoteOnly = isSmarten || isPowerOne || isHikvision || product.price === 0;
 
   const currentImage = gallery[active] || gallery[0] || product.image;
 
@@ -221,7 +227,9 @@ function ProductPage() {
                           ? "border-amber-400/40 bg-amber-400/15 text-amber-300"
                           : isPowerOne
                             ? "border-blue-400/40 bg-blue-400/15 text-blue-300"
-                            : "border-sky-400/30 bg-sky-400/10 text-sky-300",
+                            : isHikvision
+                              ? "border-red-400/40 bg-red-400/15 text-red-300"
+                              : "border-sky-400/30 bg-sky-400/10 text-sky-300",
                       )}
                     >
                       {product.brand}
@@ -418,21 +426,21 @@ function ProductPage() {
                         balancing, surge protection, and remote solar monitoring.
                       </p>
 
-                      {product.brochureUrl && (
-                        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
+                      {product.sourceUrl && (
+                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
                           <div>
-                            <h4 className="font-bold text-foreground">Official Product Documentation</h4>
+                            <h4 className="font-bold text-foreground">Official Product Source & Verification</h4>
                             <p className="text-xs text-muted-foreground">
-                              Download official {product.brand} specifications sheet and manufacturer brochure
+                              Listed under Featured Products by Techno Vision Traders (Official Hikvision Nepal Distributor)
                             </p>
                           </div>
                           <a
-                            href={product.brochureUrl}
+                            href={product.sourceUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 px-4 py-2.5 text-xs font-bold transition-all"
+                            className="inline-flex items-center gap-2 rounded-xl bg-slate-900/5 hover:bg-slate-900/10 dark:bg-white/10 dark:hover:bg-white/15 text-foreground border border-slate-300 dark:border-white/20 px-4 py-2.5 text-xs font-bold transition-all"
                           >
-                            <FileDown className="size-4" /> Download PDF Brochure
+                            <ExternalLink className="size-4" /> View on Techno Vision (tvt.com.np)
                           </a>
                         </div>
                       )}
@@ -513,7 +521,11 @@ function ProductPage() {
                   <div className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/20 p-3.5 text-xs space-y-2 text-foreground">
                     <div className="flex items-center gap-2 font-medium">
                       <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
-                      <span>Authorized {product.brand} Partner & Direct Importer</span>
+                      <span>
+                        {isHikvision
+                          ? "Techno Vision Traders Official Distributor Portfolio"
+                          : `Authorized ${product.brand} Partner & Direct Importer`}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 font-medium">
                       <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
@@ -525,7 +537,11 @@ function ProductPage() {
                     </div>
                     <div className="flex items-center gap-2 font-medium">
                       <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
-                      <span>System Engineering & Sizing Support Included</span>
+                      <span>
+                        {isHikvision
+                          ? "Surveillance Architecture & Installation Sizing Support"
+                          : "System Engineering & Sizing Support Included"}
+                      </span>
                     </div>
                   </div>
 
@@ -552,7 +568,11 @@ function ProductPage() {
                             product: product.name,
                             model: product.model,
                             series: product.series,
-                            inquiryType: isPowerOne ? "powerone-quote" : "smarten-quote",
+                            inquiryType: isHikvision
+                              ? "security-quote"
+                              : isPowerOne
+                                ? "powerone-quote"
+                                : "smarten-quote",
                           }}
                         >
                           <ExternalLink className="size-3.5" />

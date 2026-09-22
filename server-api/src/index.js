@@ -46,6 +46,21 @@ async function ensureProductImagesColumn() {
   try {
     await query("ALTER TABLE products MODIFY COLUMN images LONGTEXT NULL");
   } catch {}
+  const extraCols = [
+    { name: "model", type: "VARCHAR(120) NULL" },
+    { name: "warranty", type: "VARCHAR(120) NULL" },
+    { name: "source_url", type: "VARCHAR(500) NULL" },
+    { name: "brochure_url", type: "VARCHAR(500) NULL" },
+  ];
+  for (const col of extraCols) {
+    try {
+      await query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS ${col.name} ${col.type}`);
+    } catch {
+      try {
+        await query(`ALTER TABLE products ADD COLUMN ${col.name} ${col.type}`);
+      } catch {}
+    }
+  }
 }
 
 // Helper for safe JSON parsing
@@ -1861,6 +1876,10 @@ app.post("/api/admin/products", authMiddleware, adminMiddleware, async (req, res
     stock,
     rating,
     badges,
+    model,
+    warranty,
+    source_url,
+    brochure_url,
   } = req.body ?? {};
 
   if (!name || price == null) {
@@ -1886,8 +1905,8 @@ app.post("/api/admin/products", authMiddleware, adminMiddleware, async (req, res
           : [];
 
     await query(
-      `INSERT INTO products (id, name, category, subcategory, brand, tagline, description, price, mrp, image, images, features, specs, stock, rating, badges)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO products (id, name, category, subcategory, brand, tagline, description, price, mrp, image, images, features, specs, stock, rating, badges, model, warranty, source_url, brochure_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         prodId,
         name,
@@ -1905,6 +1924,10 @@ app.post("/api/admin/products", authMiddleware, adminMiddleware, async (req, res
         Number(stock) || 0,
         Number(rating) || 4.8,
         JSON.stringify(badges || []),
+        model || null,
+        warranty || null,
+        source_url || null,
+        brochure_url || null,
       ],
     );
     res.status(201).json({ ok: true, id: prodId });
@@ -1933,6 +1956,10 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
     stock,
     rating,
     badges,
+    model,
+    warranty,
+    source_url,
+    brochure_url,
   } = req.body ?? {};
 
   try {
@@ -1978,7 +2005,11 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
          specs = COALESCE(?, specs),
          stock = COALESCE(?, stock),
          rating = COALESCE(?, rating),
-         badges = COALESCE(?, badges)
+         badges = COALESCE(?, badges),
+         model = COALESCE(?, model),
+         warranty = COALESCE(?, warranty),
+         source_url = COALESCE(?, source_url),
+         brochure_url = COALESCE(?, brochure_url)
        WHERE id = ?`,
       [
         name !== undefined ? name : null,
@@ -1996,6 +2027,10 @@ app.put("/api/admin/products/:id", authMiddleware, adminMiddleware, async (req, 
         stock != null ? Number(stock) : null,
         rating != null ? Number(rating) : null,
         badges !== undefined ? (badges ? JSON.stringify(badges) : JSON.stringify([])) : null,
+        model !== undefined ? model : null,
+        warranty !== undefined ? warranty : null,
+        source_url !== undefined ? source_url : null,
+        brochure_url !== undefined ? brochure_url : null,
         req.params.id,
       ],
     );

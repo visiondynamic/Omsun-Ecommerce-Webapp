@@ -88,6 +88,11 @@ const SECTION_TITLES: Record<
     subtitle: "Authorized Distribution (Dyna, Excite, Luminous, Smarten)",
     actionLabel: "Add Partner",
   },
+  team: {
+    title: "Executive Team",
+    subtitle: "Leadership Profiles, Executive Team Bios & Governance",
+    actionLabel: "Add Team Member",
+  },
   settings: {
     title: "Admin & Store Settings",
     subtitle: "Store Details, Nepal Tax, NPR Currency & Staff Permissions",

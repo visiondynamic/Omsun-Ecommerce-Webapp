@@ -34,8 +34,9 @@ export function ProductCard({
   const [quantity, setQuantity] = useState(1);
   const { addToCart, buyNow } = useCart();
 
-  const isQuoteOnly = product.brand === "Smarten" || product.brand === "Power-One" || product.price === 0;
+  const isQuoteOnly = product.brand === "Smarten" || product.brand === "Power-One" || product.brand === "Hikvision" || product.brand === "Techno Vision" || product.price === 0;
   const isPowerOne = product.brand === "Power-One";
+  const isHikvision = product.brand === "Hikvision" || product.brand === "Techno Vision";
   const out = product.stock === 0;
 
 
@@ -109,11 +110,18 @@ export function ProductCard({
                     ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50"
                     : product.brand === "Greenn Volt" || product.brand === "Green Volt"
                     ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/80 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-700/50"
+                    : product.brand === "Hikvision" || product.brand === "Techno Vision"
+                    ? "bg-red-100 text-red-800 dark:bg-red-950/80 dark:text-red-300 border border-red-300 dark:border-red-700/50"
                     : "bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300 dark:border-blue-700/50",
                 )}
               >
                 {product.brand}
               </span>
+              {product.model && (
+                <span className="rounded-md px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10">
+                  {product.model}
+                </span>
+              )}
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 {product.series || product.subcategory || product.category}
               </span>
@@ -125,6 +133,13 @@ export function ProductCard({
                 {product.name}
               </Link>
             </h3>
+
+            {/* Short Description */}
+            {product.tagline && (
+              <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 leading-snug">
+                {product.tagline}
+              </p>
+            )}
 
             {/* Key Distinct Specs Chips */}
             {product.specs && product.specs.length > 0 && (
@@ -147,15 +162,21 @@ export function ProductCard({
                 <span
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-extrabold",
-                    isPowerOne
-                      ? "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300"
-                      : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+                    isHikvision
+                      ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300"
+                      : isPowerOne
+                        ? "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                        : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
                   )}
                 >
                   <MessageSquare
                     className={cn(
                       "size-3.5",
-                      isPowerOne ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400",
+                      isHikvision
+                        ? "text-red-600 dark:text-red-400"
+                        : isPowerOne
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-amber-600 dark:text-amber-400",
                     )}
                   />
                   <span>Request a Quote</span>
@@ -215,7 +236,7 @@ export function ProductCard({
                 >
                   <Link to="/product/$id" params={{ id: product.id }}>
                     <Eye className="size-3 mr-1 shrink-0" />
-                    <span>Details</span>
+                    <span>View Details</span>
                   </Link>
                 </Button>
 
@@ -224,9 +245,11 @@ export function ProductCard({
                   onClick={() => setQuoteModalOpen(true)}
                   className={cn(
                     "h-9 rounded-xl font-extrabold text-[10px] sm:text-xs px-1 sm:px-2 text-white shadow-md hover:scale-[1.02] transition-all cursor-pointer",
-                    isPowerOne
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
-                      : "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
+                    isHikvision
+                      ? "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500"
+                      : isPowerOne
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
+                        : "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
                   )}
                 >
                   <MessageSquare className="size-3 mr-1 shrink-0" />

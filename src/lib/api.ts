@@ -532,8 +532,12 @@ class ApiClient {
 export interface ProductRow {
   id: string;
   name: string;
+  slug?: string | null;
   category: string;
   subcategory?: string | null;
+  series?: string | null;
+  model?: string | null;
+  capacity?: string | null;
   brand: string;
   tagline: string | null;
   description: string | null;
@@ -541,11 +545,16 @@ export interface ProductRow {
   mrp: number | null;
   image: string | null;
   images?: string[] | null;
-  features: string[] | { label: string; value: string }[];
-  specs: { label: string; value: string }[];
+  features: string[] | { label: string; value: string }[] | string | null;
+  specs: { label: string; value: string }[] | string | null;
   stock: number;
   rating: number;
   badges: string[];
+  warranty?: string | null;
+  brochure_url?: string | null;
+  source_url?: string | null;
+  specifications?: Record<string, any> | string | null;
+  applications?: string[] | string | null;
 }
 
 export type PaymentStatus =

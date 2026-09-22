@@ -230,6 +230,52 @@ function AdminDashboardPage() {
   // Core Reactive Data State
   const [productsList, setProductsList] = useState<Product[]>(initialCatalogProducts);
   const effectiveProducts = apiProductsList ?? productsList;
+
+  // Disabled / Inactive Product IDs
+  const [disabledProductIds, setDisabledProductIds] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem("omsun_disabled_products");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const handleToggleProductStatus = (id: string, name: string) => {
+    setDisabledProductIds((prev) => {
+      const next = new Set(prev);
+      const isCurrentlyDisabled = next.has(id);
+      if (isCurrentlyDisabled) {
+        next.delete(id);
+        toast.success(`Product "${name}" is now enabled and visible.`);
+      } else {
+        next.add(id);
+        toast.info(`Product "${name}" is now disabled and hidden.`);
+      }
+      try {
+        localStorage.setItem("omsun_disabled_products", JSON.stringify(Array.from(next)));
+      } catch {}
+      return next;
+    });
+  };
+
+  const handleMoveProductOrder = (productId: string, direction: "up" | "down") => {
+    setProductsList((prev) => {
+      const list = [...prev];
+      const index = list.findIndex((p) => p.id === productId);
+      if (index === -1) return prev;
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= list.length) return prev;
+      const current = list[index];
+      const target = list[targetIndex];
+      if (!current || !target) return prev;
+      list[index] = target;
+      list[targetIndex] = current;
+      toast.success(`Display order updated for "${current.name}"`);
+      return list;
+    });
+  };
+
   const [ordersList, setOrdersList] = useState<AdminOrder[]>(INITIAL_ORDERS);
   const effectiveOrders = apiOrdersList ?? ordersList;
   const [customersList, setCustomersList] = useState<AdminCustomer[]>(INITIAL_CUSTOMERS);
@@ -319,6 +365,7 @@ function AdminDashboardPage() {
   const [isStockModalOpen, setIsStockModalOpen] = useState(false);
   const [selectedStockProduct, setSelectedStockProduct] = useState<Product | null>(null);
   const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
+  const [selectedBannerForEdit, setSelectedBannerForEdit] = useState<AdminBanner | null>(null);
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [selectedTeamMemberForEdit, setSelectedTeamMemberForEdit] = useState<TeamMember | null>(null);
@@ -455,6 +502,7 @@ function AdminDashboardPage() {
           rating: prod.rating,
           badges: prod.badges,
           specs: prod.specs,
+          model: prod.model || null,
         });
       } else {
         await api.createProduct({
@@ -473,9 +521,19 @@ function AdminDashboardPage() {
           rating: prod.rating,
           badges: prod.badges,
           specs: prod.specs,
-          features: [],
+          features: prod.features || [],
+          model: prod.model || null,
         });
       }
+      setProductsList((prev) => {
+        const idx = prev.findIndex((p) => p.id === prod.id);
+        if (idx >= 0) {
+          const next = [...prev];
+          next[idx] = prod;
+          return next;
+        }
+        return [prod, ...prev];
+      });
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -1431,7 +1489,9 @@ function AdminDashboardPage() {
                                   ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300"
                                   : prod.brand === "Power-One"
                                     ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
-                                    : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                                    : prod.brand === "Hikvision" || prod.brand === "Techno Vision"
+                                      ? "bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300"
+                                      : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
                               }`}
                             >
                               {prod.brand}
@@ -1440,31 +1500,57 @@ function AdminDashboardPage() {
                               {prod.category} {prod.subcategory ? `• ${prod.subcategory}` : ""}
                             </span>
                           </div>
-                          <div className="text-[10px] font-mono text-slate-400 mt-0.5">
-                            SKU: {prod.id}
+                          <div className="text-[10px] font-mono text-slate-400 mt-0.5 flex items-center gap-2">
+                            <span>SKU: {prod.id}</span>
+                            {prod.model && (
+                              <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                                Model: {prod.model}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/10 text-xs">
                         <div className="font-mono font-extrabold text-[#38B46A]">
-                          {formatNPR(prod.price)}
+                          {prod.price === 0 ? "Quote Only" : formatNPR(prod.price)}
                         </div>
-                        <button
-                          onClick={() => {
-                            setSelectedStockProduct(prod);
-                            setIsStockModalOpen(true);
-                          }}
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                            prod.stock > 10
-                              ? "bg-[#ECFDF3] text-[#38B46A] border-[#38B46A]/30"
-                              : prod.stock > 0
-                                ? "bg-[#FFFBEB] text-[#D97706] border-[#F4B400]/30"
-                                : "bg-red-500/10 text-red-600 border-red-500/30"
-                          }`}
-                        >
-                          {prod.stock > 0 ? `${prod.stock} Units` : "Out of Stock"}
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleProductStatus(prod.id, prod.name)}
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold border flex items-center gap-1 ${
+                              disabledProductIds.has(prod.id)
+                                ? "bg-slate-100 text-slate-500 border-slate-300"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-300"
+                            }`}
+                          >
+                            {disabledProductIds.has(prod.id) ? (
+                              <>
+                                <EyeOff className="size-2.5" /> Disabled
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="size-2.5" /> Active
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedStockProduct(prod);
+                              setIsStockModalOpen(true);
+                            }}
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                              prod.stock > 10
+                                ? "bg-[#ECFDF3] text-[#38B46A] border-[#38B46A]/30"
+                                : prod.stock > 0
+                                  ? "bg-[#FFFBEB] text-[#D97706] border-[#F4B400]/30"
+                                  : "bg-red-500/10 text-red-600 border-red-500/30"
+                            }`}
+                          >
+                            {prod.stock > 0 ? `${prod.stock} Units` : "Out of Stock"}
+                          </button>
+                        </div>
                       </div>
 
                       <div className="flex items-center justify-end gap-2 pt-1">
@@ -1509,6 +1595,8 @@ function AdminDashboardPage() {
                         <th className="p-4 whitespace-nowrap">Selling Price</th>
                         <th className="p-4 whitespace-nowrap">Stock Status</th>
                         <th className="p-4 whitespace-nowrap">Rating</th>
+                        <th className="p-4 whitespace-nowrap">Status</th>
+                        <th className="p-4 whitespace-nowrap">Order</th>
                         <th className="p-4 text-right whitespace-nowrap">Actions</th>
                       </tr>
                     </thead>
@@ -1522,14 +1610,16 @@ function AdminDashboardPage() {
                               p.subcategory === selectedSubcategoryFilter) &&
                             (selectedBrandFilter === "All" || p.brand === selectedBrandFilter) &&
                             (!productQuery ||
-                              `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand} ${p.id}`
+                              `${p.name} ${p.category} ${p.subcategory || ""} ${p.brand} ${p.id} ${p.model || ""}`
                                 .toLowerCase()
                                 .includes(productQuery.toLowerCase())),
                         )
                         .map((prod) => (
                           <tr
                             key={prod.id}
-                            className="hover:bg-[#F2FBF4]/80 dark:hover:bg-white/5 transition-colors"
+                            className={`hover:bg-[#F2FBF4]/80 dark:hover:bg-white/5 transition-colors ${
+                              disabledProductIds.has(prod.id) ? "opacity-60 bg-slate-50/50" : ""
+                            }`}
                           >
                             <td className="p-4 font-bold text-[#173226] dark:text-white flex items-center gap-3">
                               <img
@@ -1539,8 +1629,13 @@ function AdminDashboardPage() {
                               />
                               <div>
                                 <div className="text-xs font-extrabold">{prod.name}</div>
-                                <div className="text-[11px] text-slate-400 font-mono font-normal">
-                                  SKU: {prod.id}
+                                <div className="text-[11px] text-slate-400 font-mono font-normal flex items-center gap-2">
+                                  <span>SKU: {prod.id}</span>
+                                  {prod.model && (
+                                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                                      Model: {prod.model}
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             </td>
@@ -1561,14 +1656,22 @@ function AdminDashboardPage() {
                                     ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300 border border-cyan-200"
                                     : prod.brand === "Power-One"
                                       ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200"
-                                      : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200"
+                                      : prod.brand === "Hikvision" || prod.brand === "Techno Vision"
+                                        ? "bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300 border border-red-200"
+                                        : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200"
                                 }`}
                               >
                                 {prod.brand}
                               </span>
                             </td>
                             <td className="p-4 font-mono font-extrabold text-[#38B46A] text-sm">
-                              {formatNPR(prod.price)}
+                              {prod.price === 0 ? (
+                                <span className="text-amber-600 dark:text-amber-400 font-bold text-xs bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800/40">
+                                  Quote Only
+                                </span>
+                              ) : (
+                                formatNPR(prod.price)
+                              )}
                             </td>
                             <td className="p-4">
                               <button
@@ -1588,6 +1691,50 @@ function AdminDashboardPage() {
                               </button>
                             </td>
                             <td className="p-4 font-bold text-amber-500">★ {prod.rating}</td>
+                            <td className="p-4 whitespace-nowrap">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleProductStatus(prod.id, prod.name)}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border cursor-pointer transition-all hover:scale-105 ${
+                                  disabledProductIds.has(prod.id)
+                                    ? "bg-slate-100 text-slate-500 border-slate-300 dark:bg-white/10 dark:text-slate-400"
+                                    : "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800"
+                                }`}
+                                title={disabledProductIds.has(prod.id) ? "Click to Enable product" : "Click to Disable product"}
+                              >
+                                {disabledProductIds.has(prod.id) ? (
+                                  <>
+                                    <EyeOff className="size-3 text-slate-400" />
+                                    <span>Disabled</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Eye className="size-3 text-emerald-600 dark:text-emerald-400" />
+                                    <span>Active</span>
+                                  </>
+                                )}
+                              </button>
+                            </td>
+                            <td className="p-4 whitespace-nowrap">
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveProductOrder(prod.id, "up")}
+                                  className="p-1 rounded bg-slate-100 dark:bg-white/5 hover:bg-slate-200 text-slate-600 dark:text-slate-300 cursor-pointer"
+                                  title="Move Up"
+                                >
+                                  <ArrowUp className="size-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveProductOrder(prod.id, "down")}
+                                  className="p-1 rounded bg-slate-100 dark:bg-white/5 hover:bg-slate-200 text-slate-600 dark:text-slate-300 cursor-pointer"
+                                  title="Move Down"
+                                >
+                                  <ArrowDown className="size-3" />
+                                </button>
+                              </div>
+                            </td>
                             <td className="p-4 text-right">
                               <div className="flex items-center justify-end gap-1.5">
                                 <button

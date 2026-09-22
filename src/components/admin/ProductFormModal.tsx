@@ -331,6 +331,9 @@ export function ProductFormModal({
     const finalProduct: Product = {
       id: formData.id || `sku-${Date.now()}`,
       name: formData.name || "Untitled Hardware",
+      model: formData.model?.trim() || undefined,
+      series: formData.series?.trim() || undefined,
+      capacity: formData.capacity?.trim() || undefined,
       tagline: formData.tagline || "High Performance Energy Hardware",
       category: formData.category ?? defaultCategory,
       subcategory: formData.subcategory || undefined,
@@ -343,11 +346,11 @@ export function ProductFormModal({
       stock: Number(formData.stock) || 0,
       rating: Number(formData.rating) || 4.8,
       specs: (formData.specs || []).filter((s): s is { label: string; value: string } => Boolean(s.label && s.value)),
+      warranty: formData.warranty?.trim() || undefined,
+      sourceUrl: formData.sourceUrl?.trim() || undefined,
+      brochureUrl: formData.brochureUrl?.trim() || undefined,
+      description: formData.description?.trim() || undefined,
     };
-
-    if (formData.description) {
-      (finalProduct as any).description = formData.description;
-    }
 
     onSaveProduct(finalProduct);
     toast.success(
@@ -372,9 +375,9 @@ export function ProductFormModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Name & Brand */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+          {/* Name, Brand & Model */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5 sm:col-span-1">
               <Label className="text-xs font-bold text-[#173226] dark:text-slate-200">
                 Product Title / Name *
               </Label>
@@ -382,8 +385,19 @@ export function ProductFormModal({
                 required
                 value={formData.name || ""}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g. Power-One UHF Series Online UPS"
+                placeholder="e.g. DS-2CD1043G0-I Bullet Camera"
                 className="rounded-xl text-xs"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-[#173226] dark:text-slate-200">
+                Model Number / Code
+              </Label>
+              <Input
+                value={formData.model || ""}
+                onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                placeholder="e.g. DS-2CD1043G0-I"
+                className="rounded-xl text-xs font-mono"
               />
             </div>
             <div className="space-y-1.5">

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
+  Building2,
   Facebook,
   Instagram,
   Linkedin,
@@ -133,12 +134,29 @@ export function Footer() {
               Reliable Power · Trusted Solutions · Nationwide Service
             </p>
 
-            <ul className="space-y-3 text-xs text-[#173226] font-bold">
-              <li className="flex items-center gap-3">
-                <span className="grid size-8 place-items-center rounded-lg bg-[#173226] text-white border border-[#173226] shrink-0 shadow-xs">
+            <ul className="space-y-3.5 text-xs text-[#173226] font-bold">
+              <li className="flex items-start gap-3">
+                <span className="grid size-8 place-items-center rounded-lg bg-[#173226] text-white border border-[#173226] shrink-0 shadow-xs mt-0.5">
+                  <Building2 className="size-4 text-[#43B987]" />
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#173226]/75">
+                    Registered Office
+                  </span>
+                  <span>Budhanilkantha-8, Kathmandu, Nepal</span>
+                </div>
+              </li>
+
+              <li className="flex items-start gap-3">
+                <span className="grid size-8 place-items-center rounded-lg bg-[#173226] text-white border border-[#173226] shrink-0 shadow-xs mt-0.5">
                   <MapPin className="size-4 text-[#43B987]" />
                 </span>
-                <span>Bhotebahal Marg-11, Kathmandu, Nepal (Showroom)</span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#173226]/75">
+                    Showroom & Service Center
+                  </span>
+                  <span>Bhotebahal Marg-11, Kathmandu, Nepal</span>
+                </div>
               </li>
 
               <li className="flex items-center gap-3">

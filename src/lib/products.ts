@@ -46,6 +46,7 @@ export {
 
 import { smartenFallbackProducts } from "@/lib/smartenData";
 import { powerOneFallbackProducts } from "@/lib/powerOneData";
+import { technoVisionProducts } from "@/lib/technoVisionData";
 
 export type Product = {
   id: string;
@@ -201,14 +202,23 @@ export const PRODUCT_TAXONOMY: CategoryStructure[] = [
     name: "Security",
     slug: "security",
     skuPrefix: "SEC",
-    description: "4K solar PTZ surveillance, commercial PoE CCTV kits and smart remote camera monitoring systems.",
-    subcategories: ["CCTV", "Solar Security"],
+    description: "High-definition IP bullet cameras, PIR Turbo HD surveillance, and smart remote camera monitoring systems.",
+    subcategories: ["IP Camera", "Turbo HD Camera", "CCTV", "Solar Security"],
   },
 ];
 
 export const CATEGORIES = PRODUCT_TAXONOMY.map((c) => c.name);
 
-export const BRANDS = ["Smarten", "OMSUN", "Power-One", "Greenn Volt", "SineWave", "Voltura"];
+export const BRANDS = [
+  "Smarten",
+  "OMSUN",
+  "Power-One",
+  "Greenn Volt",
+  "SineWave",
+  "Voltura",
+  "Hikvision",
+  "Techno Vision",
+];
 
 // Fallback mock data used when API is unavailable (SSR, offline, etc.)
 const fallbackImageMap: Record<string, string> = {
@@ -1120,10 +1130,13 @@ const baseFallbackProducts: Product[] = [
 ];
 
 export const fallbackProducts: Product[] = [
+  ...technoVisionProducts,
   ...baseFallbackProducts,
   ...smartenFallbackProducts,
   ...powerOneFallbackProducts,
 ];
+
+export { technoVisionProducts };
 
 const API_BASE =
   (typeof import.meta !== "undefined" && import.meta.env?.["VITE_API_URL"]) ||
@@ -1182,10 +1195,10 @@ export function mapApiProductToProduct(apiProduct: {
   images?: string[] | string | null;
   stock: number;
   rating: number;
-  badges: string[];
+  badges: string[] | string;
   specs?: { label: string; value: string }[] | string | null;
-  specifications?: Record<string, string> | string | null;
-  features?: string[] | string | null;
+  specifications?: Record<string, any> | string | null;
+  features?: string[] | { label: string; value: string }[] | string | null;
   applications?: string[] | string | null;
   warranty?: string | null;
   brochure_url?: string | null;
@@ -1256,7 +1269,10 @@ export function mapApiProductToProduct(apiProduct: {
     rating: apiProduct.rating,
     efficient: apiProduct.rating >= 4.5,
     specs: Array.isArray(parsedSpecs) ? parsedSpecs : [],
-    specifications: typeof parsedSpecsObj === "object" && !Array.isArray(parsedSpecsObj) ? parsedSpecsObj : undefined,
+    specifications:
+      typeof parsedSpecsObj === "object" && parsedSpecsObj !== null && !Array.isArray(parsedSpecsObj)
+        ? (parsedSpecsObj as Record<string, string>)
+        : undefined,
     features: Array.isArray(parsedFeatures) ? parsedFeatures : undefined,
     applications: Array.isArray(parsedApps) ? parsedApps : undefined,
     warranty: apiProduct.warranty || undefined,
