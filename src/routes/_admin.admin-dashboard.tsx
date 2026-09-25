@@ -343,7 +343,7 @@ function AdminDashboardPage() {
       supportPhone: "+977-9800000000",
       supportEmail: "sales@omsunnepal.com",
       hubAddress: "OMSUN Hub, Tripureshwor, Kathmandu 44600, Nepal",
-      fonepayMerchantId: "FP-OMSUN-KTM-01",
+      fonepayMerchantId: "2222440021860909",
       valleyDeliveryFee: 0,
       outsideValleyDeliveryFee: 1500,
       notificationEmail: "sales@omsunnepal.com",

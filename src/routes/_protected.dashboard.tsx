@@ -57,6 +57,7 @@ import {
 import { toast } from "sonner";
 import panel from "@/assets/p-panel.jpg";
 import { TaxInvoiceModal } from "@/components/common/TaxInvoiceModal";
+import { FonepayQrModal } from "@/components/common/FonepayQrModal";
 
 export const Route = createFileRoute("/_protected/dashboard")({
   component: DashboardPage,
@@ -94,6 +95,7 @@ function DashboardPage() {
   const [orderFilter, setOrderFilter] = useState<string>("all");
   const [selectedOrderForModal, setSelectedOrderForModal] = useState<OrderRow | null>(null);
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<OrderRow | null>(null);
+  const [isStandeeModalOpen, setIsStandeeModalOpen] = useState(false);
 
   // Photo Avatar state
   const [userAvatar, setUserAvatar] = useState<string | null>(user?.avatar || null);
@@ -1292,74 +1294,19 @@ function DashboardPage() {
                   {/* QR Standee Visual Box */}
                   <div className="p-6 bg-gradient-to-b from-slate-50 to-slate-100/60 dark:from-black/40 dark:to-black/20 rounded-2xl border border-slate-200/80 dark:border-white/10 flex flex-col sm:flex-row items-center gap-6">
                     {/* High-Contrast Crisp QR Graphic */}
-                    <div className="size-44 bg-white p-3 rounded-2xl shadow-md border-2 border-slate-900 dark:border-white flex flex-col items-center justify-center relative shrink-0">
-                      <svg viewBox="0 0 100 100" className="size-full text-slate-950">
-                        {/* Finder Patterns */}
-                        <rect x="5" y="5" width="26" height="26" fill="currentColor" rx="4" />
-                        <rect x="9" y="9" width="18" height="18" fill="white" rx="2" />
-                        <rect x="13" y="13" width="10" height="10" fill="currentColor" rx="1" />
-
-                        <rect x="69" y="5" width="26" height="26" fill="currentColor" rx="4" />
-                        <rect x="73" y="9" width="18" height="18" fill="white" rx="2" />
-                        <rect x="77" y="13" width="10" height="10" fill="currentColor" rx="1" />
-
-                        <rect x="5" y="69" width="26" height="26" fill="currentColor" rx="4" />
-                        <rect x="9" y="73" width="18" height="18" fill="white" rx="2" />
-                        <rect x="13" y="77" width="10" height="10" fill="currentColor" rx="1" />
-
-                        {/* Random Grid Data Pixels */}
-                        <rect x="36" y="8" width="5" height="5" fill="currentColor" />
-                        <rect x="45" y="8" width="5" height="5" fill="currentColor" />
-                        <rect x="55" y="8" width="5" height="5" fill="currentColor" />
-                        <rect x="36" y="18" width="5" height="5" fill="currentColor" />
-                        <rect x="48" y="18" width="5" height="5" fill="currentColor" />
-                        <rect x="58" y="18" width="5" height="5" fill="currentColor" />
-
-                        <rect x="8" y="36" width="5" height="5" fill="currentColor" />
-                        <rect x="18" y="36" width="5" height="5" fill="currentColor" />
-                        <rect x="28" y="36" width="5" height="5" fill="currentColor" />
-                        <rect x="36" y="36" width="5" height="5" fill="currentColor" />
-                        <rect x="45" y="36" width="5" height="5" fill="currentColor" />
-                        <rect x="55" y="36" width="5" height="5" fill="currentColor" />
-                        <rect x="65" y="36" width="5" height="5" fill="currentColor" />
-                        <rect x="75" y="36" width="5" height="5" fill="currentColor" />
-                        <rect x="85" y="36" width="5" height="5" fill="currentColor" />
-
-                        <rect x="8" y="46" width="5" height="5" fill="currentColor" />
-                        <rect x="25" y="46" width="5" height="5" fill="currentColor" />
-                        <rect x="68" y="46" width="5" height="5" fill="currentColor" />
-                        <rect x="85" y="46" width="5" height="5" fill="currentColor" />
-
-                        <rect x="8" y="56" width="5" height="5" fill="currentColor" />
-                        <rect x="18" y="56" width="5" height="5" fill="currentColor" />
-                        <rect x="36" y="56" width="5" height="5" fill="currentColor" />
-                        <rect x="45" y="56" width="5" height="5" fill="currentColor" />
-                        <rect x="65" y="56" width="5" height="5" fill="currentColor" />
-                        <rect x="75" y="56" width="5" height="5" fill="currentColor" />
-                        <rect x="85" y="56" width="5" height="5" fill="currentColor" />
-
-                        <rect x="36" y="68" width="5" height="5" fill="currentColor" />
-                        <rect x="48" y="68" width="5" height="5" fill="currentColor" />
-                        <rect x="58" y="68" width="5" height="5" fill="currentColor" />
-                        <rect x="75" y="68" width="5" height="5" fill="currentColor" />
-                        <rect x="85" y="68" width="5" height="5" fill="currentColor" />
-
-                        <rect x="36" y="78" width="5" height="5" fill="currentColor" />
-                        <rect x="45" y="78" width="5" height="5" fill="currentColor" />
-                        <rect x="65" y="78" width="5" height="5" fill="currentColor" />
-                        <rect x="75" y="78" width="5" height="5" fill="currentColor" />
-                        <rect x="85" y="78" width="5" height="5" fill="currentColor" />
-
-                        <rect x="36" y="88" width="5" height="5" fill="currentColor" />
-                        <rect x="55" y="88" width="5" height="5" fill="currentColor" />
-                        <rect x="68" y="88" width="5" height="5" fill="currentColor" />
-                        <rect x="85" y="88" width="5" height="5" fill="currentColor" />
-
-                        {/* Center Fonepay Logo Badge */}
-                        <circle cx="50" cy="50" r="11" fill="white" />
-                        <circle cx="50" cy="50" r="9" fill="#E31837" />
-                        <text x="50" y="53" textAnchor="middle" fill="white" fontSize="6" fontWeight="900" fontFamily="sans-serif">f</text>
-                      </svg>
+                    <div
+                      className="size-48 bg-white p-2.5 rounded-2xl shadow-md border-2 border-slate-900 dark:border-white flex flex-col items-center justify-center relative shrink-0 overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#E31837] transition-all group"
+                      onClick={() => setIsStandeeModalOpen(true)}
+                      title="Click to view full official Fonepay standee"
+                    >
+                      <img
+                        src="/images/payments/omsun-fonepay-qr-code.jpg"
+                        alt="OMSUN Nepal Official Fonepay QR"
+                        className="size-full object-contain"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[10px] font-bold text-white text-center p-1">
+                        Expand Standee
+                      </div>
                     </div>
 
                     {/* Merchant Info Details */}
@@ -1367,17 +1314,22 @@ function DashboardPage() {
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Merchant Name</span>
                         <strong className="text-sm font-extrabold text-slate-900 dark:text-white block">
-                          OMSUN NEPAL PVT. LTD.
+                          OMSUN NEPAL PRIVATE LIMITED
                         </strong>
                       </div>
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">PAN / VAT Number</span>
-                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300">606847291</span>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Terminal ID</span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">
+                          2222440021860909
+                        </span>
+                        <span className="text-[10px] text-slate-400 block">
+                          Address: Kathmandu MP • Acquired by NIMB Bank
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Accepted Apps</span>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
-                          Nabil, Global IME, NIC Asia, Siddhartha, Sanima, eSewa, Khalti, & all 60+ Nepal Banking Apps.
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Supported Networks</span>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-300 font-semibold leading-tight">
+                          Fonepay · UPI · Alipay+ · UnionPay · All 60+ Nepal Banking Apps & Wallets
                         </p>
                       </div>
                     </div>
@@ -1385,19 +1337,29 @@ function DashboardPage() {
 
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                     <p className="text-[11px] text-slate-400">
-                      Scan with any Mobile Banking App to pay directly.
+                      Scan with any Mobile Banking App or Wallet to settle orders directly.
                     </p>
-                    <Button
-                      onClick={() => {
-                        navigator.clipboard.writeText("606847291");
-                        toast.success("OMSUN Fonepay PAN/Merchant ID copied!");
-                      }}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-xl text-xs font-bold h-8 border-slate-200"
-                    >
-                      <Copy className="size-3.5 mr-1" /> Copy Merchant PAN
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => setIsStandeeModalOpen(true)}
+                        size="sm"
+                        className="rounded-xl text-xs font-bold h-8 bg-[#E31837] hover:bg-[#c9122e] text-white"
+                      >
+                        View Full Standee
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          navigator.clipboard.writeText("2222440021860909");
+                          toast.success("OMSUN Fonepay Terminal ID (2222440021860909) copied!");
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl text-xs font-bold h-8 border-slate-200"
+                      >
+                        <Copy className="size-3.5 mr-1" /> Copy Terminal ID
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
@@ -2024,6 +1986,12 @@ function DashboardPage() {
         isOpen={!!selectedInvoiceOrder}
         onClose={() => setSelectedInvoiceOrder(null)}
         order={selectedInvoiceOrder}
+      />
+
+      {/* ── OFFICIAL FONEPAY STANDEE MODAL ── */}
+      <FonepayQrModal
+        isOpen={isStandeeModalOpen}
+        onClose={() => setIsStandeeModalOpen(false)}
       />
     </div>
   );

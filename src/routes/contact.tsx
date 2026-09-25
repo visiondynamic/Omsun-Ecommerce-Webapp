@@ -77,51 +77,6 @@ const branchLocations = [
     embedCoords: "27.7667° N, 85.3567° E",
     embedUrl: "https://maps.google.com/maps?q=27.7667,85.3567&z=15&output=embed",
   },
-  {
-    id: "pokhara",
-    city: "Pokhara",
-    name: "Gandaki Solar & Inverter Depot",
-    address: "Naya Bazar Commercial Zone, Pokhara 33700, Kaski, Nepal",
-    landmark: "Near Pokhara Bus Park Highway Plaza",
-    phone: "+977 61 541 209",
-    hotline: "+977 9801 234 568",
-    email: "pokhara@omsunnepal.com",
-    hours: "Mon – Sat: 9:30 AM – 5:30 PM",
-    isHQ: false,
-    mapUrl: "https://maps.google.com/?q=Naya+Bazar+Pokhara+Nepal",
-    embedCoords: "28.2096° N, 83.9856° E",
-    embedUrl: "https://maps.google.com/maps?q=28.2096,83.9856&z=15&output=embed",
-  },
-  {
-    id: "biratnagar",
-    city: "Biratnagar",
-    name: "Koshi Industrial Logistics Centre",
-    address: "Main Road Industrial Area, Ward 4, Biratnagar, Morang, Nepal",
-    landmark: "Bargachhi Chowk Logistics Hub",
-    phone: "+977 21 470 155",
-    hotline: "+977 9801 234 569",
-    email: "biratnagar@omsunnepal.com",
-    hours: "Mon – Sat: 9:00 AM – 5:00 PM",
-    isHQ: false,
-    mapUrl: "https://maps.google.com/?q=Biratnagar+Morang+Nepal",
-    embedCoords: "26.4525° N, 87.2718° E",
-    embedUrl: "https://maps.google.com/maps?q=26.4525,87.2718&z=15&output=embed",
-  },
-  {
-    id: "butwal",
-    city: "Butwal",
-    name: "Lumbini Energy Distribution Hub",
-    address: "Traffic Chowk, Highway Link, Butwal 32907, Rupandehi, Nepal",
-    landmark: "Opposite Commercial Bank Tower",
-    phone: "+977 71 540 882",
-    hotline: "+977 9801 234 570",
-    email: "butwal@omsunnepal.com",
-    hours: "Mon – Sat: 9:30 AM – 5:30 PM",
-    isHQ: false,
-    mapUrl: "https://maps.google.com/?q=Traffic+Chowk+Butwal+Nepal",
-    embedCoords: "27.7006° N, 83.4484° E",
-    embedUrl: "https://maps.google.com/maps?q=27.7006,83.4484&z=15&output=embed",
-  },
 ];
 
 /* ── FAQ DATA ── */
@@ -130,7 +85,7 @@ const faqs = [
     question:
       "How quickly can OMSUN perform an on-site solar assessment in Kathmandu or outside the valley?",
     answer:
-      "For Kathmandu Valley (Kathmandu, Lalitpur, Bhaktapur), our licensed solar engineers conduct site visits within 24 hours. For major regional hubs (Pokhara, Biratnagar, Chitwan, Butwal), visits are scheduled within 48 to 72 hours.",
+      "For Kathmandu Valley (Kathmandu, Lalitpur, Bhaktapur), our licensed solar engineers conduct site visits within 24 hours. For major cities outside the valley, visits are scheduled within 48 to 72 hours.",
   },
   {
     question: "Does OMSUN handle NEA Net-Metering paperwork and Grid Connection approvals?",
@@ -296,9 +251,9 @@ function ContactPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="font-display text-2xl font-extrabold text-[#03C987]">4 Hubs</div>
+                  <div className="font-display text-2xl font-extrabold text-[#03C987]">Nepal-Wide</div>
                   <div className="text-xs text-slate-300 font-medium mt-0.5">
-                    Kathmandu, Pokhara, Biratnagar, Butwal
+                    Delivery & Installation Coverage
                   </div>
                 </div>
                 <div>
@@ -607,7 +562,7 @@ function ContactPage() {
                               name="district"
                               value={formData.district}
                               onChange={handleInputChange}
-                              placeholder="e.g. Kathmandu / Pokhara"
+                              placeholder="e.g. Kathmandu / Lalitpur"
                               className="h-12 rounded-xl border-white/15 bg-black/40 text-xs text-white placeholder:text-slate-500 focus-visible:ring-[#03C987]"
                             />
                           </div>
@@ -761,11 +716,11 @@ function ContactPage() {
                 <span>Nationwide Presence</span>
               </div>
               <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-[#173226]">
-                OMSUN Offices & Warehouses Across Nepal
+                OMSUN Office & Warehouse in Kathmandu
               </h2>
               <p className="mt-2 text-xs sm:text-sm text-[#475569] font-medium">
-                Select a regional center to view full address details, local contact lines,
-                operating hours, and map locations.
+                View our full address details, direct contact lines, operating hours, and map
+                location.
               </p>
             </Reveal>
 
@@ -808,7 +763,7 @@ function ContactPage() {
                       {activeBranch.name}
                     </h3>
                     <p className="text-xs text-[#03C987] font-bold">
-                      {activeBranch.city} Regional Center
+                      Head Office & Showroom
                     </p>
                   </div>
                 </div>

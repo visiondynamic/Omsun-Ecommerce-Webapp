@@ -34,6 +34,7 @@ import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { TaxInvoiceModal } from "@/components/common/TaxInvoiceModal";
+import { FonepayQrModal } from "@/components/common/FonepayQrModal";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/order/$ref")({
@@ -50,6 +51,7 @@ function OrderTrackingPage() {
   const [isSubmittingProof, setIsSubmittingProof] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [isStandeeModalOpen, setIsStandeeModalOpen] = useState(false);
 
   // Fetch live order data
   const { data: order, isLoading, isError, refetch } = useQuery({
@@ -413,61 +415,47 @@ function OrderTrackingPage() {
                 {/* QR Display Card */}
                 <div className="p-5 bg-gradient-to-b from-rose-50/40 to-slate-50 dark:from-black/40 dark:to-black/20 rounded-2xl border border-slate-200/80 dark:border-white/10 flex flex-col sm:flex-row items-center gap-6">
                   {/* High Contrast Scalable QR */}
-                  <div className="size-40 bg-white p-2 rounded-2xl shadow-sm border-2 border-slate-900 dark:border-white flex flex-col items-center justify-center relative shrink-0">
-                    <svg viewBox="0 0 100 100" className="size-full text-slate-950">
-                      <rect x="5" y="5" width="26" height="26" fill="currentColor" rx="4" />
-                      <rect x="9" y="9" width="18" height="18" fill="white" rx="2" />
-                      <rect x="13" y="13" width="10" height="10" fill="currentColor" rx="1" />
-
-                      <rect x="69" y="5" width="26" height="26" fill="currentColor" rx="4" />
-                      <rect x="73" y="9" width="18" height="18" fill="white" rx="2" />
-                      <rect x="77" y="13" width="10" height="10" fill="currentColor" rx="1" />
-
-                      <rect x="5" y="69" width="26" height="26" fill="currentColor" rx="4" />
-                      <rect x="9" y="73" width="18" height="18" fill="white" rx="2" />
-                      <rect x="13" y="77" width="10" height="10" fill="currentColor" rx="1" />
-
-                      <rect x="36" y="8" width="5" height="5" fill="currentColor" />
-                      <rect x="45" y="8" width="5" height="5" fill="currentColor" />
-                      <rect x="36" y="18" width="5" height="5" fill="currentColor" />
-                      <rect x="48" y="18" width="5" height="5" fill="currentColor" />
-                      <rect x="8" y="36" width="5" height="5" fill="currentColor" />
-                      <rect x="18" y="36" width="5" height="5" fill="currentColor" />
-                      <rect x="36" y="36" width="5" height="5" fill="currentColor" />
-                      <rect x="45" y="36" width="5" height="5" fill="currentColor" />
-                      <rect x="65" y="36" width="5" height="5" fill="currentColor" />
-                      <rect x="8" y="46" width="5" height="5" fill="currentColor" />
-                      <rect x="68" y="46" width="5" height="5" fill="currentColor" />
-                      <rect x="8" y="56" width="5" height="5" fill="currentColor" />
-                      <rect x="36" y="56" width="5" height="5" fill="currentColor" />
-                      <rect x="65" y="56" width="5" height="5" fill="currentColor" />
-                      <rect x="36" y="68" width="5" height="5" fill="currentColor" />
-                      <rect x="48" y="68" width="5" height="5" fill="currentColor" />
-                      <rect x="75" y="68" width="5" height="5" fill="currentColor" />
-                      <rect x="36" y="78" width="5" height="5" fill="currentColor" />
-                      <rect x="65" y="78" width="5" height="5" fill="currentColor" />
-                      <circle cx="50" cy="50" r="11" fill="white" />
-                      <circle cx="50" cy="50" r="9" fill="#E31837" />
-                      <text x="50" y="53" textAnchor="middle" fill="white" fontSize="6" fontWeight="900" fontFamily="sans-serif">f</text>
-                    </svg>
+                  <div
+                    className="size-44 bg-white p-2 rounded-2xl shadow-md border-2 border-slate-900 dark:border-white flex flex-col items-center justify-center relative shrink-0 overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#E31837] transition-all group"
+                    onClick={() => setIsStandeeModalOpen(true)}
+                    title="Click to view full official Fonepay standee"
+                  >
+                    <img
+                      src="/images/payments/omsun-fonepay-qr-code.jpg"
+                      alt="OMSUN Nepal Official Fonepay QR"
+                      className="size-full object-contain"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[10px] font-bold text-white text-center p-1">
+                      Expand Standee
+                    </div>
                   </div>
 
                   <div className="space-y-2 text-xs text-center sm:text-left flex-1 min-w-0">
                     <div>
                       <span className="text-[10px] uppercase font-bold text-slate-400 block">Official Merchant</span>
                       <strong className="text-sm font-extrabold text-slate-900 dark:text-white block">
-                        OMSUN NEPAL PVT. LTD.
+                        OMSUN NEPAL PRIVATE LIMITED
                       </strong>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Merchant PAN / Tax ID</span>
-                      <span className="font-mono font-bold text-slate-700 dark:text-slate-300">609823412</span>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Terminal ID</span>
+                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">2222440021860909</span>
+                      <span className="text-[10px] text-slate-400 block">Address: Kathmandu MP • Acquired by NIMB Bank</span>
                     </div>
                     <div>
                       <span className="text-[10px] uppercase font-bold text-slate-400 block">Exact Payable Amount</span>
                       <span className="font-mono font-extrabold text-base text-emerald-600 dark:text-emerald-400">
                         {formatNPR(order.grandTotal)}
                       </span>
+                    </div>
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setIsStandeeModalOpen(true)}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#E31837] hover:underline"
+                      >
+                        <span>View Full Official Standee</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -881,6 +869,13 @@ function OrderTrackingPage() {
           isOpen={isInvoiceModalOpen}
           onClose={() => setIsInvoiceModalOpen(false)}
           order={order}
+        />
+
+        {/* Official Fonepay Standee Modal */}
+        <FonepayQrModal
+          isOpen={isStandeeModalOpen}
+          onClose={() => setIsStandeeModalOpen(false)}
+          payableAmount={order?.grandTotal}
         />
       </main>
 

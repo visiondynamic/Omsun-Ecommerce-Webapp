@@ -24,6 +24,7 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { FonepayQrModal } from "@/components/common/FonepayQrModal";
 
 export const Route = createFileRoute("/_protected/checkout")({
   component: CheckoutPage,
@@ -38,6 +39,7 @@ function CheckoutPage() {
   const [paymentReceipt, setPaymentReceipt] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [isStandeeModalOpen, setIsStandeeModalOpen] = useState(false);
   const [orderRef, setOrderRef] = useState("");
 
   const [formData, setFormData] = useState({
@@ -347,53 +349,45 @@ function CheckoutPage() {
                     Scan Merchant QR to Pay {formatNPR(grandTotal)}
                   </span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-500">PAN: 609823412</span>
+                <span className="text-[10px] font-mono text-slate-500">Terminal: 2222440021860909</span>
               </div>
 
               <div className="flex items-center gap-4 bg-white dark:bg-black/40 p-3.5 rounded-xl border border-slate-200 dark:border-white/10">
-                {/* QR Code */}
-                <div className="size-24 bg-white p-1 rounded-lg border border-slate-300 dark:border-white shrink-0 flex items-center justify-center relative shadow-xs">
-                  <svg viewBox="0 0 100 100" className="size-full text-slate-950">
-                    <rect x="5" y="5" width="26" height="26" fill="currentColor" rx="3" />
-                    <rect x="9" y="9" width="18" height="18" fill="white" rx="1.5" />
-                    <rect x="13" y="13" width="10" height="10" fill="currentColor" rx="1" />
-                    <rect x="69" y="5" width="26" height="26" fill="currentColor" rx="3" />
-                    <rect x="73" y="9" width="18" height="18" fill="white" rx="1.5" />
-                    <rect x="77" y="13" width="10" height="10" fill="currentColor" rx="1" />
-                    <rect x="5" y="69" width="26" height="26" fill="currentColor" rx="3" />
-                    <rect x="9" y="73" width="18" height="18" fill="white" rx="1.5" />
-                    <rect x="13" y="77" width="10" height="10" fill="currentColor" rx="1" />
-                    <rect x="36" y="8" width="5" height="5" fill="currentColor" />
-                    <rect x="45" y="8" width="5" height="5" fill="currentColor" />
-                    <rect x="36" y="18" width="5" height="5" fill="currentColor" />
-                    <rect x="48" y="18" width="5" height="5" fill="currentColor" />
-                    <rect x="8" y="36" width="5" height="5" fill="currentColor" />
-                    <rect x="18" y="36" width="5" height="5" fill="currentColor" />
-                    <rect x="36" y="36" width="5" height="5" fill="currentColor" />
-                    <rect x="45" y="36" width="5" height="5" fill="currentColor" />
-                    <rect x="65" y="36" width="5" height="5" fill="currentColor" />
-                    <rect x="8" y="46" width="5" height="5" fill="currentColor" />
-                    <rect x="68" y="46" width="5" height="5" fill="currentColor" />
-                    <rect x="8" y="56" width="5" height="5" fill="currentColor" />
-                    <rect x="36" y="56" width="5" height="5" fill="currentColor" />
-                    <rect x="65" y="56" width="5" height="5" fill="currentColor" />
-                    <rect x="36" y="68" width="5" height="5" fill="currentColor" />
-                    <rect x="48" y="68" width="5" height="5" fill="currentColor" />
-                    <rect x="75" y="68" width="5" height="5" fill="currentColor" />
-                    <rect x="36" y="78" width="5" height="5" fill="currentColor" />
-                    <rect x="65" y="78" width="5" height="5" fill="currentColor" />
-                    <circle cx="50" cy="50" r="10" fill="white" />
-                    <circle cx="50" cy="50" r="8" fill="#E31837" />
-                    <text x="50" y="53" textAnchor="middle" fill="white" fontSize="5" fontWeight="900" fontFamily="sans-serif">f</text>
-                  </svg>
-                </div>
-                <div className="space-y-1 text-xs">
-                  <div className="font-extrabold text-slate-900 dark:text-white">OMSUN NEPAL PVT. LTD.</div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Open Nabil, NIC Asia, Global IME, eSewa, Khalti or any Nepal banking app & scan.
+                {/* Official Scannable Fonepay QR Code */}
+                <div
+                  className="size-28 bg-white p-1 rounded-xl border border-slate-300 dark:border-white shrink-0 flex items-center justify-center relative shadow-xs overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#E31837] transition-all group"
+                  onClick={() => setIsStandeeModalOpen(true)}
+                  title="Click to view full official Fonepay standee"
+                >
+                  <img
+                    src="/images/payments/omsun-fonepay-qr-code.jpg"
+                    alt="OMSUN Nepal Official Fonepay QR"
+                    className="size-full object-contain"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[10px] font-bold text-white text-center p-1">
+                    Expand Standee
                   </div>
-                  <div className="text-[10px] text-emerald-600 font-semibold pt-0.5">
-                    ● Instant Verification Ready
+                </div>
+
+                <div className="space-y-1 text-xs">
+                  <div className="font-extrabold text-slate-900 dark:text-white">OMSUN NEPAL PRIVATE LIMITED</div>
+                  <div className="text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                    Terminal: <strong className="text-slate-900 dark:text-white">2222440021860909</strong>
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                    Acquired by NIMB Bank • Scan with Nabil, NIC Asia, Global IME, eSewa, Khalti, UPI or any mobile banking app.
+                  </div>
+                  <div className="flex items-center gap-3 pt-0.5">
+                    <span className="text-[10px] text-emerald-600 font-semibold">
+                      ● Active Official Merchant
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsStandeeModalOpen(true)}
+                      className="text-[10px] font-bold text-[#E31837] hover:underline"
+                    >
+                      View Full Standee
+                    </button>
                   </div>
                 </div>
               </div>
@@ -567,6 +561,13 @@ function CheckoutPage() {
           </p>
         </div>
       </div>
+
+      {/* Official Fonepay Standee Modal */}
+      <FonepayQrModal
+        isOpen={isStandeeModalOpen}
+        onClose={() => setIsStandeeModalOpen(false)}
+        payableAmount={grandTotal}
+      />
     </div>
   );
 }
