@@ -71,7 +71,7 @@ const branchLocations = [
     phone: "+977-01-53114114",
     hotline: "+977-9801828498",
     email: "nepalomsun@gmail.com",
-    hours: "Mon – Fri: 9:00 AM – 6:00 PM | Sat: 10:00 AM – 4:00 PM",
+    hours: "Sunday – Friday: 10:00 AM – 7:00 PM | Saturday: Closed",
     isHQ: true,
     mapUrl: "https://maps.google.com/?q=Budhanilkantha+Kathmandu+Nepal",
     embedCoords: "27.7667° N, 85.3567° E",
@@ -237,7 +237,7 @@ function ContactPage() {
               </p>
 
               {/* Fast Action Stats Strip */}
-              <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 rounded-2xl border border-white/15 bg-white/5 p-6 backdrop-blur-md text-white">
+              <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 rounded-2xl border border-white/15 bg-white/5 p-6 backdrop-blur-md text-white">
                 <div>
                   <div className="font-display text-2xl font-extrabold text-[#03C987]">2 Hours</div>
                   <div className="text-xs text-slate-300 font-medium mt-0.5">
@@ -254,14 +254,6 @@ function ContactPage() {
                   <div className="font-display text-2xl font-extrabold text-[#03C987]">Nepal-Wide</div>
                   <div className="text-xs text-slate-300 font-medium mt-0.5">
                     Delivery & Installation Coverage
-                  </div>
-                </div>
-                <div>
-                  <div className="font-display text-2xl font-extrabold text-[#03C987]">
-                    100% Free
-                  </div>
-                  <div className="text-xs text-slate-300 font-medium mt-0.5">
-                    3D Shadow Analysis & Quote
                   </div>
                 </div>
               </div>
@@ -343,9 +335,9 @@ function ContactPage() {
               </div>
               <h3 className="text-base font-extrabold text-white">Business Hours</h3>
               <p className="mt-1.5 text-xs text-slate-300 leading-relaxed font-medium">
-                Monday – Friday: 9:00 AM – 6:00 PM
+                Sunday – Friday: 10:00 AM – 7:00 PM
                 <br />
-                Saturday: 10:00 AM – 4:00 PM
+                Saturday: Closed
               </p>
               <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400">
                 <span className="relative flex size-2">

@@ -833,7 +833,7 @@ function OrderTrackingPage() {
                 <span>Need Order Assistance?</span>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Our support engineers in Kathmandu are available 9:00 AM – 7:00 PM to assist with payment verification or delivery logistics.
+                Our support engineers in Kathmandu are available Sunday – Friday: 10:00 AM – 7:00 PM to assist with payment verification or delivery logistics.
               </p>
               <div className="flex gap-2">
                 <Button
